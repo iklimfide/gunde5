@@ -3,11 +3,8 @@
 1. [Supabase](https://supabase.com) projesi oluşturun.
 2. **SQL Editor** → `schema.sql` dosyasının tamamını çalıştırın.
 3. **Authentication** → Providers → Email: açık. Geliştirme için **Confirm email** kapatabilirsiniz.
-4. **Lokal:** `js/gunde5-config.example.js` → `js/gunde5-config.js` kopyalayın; URL ve `anon` key girin.  
-   **Vercel:** `js/gunde5-config.js` repoda yok (gitignore). Project Settings → Environment Variables:
-   - `GUNDE5_SUPABASE_URL` — Project URL
-   - `GUNDE5_SUPABASE_ANON_KEY` — anon public key  
-   Deploy sırasında `npm run build` bu dosyayı üretir.
+4. `js/gunde5-config.example.js` → `js/gunde5-config.js` kopyalayın; URL ve `anon` key girin (anon key istemcide görünür; repoda tutulabilir).  
+   İsteğe bağlı Vercel env: `GUNDE5_SUPABASE_URL`, `GUNDE5_SUPABASE_ANON_KEY` — deploy build bu değerlerle dosyayı günceller.
 5. Kayıt profili için `auth-uye-trigger.sql` dosyasını da çalıştırın (veya güncel `schema.sql`).
 6. Profil fotoğrafı ve ek alanlar için `profil-alanlari.sql` dosyasını çalıştırın (mevcut projeler).
 7. İtiraf kartlarında profil özeti için `itiraf-profil-meta.sql` dosyasını çalıştırın.
