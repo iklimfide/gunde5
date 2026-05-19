@@ -21,8 +21,12 @@
         return new URL(path, global.location.origin).href;
     }
 
-    function itirafPaylasUrl(id) {
-        return kokUrl('/itiraf/' + encodeURIComponent(String(id)));
+    function itirafPaylasUrl(id, status) {
+        var sid = encodeURIComponent(String(id));
+        if (status === 'podyum' || status === 'kulis') {
+            return kokUrl('/' + sayfaDosyasi(status)) + '?itiraf=' + sid;
+        }
+        return kokUrl('/itiraf/' + sid);
     }
 
     function yonlendirItiraf404(itirafId) {
@@ -37,12 +41,24 @@
         var id = card.getAttribute('data-id');
         var status = card.getAttribute('data-status') || 'kulis';
         if (!id) return;
-        paylasItiraf(id);
+        paylasItiraf(id, status);
     }
 
-    async function paylasItiraf(id) {
+    async function paylasItiraf(id, status) {
         injectPaylasStyles();
-        var url = itirafPaylasUrl(id);
+        var url;
+        if (status === 'podyum' || status === 'kulis') {
+            url = itirafPaylasUrl(id, status);
+        } else if (DB && DB.itirafGetir) {
+            try {
+                var row = await DB.itirafGetir(id);
+                url = itirafPaylasUrl(id, row ? row.status : null);
+            } catch (e) {
+                url = itirafPaylasUrl(id, null);
+            }
+        } else {
+            url = itirafPaylasUrl(id, null);
+        }
         try {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(url);
@@ -116,7 +132,7 @@
 
         var hedefSayfa = row.status === 'podyum' ? 'podyum' : 'kulis';
         if (hedefSayfa !== sayfa) {
-            global.location.replace(itirafPaylasUrl(id));
+            global.location.replace(itirafPaylasUrl(id, row.status));
             return false;
         }
         return true;
@@ -144,7 +160,7 @@
 
         var hedefSayfa = row.status === 'podyum' ? 'podyum' : 'kulis';
         if (hedefSayfa !== sayfa) {
-            global.location.replace(itirafPaylasUrl(id));
+            global.location.replace(itirafPaylasUrl(id, row.status));
             return;
         }
 

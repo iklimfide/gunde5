@@ -98,7 +98,7 @@ grant select, update on public.uye to authenticated;
 grant select on public.itiraflar to anon, authenticated;
 grant insert on public.uye to authenticated;
 grant insert on public.itiraflar to authenticated;
-grant select, insert on public.itiraf_oylar to authenticated;
+grant select, insert, update on public.itiraf_oylar to authenticated;
 grant usage, select on sequence public.itiraflar_id_seq to authenticated;
 grant usage, select on sequence public.itiraf_oylar_id_seq to authenticated;
 

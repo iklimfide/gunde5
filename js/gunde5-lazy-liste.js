@@ -123,6 +123,7 @@
                 if (temiz) temiz.innerHTML = '';
             }
             kartlariEkle(rows);
+            state.ilkSayfaYuklendi = true;
             if (state.bitti) {
                 sentinelGuncelle('');
                 observerDurdur();
@@ -130,6 +131,12 @@
                 sentinelGuncelle('Aşağı kaydır, daha fazla itiraf yükle');
             }
         } catch (err) {
+            if (state.offset === 0) {
+                var hataEl = document.getElementById(state.konteynerId);
+                if (hataEl) {
+                    hataEl.innerHTML = UI.bosListe(DB.hataMesaji ? DB.hataMesaji(err) : 'İtiraflar yüklenemedi.');
+                }
+            }
             sentinelGuncelle(DB.hataMesaji ? DB.hataMesaji(err) : 'Yüklenemedi', true);
             if (UI && UI.showToast) {
                 UI.showToast(DB.hataMesaji ? DB.hataMesaji(err) : String(err), 'hata');
@@ -154,6 +161,7 @@
         state.offset = 0;
         state.yukleniyor = false;
         state.bitti = false;
+        state.ilkSayfaYuklendi = false;
 
         var el = document.getElementById(konteynerId);
         if (!el) return;
@@ -162,7 +170,7 @@
         await sonrakiSayfa();
 
         var liste = document.getElementById(konteynerId);
-        if (!liste || liste.querySelector('.liste-bos')) return;
+        if (!liste || !state.ilkSayfaYuklendi) return;
 
         var sentinel = sentinelOlustur();
         if (!document.getElementById(SENTINEL_ID)) {

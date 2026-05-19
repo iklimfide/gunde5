@@ -116,8 +116,10 @@
     }
 
     var IKON_YORUM = '<path d="M12 21a9 9 0 1 0-8.5-6.2L3 21l6.2-1.5A8.96 8.96 0 0 0 12 21z"/>';
-    var IKON_BEGENME = '<path d="M10 15v4a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-4l3.4-5.2a1 1 0 0 0-.8-1.6H6.4a1 1 0 0 0-.8 1.6L10 15z"/><path d="M5 21h14"/>';
-    var IKON_BEGENI = '<path d="M12 20.25s-6.5-4.35-8.5-8.5C1.5 7.5 4.5 4.5 8 6c1.9 1 3 2.5 4 2.5s2.1-1.5 4-2.5c3.5-1.5 6.5 1.5 4.5 5.75-2 4.15-8.5 8.5-8.5 8.5z"/>';
+
+    function oyEmojiHtml(emoji) {
+        return '<span class="kart-aksiyon-emoji" aria-hidden="true">' + emoji + '</span>';
+    }
     var IKON_GORUNTULENME = '<path d="M3 19V9h2v10H3zm4 0V5h2v14H7zm4 0v-7h2v7h-2zm4 0V3h2v16h-2zm4 0v-6h2v6h-2z"/>';
     var IKON_KAYDET = '<path d="M6 4h12v16l-6-4-6 4V4z"/>';
     var IKON_PAYLAS = '<path d="M12 5v14"/><path d="M7 10l5-5 5 5"/><path d="M5 19v2h14v-2"/>';
@@ -164,6 +166,19 @@
 
     global.toggleKaydetFromCard = toggleKaydetFromCard;
 
+    function kartOyArayuzunuGuncelle(card, sonuc) {
+        if (!card || !sonuc) return;
+        var upEl = card.querySelector('.up-num');
+        var downEl = card.querySelector('.down-num');
+        if (upEl) upEl.textContent = formatSayac(sonuc.up_votes);
+        if (downEl) downEl.textContent = formatSayac(sonuc.down_votes);
+        var begeni = card.querySelector('.kart-aksiyon--begeni');
+        var begenme = card.querySelector('.kart-aksiyon--begenme');
+        var o = sonuc.oy;
+        if (begeni) begeni.classList.toggle('aktif', o === 1);
+        if (begenme) begenme.classList.toggle('aktif', o === -1);
+    }
+
     function injectKartAksiyonStyles() {
         var css =
             '.card-footer{padding-top:10px;border-top:1px solid rgba(0,0,0,0.06)}' +
@@ -171,15 +186,16 @@
             '.kart-aksiyonlar{display:flex;align-items:center;justify-content:space-between;width:100%;gap:2px}' +
             '.kart-aksiyon{display:inline-flex;align-items:center;gap:4px;border:none;background:transparent;color:var(--text-muted);padding:8px;margin:0;border-radius:999px;cursor:pointer;font-size:13px;font-weight:400;font-family:inherit;line-height:1;transition:color .15s ease,background .15s ease}' +
             '.kart-aksiyon:hover{color:#1d9bf0;background:rgba(29,155,240,0.1)}' +
-            '.kart-aksiyon--begeni:hover,.kart-aksiyon--begeni.aktif{color:#f91880}' +
-            '.kart-aksiyon--begenme:hover,.kart-aksiyon--begenme.aktif{color:#f4212e}' +
+            '.kart-aksiyon--begeni:hover,.kart-aksiyon--begenme:hover{background:rgba(0,0,0,0.05)}' +
+            'body.dark-mode .kart-aksiyon--begeni:hover,body.dark-mode .kart-aksiyon--begenme:hover{background:rgba(255,255,255,0.08)}' +
+            '.kart-aksiyon--begeni.aktif,.kart-aksiyon--begenme.aktif{background:rgba(0,0,0,0.06)}' +
+            'body.dark-mode .kart-aksiyon--begeni.aktif,body.dark-mode .kart-aksiyon--begenme.aktif{background:rgba(255,255,255,0.1)}' +
+            '.kart-aksiyon-emoji{font-size:18px;line-height:1;display:inline-flex;align-items:center;justify-content:center;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}' +
             '.kart-aksiyon--kaydet:hover,.kart-aksiyon--kaydet.aktif{color:#1d9bf0}' +
             '.kart-aksiyon--kaydet.aktif svg{fill:currentColor;stroke:currentColor}' +
             '.kart-aksiyon--goruntulenme{cursor:default;pointer-events:none}' +
             '.kart-aksiyon--goruntulenme:hover{color:var(--text-muted);background:transparent}' +
             '.kart-aksiyon-sayi{font-variant-numeric:tabular-nums;min-width:1ch;font-size:13px;font-weight:400;color:var(--text-muted)}' +
-            '.kart-aksiyon--begeni .up-num{color:#f91880}' +
-            '.kart-aksiyon--begenme .down-num{color:#f4212e}' +
             '.kart-aksiyon-ikon{display:inline-flex;width:18px;height:18px;flex-shrink:0}' +
             '.kart-aksiyon-ikon svg{width:18px;height:18px;display:block}';
         var s = document.getElementById('gunde5-kart-aksiyon-styles');
@@ -204,13 +220,13 @@
                     ikonSvg(IKON_YORUM, false) +
                     sayiSpan(cevapN, '', 'data-cevap-sayi') +
                 '</button>' +
-                '<button type="button" class="kart-aksiyon kart-aksiyon--begenme" onclick="vote(\'' + kartId + '\', -1)" aria-label="Beğenmedim">' +
-                    ikonSvg(IKON_BEGENME, false) +
-                    sayiSpan(downN, 'down-num', '') +
-                '</button>' +
                 '<button type="button" class="kart-aksiyon kart-aksiyon--begeni" onclick="vote(\'' + kartId + '\', 1)" aria-label="Beğendim">' +
-                    ikonSvg(IKON_BEGENI, false) +
+                    oyEmojiHtml('\uD83D\uDC4D') +
                     sayiSpan(upN, 'up-num', '') +
+                '</button>' +
+                '<button type="button" class="kart-aksiyon kart-aksiyon--begenme" onclick="vote(\'' + kartId + '\', -1)" aria-label="Beğenmedim">' +
+                    oyEmojiHtml('\uD83D\uDC4E') +
+                    sayiSpan(downN, 'down-num', '') +
                 '</button>' +
                 '<span class="kart-aksiyon kart-aksiyon--goruntulenme" aria-label="Görüntülenme">' +
                     ikonSvg(IKON_GORUNTULENME, true) +
@@ -674,6 +690,7 @@
         headerMenuAuthClick: headerMenuAuthClick,
         headerMenuTemaClick: headerMenuTemaClick,
         formatSayac: formatSayac,
+        kartOyArayuzunuGuncelle: kartOyArayuzunuGuncelle,
         toggleKaydet: toggleKaydet,
         isItirafKayitli: isItirafKayitli
     };

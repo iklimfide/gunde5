@@ -14,6 +14,10 @@
         var s = document.createElement('style');
         s.id = 'gunde5-kart-cevap-styles';
         s.textContent =
+            '.card-body{position:relative}' +
+            '.card-body::before{content:"gunde5.com";position:absolute;inset:0;display:grid;place-items:center;transform:rotate(-32deg);font-size:clamp(1.9rem,9vw,2.75rem);font-weight:900;letter-spacing:-0.04em;line-height:1;color:#111827;opacity:0.08;pointer-events:none;z-index:0;user-select:none;white-space:nowrap}' +
+            'body.dark-mode .card-body::before{color:#e7e9ea;opacity:0.09}' +
+            '.card-body > *{position:relative;z-index:1}' +
             '.kart-detay{margin-top:12px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.06)}' +
             'body.dark-mode .kart-detay{border-top-color:rgba(255,255,255,0.06)}' +
             '.card.uzun-metin.acik .short-text{display:none}' +
@@ -43,7 +47,9 @@
             '.kart-ic-yorum-form{margin-top:8px}' +
             '.kart-ic-yorum-form textarea{width:100%;border:1px solid var(--border-color);border-radius:10px;padding:8px;font-size:13px;background:var(--bg-card);color:var(--text-main);margin-bottom:6px}' +
             '.kart-ic-yorum-gonder{padding:6px 12px;border:none;border-radius:8px;background:#1d9bf0;color:#fff;font-size:12px;font-weight:800;cursor:pointer}' +
-            '.kart-cevap-daha{display:block;width:100%;margin-top:4px;padding:10px;border:1px dashed var(--border-color);border-radius:10px;background:transparent;color:var(--text-muted);font-size:12px;font-weight:700;cursor:pointer}' +
+            '.kart-cevap-daha{width:100%;margin-top:4px;padding:10px;border:1px dashed var(--border-color);border-radius:10px;background:transparent;color:var(--text-muted);font-size:12px;font-weight:700;cursor:pointer}' +
+            '.kart-cevap-daha[hidden]{display:none!important}' +
+            '.kart-cevap-bos{margin:0;font-size:13px;font-weight:600;color:var(--text-muted);text-align:center}' +
             'button.cevap-ozet{display:inline-block;margin-top:8px;border:none;background:none;font-size:12px;font-weight:700;cursor:pointer;padding:0}' +
             '.card-footer button.cevap-ozet,.card-footer--podyum button.cevap-ozet{margin-top:0}' +
             '.female button.cevap-ozet{color:var(--female-color)}' +
@@ -63,6 +69,15 @@
             kartState[cardId] = { cevapOffset: 0, cevapToplam: 0, yuklendi: false, acik: false };
         }
         return kartState[cardId];
+    }
+
+    function guncelleDahaEskiBtn(btn, kalan) {
+        if (!btn) return;
+        kalan = parseInt(kalan, 10) || 0;
+        var goster = kalan > 0;
+        btn.hidden = !goster;
+        btn.style.display = goster ? 'block' : 'none';
+        if (goster) btn.textContent = 'Daha eski cevaplar (' + kalan + ')';
     }
 
     function zamanKisa(iso) {
@@ -201,12 +216,12 @@
         var s = st(cardId);
         if (!daha) {
             s.cevapOffset = 0;
-            liste.innerHTML = '<p class="liste-bos" style="padding:12px 0">Yükleniyor…</p>';
+            liste.innerHTML = '<p class="kart-cevap-bos" style="padding:12px 0">Yükleniyor…</p>';
         }
         var rows = await DB.kokCevaplariListele(cardId, s.cevapOffset, DB.CEVAP_SAYFA);
         if (!daha) liste.innerHTML = '';
         if (!rows.length && s.cevapOffset === 0) {
-            liste.innerHTML = '<p class="liste-bos" style="padding:12px 0;font-size:13px">Henüz cevap yok.</p>';
+            liste.innerHTML = '<p class="kart-cevap-bos" style="padding:12px 0;font-size:13px">Henüz cevap yok.</p>';
         } else {
             var i;
             for (i = 0; i < rows.length; i++) {
@@ -219,15 +234,12 @@
         }
         s.cevapToplam = await DB.kokCevapToplam(cardId);
         await yenileYorumOzeti(cardId);
-        var kalan = s.cevapToplam - s.cevapOffset;
-        if (dahaBtn) {
-            dahaBtn.hidden = kalan <= 0;
-            if (kalan > 0) dahaBtn.textContent = 'Daha eski cevaplar (' + kalan + ')';
-        }
+        guncelleDahaEskiBtn(dahaBtn, s.cevapToplam - s.cevapOffset);
         s.yuklendi = true;
     }
 
     function baglaKart(card) {
+        injectStyles();
         if (card._cevapBagli) return;
         card._cevapBagli = true;
         var cardId = card.getAttribute('data-id');
@@ -304,6 +316,8 @@
         card.classList.add('acik');
         detay.hidden = false;
         if (!s.yuklendi) {
+            var dahaBtn = card.querySelector('[data-cevap-daha]');
+            if (dahaBtn) guncelleDahaEskiBtn(dahaBtn, 0);
             await kokCevaplariYukle(cardId, false);
         }
         if (focusCevap) {
@@ -324,7 +338,9 @@
         toggle: toggle,
         initSayfa: initSayfa,
         baglaKart: baglaKart,
+        injectStyles: injectStyles,
         guncelleCevapOzet: guncelleCevapOzet
     };
     global.toggleKartDetay = toggle;
+    injectStyles();
 })(window);

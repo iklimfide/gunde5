@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>gunde5.com - Günün En İyi 5 İtirafı</title>
+    <link rel="icon" href="favicon.ico" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <style>
         :root {
             --bg-main: #ffffff;
@@ -215,27 +219,6 @@
             overflow: hidden;
             isolation: isolate;
         }
-        .card::before {
-            content: 'gunde5.com';
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%) rotate(-32deg);
-            transform-origin: center center;
-            font-size: clamp(1.65rem, 8.5vw, 2.35rem);
-            font-weight: 900;
-            letter-spacing: -0.04em;
-            line-height: 1;
-            color: #111827;
-            opacity: 0.08;
-            pointer-events: none;
-            z-index: 0;
-            user-select: none;
-        }
-        body.dark-mode .card::before {
-            color: #e7e9ea;
-            opacity: 0.07;
-        }
         .card-header,
         .card-body,
         .card-footer,
@@ -358,8 +341,41 @@
         }
         .short-text { display: inline; }
         .full-text { display: none; }
-        .read-more {
+        .card.uzun-metin.acik .short-text { display: none; }
+        .card.uzun-metin:not(.acik) .full-text { display: none !important; }
+        .card.uzun-metin.acik .full-text { display: block; margin-top: 0; }
+        .card:not(.acik) .kart-daralt-satir--ust { display: none; }
+        .card.acik .read-more--ac { display: none; }
+        .kart-daralt-satir { width: 100%; text-align: center; margin-top: 10px; }
+        .kart-daralt-satir--alt { margin-top: 14px; padding-top: 4px; }
+        button.read-more,
+        button.kart-daralt {
+            border: none;
+            background: none;
+            font: inherit;
+            cursor: pointer;
+            padding: 0;
+        }
+        button.read-more {
             display: block;
+            width: 100%;
+            text-align: center;
+            font-weight: 700;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        button.kart-daralt {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 8px 16px;
+            color: var(--text-muted);
+        }
+        .female button.read-more,
+        .female button.kart-daralt { color: var(--female-color); }
+        .male button.read-more,
+        .male button.kart-daralt { color: var(--male-color); }
+        .read-more {
             font-weight: 700;
             font-size: 13px;
             margin-top: 8px;
@@ -1321,12 +1337,7 @@
             try {
                 var sonuc = await Gunde5DB.oyVer(cardId, score);
                 var card = document.querySelector('.card[data-id="' + cardId + '"]');
-                if (card && sonuc) {
-                    var upEl = card.querySelector('.up-num');
-                    var downEl = card.querySelector('.down-num');
-                    if (upEl) upEl.textContent = Gunde5UI.formatSayac(sonuc.up_votes);
-                    if (downEl) downEl.textContent = Gunde5UI.formatSayac(sonuc.down_votes);
-                }
+                if (card && sonuc) Gunde5UI.kartOyArayuzunuGuncelle(card, sonuc);
             } catch (err) {
                 Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
             }
@@ -1336,16 +1347,16 @@
 
         Gunde5DB.init().then(function () {
             guncelleHeaderOturum();
-            if (Gunde5Paylas) {
-                return Gunde5Paylas.paylasLinkiKontrolEt('podyum').then(function (devam) {
-                    if (!devam) return;
-                    return Gunde5DB.yuklePodyumListe('podyumListe');
-                });
-            }
             return Gunde5DB.yuklePodyumListe('podyumListe');
         }).then(function () {
-            if (Gunde5Paylas) return Gunde5Paylas.isleDerinBaglanti('podyum');
+            if (!Gunde5Paylas) return;
+            return Gunde5Paylas.paylasLinkiKontrolEt('podyum').then(function (devam) {
+                if (devam === false) return;
+                return Gunde5Paylas.isleDerinBaglanti('podyum');
+            });
         }).catch(function (err) {
+            var el = document.getElementById('podyumListe');
+            if (el) el.innerHTML = Gunde5UI.bosListe(Gunde5DB.hataMesaji(err));
             Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
         });
     </script>

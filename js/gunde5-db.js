@@ -660,6 +660,21 @@
         if (!u || !u.id) throw new Error('Oy vermek için giriş yapmalısın.');
 
         var id = parseInt(itirafId, 10);
+        oy = oy === 1 ? 1 : -1;
+
+        var mevcutRes = await sb.from('itiraf_oylar')
+            .select('oy')
+            .eq('itiraf_id', id)
+            .eq('user_id', u.id)
+            .maybeSingle();
+        if (mevcutRes.error) throw mevcutRes.error;
+
+        if (mevcutRes.data && mevcutRes.data.oy === oy) {
+            var ayniSay = await sb.from('itiraflar').select('up_votes, down_votes').eq('id', id).single();
+            if (ayniSay.error) throw ayniSay.error;
+            return Object.assign({}, ayniSay.data, { oy: oy });
+        }
+
         var oyRes = await sb.from('itiraf_oylar').upsert(
             { itiraf_id: id, user_id: u.id, oy: oy },
             { onConflict: 'itiraf_id,user_id' }
@@ -668,7 +683,7 @@
 
         var sayRes = await sb.from('itiraflar').select('up_votes, down_votes').eq('id', id).single();
         if (sayRes.error) throw sayRes.error;
-        return sayRes.data;
+        return Object.assign({}, sayRes.data, { oy: oy });
     }
 
     async function yukleKulisListe(konteynerId) {
