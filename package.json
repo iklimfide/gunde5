@@ -2,6 +2,7 @@
   "name": "gunde5",
   "private": true,
   "scripts": {
+    "build": "node scripts/write-config.js",
     "start": "serve . -l 8080",
     "dev": "python dev-server.py 8080"
   },
