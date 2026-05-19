@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Giyotin çoktan inmiş — gunde5.com</title>
+    <style>
+        :root {
+            --bg-main: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #f3f4f6;
+            --male-color: #2563eb;
+        }
+        body.dark-mode {
+            --bg-main: #0f1419;
+            --text-main: #e7e9ea;
+            --text-muted: #71767b;
+            --border-color: #2f3336;
+            --male-color: #1d9bf0;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        header {
+            background: #1d9bf0;
+            color: #fff;
+            padding: 16px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            border-bottom: 1px solid #1a8cd8;
+            position: relative;
+        }
+        header a {
+            color: inherit;
+            text-decoration: none;
+        }
+        header span { color: #fff; }
+        .theme-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 32px 20px 48px;
+            text-align: center;
+        }
+        .not-found-ikon {
+            font-size: 56px;
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+        .not-found-kod {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        h1 {
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            color: #b45309;
+        }
+        body.dark-mode h1 { color: #f59e0b; }
+        .not-found-metin {
+            font-size: 15px;
+            line-height: 1.65;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+        .not-found-metin strong {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+        .not-found-aksiyonlar {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .not-found-btn {
+            display: block;
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 800;
+            text-decoration: none;
+            text-align: center;
+            transition: transform 0.12s, opacity 0.12s;
+        }
+        .not-found-btn:active { transform: scale(0.98); }
+        .not-found-btn--birincil {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 14px rgba(29, 155, 240, 0.35);
+        }
+        .not-found-btn--ikincil {
+            background: var(--bg-main);
+            color: var(--male-color);
+            border: 2px solid var(--male-color);
+        }
+        body.dark-mode .not-found-btn--ikincil {
+            background: #15181c;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="kulis.html">gunde<span>5</span>.com</a>
+        <button class="theme-toggle" type="button" onclick="toggleTheme()">🌓 Mod</button>
+    </header>
+
+    <main class="container">
+        <div class="not-found-ikon" aria-hidden="true">⚔️</div>
+        <p class="not-found-kod">404</p>
+        <h1>Giyotin çoktan inmiş</h1>
+        <p class="not-found-metin">
+            Üzgünüz ama <strong>13.12'de</strong> giyotin çoktan inmiş ve aradığınız itirafı sonsuza dek silip atmış.
+            Yenilerini kaçırmamak için oyla, yorum yaz ve podyuma çıkmasını sağla.
+        </p>
+        <div class="not-found-aksiyonlar">
+            <a href="kulis.html" class="not-found-btn not-found-btn--birincil">Kulis sayfasına git ve oylamaya katıl</a>
+            <a href="index.html" class="not-found-btn not-found-btn--ikincil">Geçmişin şampiyonlarını gör</a>
+        </div>
+    </main>
+
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+    </script>
+</body>
+</html>

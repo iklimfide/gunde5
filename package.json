@@ -1,0 +1,11 @@
+{
+  "name": "gunde5",
+  "private": true,
+  "scripts": {
+    "start": "serve . -l 8080",
+    "dev": "python dev-server.py 8080"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}

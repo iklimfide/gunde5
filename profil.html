@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>gunde5.com - Profilim</title>
+    <style>
+        :root {
+            --bg-main: #ffffff;
+            --bg-card: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #f3f4f6;
+            --header-bg: #ffffff;
+            --female-color: #db2777;
+            --female-bg: #fff1f2;
+            --female-border: #fecdd3;
+            --male-color: #2563eb;
+            --male-bg: #eff6ff;
+            --male-border: #bfdbfe;
+        }
+
+        body.dark-mode {
+            --bg-main: #0f1419;
+            --bg-card: #15181c;
+            --text-main: #e7e9ea;
+            --text-muted: #71767b;
+            --border-color: #2f3336;
+            --header-bg: #161a1e;
+            --female-color: #f43f5e;
+            --female-bg: #201319;
+            --female-border: #4c1d24;
+            --male-color: #1d9bf0;
+            --male-bg: #0e1924;
+            --male-border: #1d354b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding-bottom: 80px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        header {
+            background-color: #1d9bf0;
+            color: #ffffff;
+            padding: 16px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            border-bottom: 1px solid #1a8cd8;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header span { color: #ffffff; }
+        header .header-auth-btn {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.45);
+            color: #ffffff;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .header-auth-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            padding: 6px 10px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .header-auth-btn--kayit { left: 16px; }
+        .header-auth-btn--giris { left: 68px; }
+
+        .header-profil-link {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px 5px 6px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 800;
+            max-width: 40%;
+        }
+        .header-profil-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            color: #ffffff;
+            flex-shrink: 0;
+        }
+        .header-profil-link.cins-female .header-profil-avatar { background-color: var(--female-color); }
+        .header-profil-link.cins-male .header-profil-avatar { background-color: var(--male-color); }
+        #headerProfilRumuz {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            padding-left: 4px;
+        }
+
+        .profil-kart {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px 20px;
+            margin-bottom: 16px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .profil-kart.female {
+            background-color: var(--female-bg);
+            border-color: var(--female-border);
+        }
+        .profil-kart.male {
+            background-color: var(--male-bg);
+            border-color: var(--male-border);
+        }
+
+        .profil-avatar-wrap {
+            position: relative;
+            width: 88px;
+            margin: 0 auto 14px;
+        }
+        .profil-avatar {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffffff;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+        .profil-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+        }
+        .profil-avatar.has-foto { background: var(--border-color) !important; }
+        .profil-kart.female .profil-avatar:not(.has-foto) { background-color: var(--female-color); }
+        .profil-kart.male .profil-avatar:not(.has-foto) { background-color: var(--male-color); }
+        .profil-avatar-etiket {
+            display: block;
+            margin-top: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        .profil-avatar-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+        .profil-avatar-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-main);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .profil-avatar-btn--kaldir {
+            color: #f4212e;
+            border-color: #fecaca;
+        }
+        body.dark-mode .profil-avatar-btn--kaldir {
+            border-color: #4c1d24;
+            color: #f87171;
+        }
+        .profil-avatar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .header-profil-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        .header-profil-avatar.has-foto {
+            background: transparent !important;
+            overflow: hidden;
+        }
+
+        .profil-duzenle {
+            text-align: left;
+            margin-top: 4px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+        }
+        body.dark-mode .profil-duzenle { border-top-color: rgba(255, 255, 255, 0.08); }
+        .profil-kart.female .profil-duzenle { border-top-color: var(--female-border); }
+        .profil-kart.male .profil-duzenle { border-top-color: var(--male-border); }
+        .profil-duzenle-baslik {
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 14px;
+            padding-left: 2px;
+            text-align: center;
+        }
+        .profil-alan {
+            margin-bottom: 14px;
+        }
+        .profil-alan label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .profil-select, .profil-input {
+            display: block;
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            background: #ffffff;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+        }
+        body.dark-mode .profil-select,
+        body.dark-mode .profil-input {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+        }
+        .profil-kart.female .profil-select,
+        .profil-kart.female .profil-input { border-color: var(--female-border); }
+        .profil-kart.male .profil-select,
+        .profil-kart.male .profil-input { border-color: var(--male-border); }
+        .profil-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+        .profil-select optgroup {
+            font-weight: 800;
+            font-style: normal;
+            color: var(--text-main);
+        }
+        .profil-yurtdisi {
+            display: none;
+            margin-top: -4px;
+        }
+        .profil-yurtdisi.goster { display: block; }
+        .profil-kaydet {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: #1d9bf0;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        .profil-kart.female .profil-kaydet { background: var(--female-color); }
+        .profil-kart.male .profil-kaydet { background: var(--male-color); }
+
+        .profil-rumuz {
+            font-size: 22px;
+            font-weight: 900;
+            margin-bottom: 4px;
+        }
+        .profil-kart.female .profil-rumuz { color: var(--female-color); }
+        .profil-kart.male .profil-rumuz { color: var(--male-color); }
+
+        .profil-meta {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+        }
+
+        .profil-satir {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            font-size: 14px;
+        }
+        body.dark-mode .profil-satir { border-top-color: rgba(255,255,255,0.06); }
+        .profil-kart.female .profil-satir { border-top-color: rgba(219, 39, 119, 0.12); }
+        .profil-kart.male .profil-satir { border-top-color: rgba(37, 99, 235, 0.12); }
+        .profil-satir span:first-child {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .profil-satir span:last-child {
+            font-weight: 700;
+            color: var(--text-main);
+            text-align: right;
+            max-width: 58%;
+            word-break: break-all;
+        }
+
+        .profil-istat {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .profil-istat-kutu {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px 8px;
+            text-align: center;
+        }
+        .profil-istat-kutu strong {
+            display: block;
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--text-main);
+            margin-bottom: 2px;
+        }
+        .profil-istat-kutu span {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .profil-bolum-baslik {
+            font-size: 15px;
+            font-weight: 800;
+            margin: 8px 0 12px 4px;
+        }
+
+        .profil-itiraf {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+        }
+        .profil-itiraf-metin {
+            font-size: 14px;
+            line-height: 1.55;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+        .profil-itiraf-alt {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+        .profil-itiraf-alt .durum-kulis { color: #d97706; }
+        .profil-itiraf-alt .durum-podyum { color: #00ba7c; }
+        .profil-itiraf-ust {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .profil-itiraf-duzenle-btn {
+            flex-shrink: 0;
+            border: 1px solid var(--border-color);
+            background: var(--bg-main);
+            color: var(--text-main);
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .profil-itiraf-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+        .profil-itiraf-form-alt {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .profil-itiraf-kaydet,
+        .profil-itiraf-iptal {
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+        }
+        .profil-itiraf-kaydet {
+            background: #1d9bf0;
+            color: #fff;
+        }
+        .profil-itiraf-iptal {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .profil-bos {
+            text-align: center;
+            padding: 28px 16px;
+            border: 1px dashed var(--border-color);
+            border-radius: 16px;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .profil-guest {
+            text-align: center;
+            padding: 36px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            background: var(--bg-card);
+            margin-bottom: 16px;
+        }
+        .profil-guest p {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .profil-guest-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .profil-guest-btn {
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+        }
+        .profil-guest-btn--kayit {
+            background: #1d9bf0;
+            color: #ffffff;
+        }
+        .profil-guest-btn--giris {
+            background: var(--bg-main);
+            border: 1.5px solid #1d9bf0;
+            color: #1d9bf0;
+        }
+
+        .profil-cikis {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #f4212e;
+            border-radius: 12px;
+            background: transparent;
+            color: #f4212e;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--header-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            z-index: 1000;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.02);
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+            color: #9ca3af;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .nav-item.active { color: var(--text-main); }
+        .nav-item .icon { font-size: 22px; margin-bottom: 2px; }
+        .nav-item--btn {
+            border: none;
+            background: transparent;
+            font: inherit;
+            color: inherit;
+        }
+
+        .auth-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2100;
+            background: rgba(17, 24, 39, 0.32);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .auth-modal-panel {
+            --auth-accent: #2563eb;
+            --auth-accent-border: var(--male-border);
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 2px solid var(--auth-accent-border);
+            border-radius: 20px;
+            padding: 28px 22px 22px;
+        }
+        .auth-modal-panel.cins-female {
+            --auth-accent: var(--female-color);
+            --auth-accent-border: var(--female-border);
+            border-color: var(--female-border);
+        }
+        .auth-modal-panel.cins-male {
+            --auth-accent: var(--male-color);
+            --auth-accent-border: var(--male-border);
+            border-color: var(--male-border);
+        }
+        .auth-modal-kapat {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 50%;
+            background: #f9fafb;
+            color: #374151;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .auth-brand { text-align: center; margin-bottom: 22px; padding-top: 4px; }
+        .auth-brand-text { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: #111827; }
+        .auth-brand-text span { color: #ef4444; }
+        .auth-modal-baslik { font-size: 16px; font-weight: 800; margin-bottom: 4px; text-align: center; color: var(--text-main); }
+        .auth-modal-alt-baslik { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-bottom: 18px; text-align: center; }
+        .auth-etiket { display: block; font-size: 11px; font-weight: 600; color: #9ca3af; margin-bottom: 6px; }
+        .auth-etiket--yil { margin-top: 2px; }
+        .auth-input, .auth-select {
+            display: block;
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            border: 1.5px solid var(--auth-accent-border);
+            border-radius: 12px;
+            background: #ffffff;
+            color: var(--text-main);
+            font-size: 15px;
+            font-weight: 500;
+            outline: none;
+        }
+        .auth-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+        .auth-cins-satir { display: flex; gap: 12px; margin-bottom: 20px; }
+        .auth-cins-btn {
+            flex: 1;
+            padding: 12px 8px;
+            border: 1.5px solid var(--auth-accent-border);
+            border-radius: 12px;
+            background: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            color: #6b7280;
+            cursor: pointer;
+        }
+        .auth-cins-btn.secili-female { border-color: var(--female-color); background: var(--female-bg); color: var(--female-color); }
+        .auth-cins-btn.secili-male { border-color: var(--male-color); background: var(--male-bg); color: var(--male-color); }
+        .auth-kvkk { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 18px; font-size: 11px; line-height: 1.5; color: #6b7280; font-weight: 500; }
+        .auth-kvkk input { margin-top: 3px; flex-shrink: 0; accent-color: var(--auth-accent); }
+        .auth-submit {
+            display: block;
+            width: 100%;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 12px;
+            background: var(--auth-accent);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .auth-modal-panel.cins-female .auth-submit--kayit { background: var(--female-color); }
+        .auth-modal-panel.cins-male .auth-submit--kayit { background: var(--male-color); }
+        .auth-gecis { text-align: center; margin-top: 16px; font-size: 13px; font-weight: 500; color: #6b7280; }
+        .auth-gecis button { border: none; background: none; padding: 0; font-size: 13px; font-weight: 700; color: var(--auth-accent); cursor: pointer; }
+        .auth-modal-panel.cins-female .auth-gecis button { color: var(--female-color); }
+        .auth-modal-panel.cins-male .auth-gecis button { color: var(--male-color); }
+        .auth-view { display: none; }
+        .auth-view.aktif { display: block; }
+
+        .liste-bos, .gunde5-toast { /* profil */ }
+        .gunde5-toast {
+            display: none;
+            position: fixed;
+            left: 16px;
+            right: 16px;
+            bottom: 76px;
+            max-width: 468px;
+            margin: 0 auto;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: #111827;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            z-index: 3000;
+        }
+        .gunde5-toast--hata { background: #991b1b; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="profil.html" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+            <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
+            <span id="headerProfilRumuz">Müdavim</span>
+        </a>
+        <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
+        <button type="button" class="header-auth-btn header-auth-btn--giris" id="hdrGiris" onclick="openAuthModal('login')">Giriş</button>
+        gunde<span>5</span>.com
+        <button class="theme-toggle" type="button" onclick="toggleTheme()">🌓 Mod</button>
+    </header>
+
+    <div class="container">
+        <h1 class="page-title">Profilim</h1>
+        <div id="profilIcerik"></div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <div class="icon">🏆</div><span>Podyum</span>
+        </a>
+        <a href="kulis.html" class="nav-item">
+            <div class="icon">🔥</div><span>Kulis</span>
+        </a>
+        <button type="button" class="nav-item nav-item--btn" id="navYazBtn">
+            <div class="icon">✍️</div><span>İtiraf Yaz</span>
+        </button>
+        <a href="profil.html" class="nav-item active">
+            <div class="icon">🏷️</div><span>Profil</span>
+        </a>
+    </div>
+
+    <div id="authOverlay" class="auth-overlay" aria-hidden="true">
+        <div class="auth-modal-panel" id="authModalPanel">
+            <button type="button" class="auth-modal-kapat" onclick="closeAuthModal()" aria-label="Kapat">×</button>
+            <div id="authRegister" class="auth-view aktif">
+                <div class="auth-brand">
+                    <div class="auth-brand-text">gunde<span>5</span>.com</div>
+                </div>
+                <div class="auth-cins-satir">
+                    <button type="button" class="auth-cins-btn" id="regCinsFemale" onclick="secAuthCinsiyet('female')">♀ KADIN</button>
+                    <button type="button" class="auth-cins-btn" id="regCinsMale" onclick="secAuthCinsiyet('male')">♂ ERKEK</button>
+                </div>
+                <input type="hidden" id="regGender" value="">
+                <label class="auth-etiket" for="regUsername">Kullanıcı Adı</label>
+                <input class="auth-input" type="text" id="regUsername" maxlength="15" minlength="5" placeholder="5–15 karakter" autocomplete="username">
+                <label class="auth-etiket" for="regEmail">E-Posta</label>
+                <input class="auth-input" type="email" id="regEmail" maxlength="80" placeholder="mail@adresin.com" autocomplete="email">
+                <label class="auth-etiket" for="regPassword">Şifre</label>
+                <input class="auth-input" type="password" id="regPassword" minlength="6" placeholder="Min. 6 karakter" autocomplete="new-password">
+                <label class="auth-etiket auth-etiket--yil" for="regBirthYear">Doğum tarihi: (Minimum 18 yaş gerekir.)</label>
+                <select class="auth-select" id="regBirthYear">
+                    <option value="">Yıl</option>
+                </select>
+                <label class="auth-kvkk">
+                    <input type="checkbox" id="authKvk">
+                    <span>Kullanıcı Sözleşmesi'ni ve KVKK Aydınlatma Metni'ni okudum, onaylıyorum.</span>
+                </label>
+                <button type="button" class="auth-submit auth-submit--kayit" onclick="kayitOl()">Kayıt Ol</button>
+                <p class="auth-gecis">Zaten üye misin? <button type="button" onclick="toggleAuthMode('login')">Giriş Yap</button></p>
+            </div>
+            <div id="authLogin" class="auth-view">
+                <div class="auth-brand">
+                    <div class="auth-brand-text">gunde<span>5</span>.com</div>
+                </div>
+                <h2 class="auth-modal-baslik">Üye Girişi</h2>
+                <p class="auth-modal-alt-baslik">E-posta ve şifrenle kulise dön.</p>
+                <label class="auth-etiket" for="loginEmail">E-Posta</label>
+                <input class="auth-input" type="email" id="loginEmail" maxlength="80" placeholder="mail@adresin.com" autocomplete="email">
+                <label class="auth-etiket" for="loginPassword">Şifre</label>
+                <input class="auth-input" type="password" id="loginPassword" placeholder="Şifren" autocomplete="current-password">
+                <button type="button" class="auth-submit auth-submit--giris" onclick="girisYap()">Giriş Yap</button>
+                <p class="auth-gecis">Hesabınız yok mu? <button type="button" onclick="toggleAuthMode('register')">Kayıt Ol</button></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/gunde5-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+    <script src="js/gunde5-ui.js"></script>
+    <script src="js/gunde5-profil.js"></script>
+    <script src="js/gunde5-db.js"></script>
+    <script>
+        function htmlEsc(s) {
+            return Gunde5UI.htmlEsc(s);
+        }
+
+        function cinsiyetEtiketi(cins) {
+            return cins === 'male' ? 'Erkek' : 'Kadın';
+        }
+
+        function avatarSembol(cins) {
+            return cins === 'male' ? '♂' : '♀';
+        }
+
+        function kullaniciMeta(u) {
+            var parcalar = [];
+            if (u.age) parcalar.push(u.age + ' Yaş');
+            var yer = Gunde5Profil.yasadigiYerGosterim(u);
+            if (yer) parcalar.push(yer);
+            if (u.meslek) {
+                var m = Gunde5Profil.meslekEtiketi(u.meslek);
+                if (m) parcalar.push(m);
+            }
+            return parcalar.length ? parcalar.join(' • ') : '—';
+        }
+
+        function guncelleHeaderOturum() {
+            var u = Gunde5DB.getGunde5User();
+            var kayit = document.getElementById('hdrKayit');
+            var giris = document.getElementById('hdrGiris');
+            var link = document.getElementById('headerProfilLink');
+            if (!kayit || !giris || !link) return;
+            if (u && u.username) {
+                kayit.style.display = 'none';
+                giris.style.display = 'none';
+                link.style.display = 'flex';
+                var cins = u.gender === 'male' ? 'male' : 'female';
+                link.className = 'header-profil-link cins-' + cins;
+                Gunde5UI.uygulaAvatarElement(document.getElementById('headerProfilAvatar'), u);
+                if (u.gender) {
+                    document.body.setAttribute('data-user-gender', cins);
+                }
+                var rumuz = u.username;
+                if (rumuz.length > 12) rumuz = rumuz.slice(0, 12) + '…';
+                document.getElementById('headerProfilRumuz').textContent = rumuz;
+            } else {
+                kayit.style.display = '';
+                giris.style.display = '';
+                link.style.display = 'none';
+            }
+        }
+
+        async function yukleProfil() {
+            var u = Gunde5DB.getGunde5User();
+            var el = document.getElementById('profilIcerik');
+            guncelleHeaderOturum();
+
+            if (!u || !u.username) {
+                el.innerHTML = '<p class="liste-bos">Bu sayfa giriş yapmış üyeler içindir.</p>';
+                openAuthModal('login');
+                return;
+            }
+
+            var cins = u.gender === 'male' ? 'male' : 'female';
+
+            el.innerHTML = '<p class="liste-bos">Yükleniyor…</p>';
+            var itiraflar = [];
+            try {
+                itiraflar = await Gunde5DB.profilItiraflarim();
+            } catch (err) {
+                el.innerHTML = '<p class="liste-bos">' + htmlEsc(Gunde5DB.hataMesaji(err)) + '</p>';
+                return;
+            }
+            var kulisSay = 0;
+            var podyumSay = 0;
+            var i, listeHtml = '';
+
+            for (i = 0; i < itiraflar.length; i++) {
+                if (itiraflar[i].status === 'podyum') {
+                    podyumSay += 1;
+                } else {
+                    kulisSay += 1;
+                }
+            }
+
+            if (itiraflar.length === 0) {
+                listeHtml = '<div class="profil-bos">Henüz itiraf yazmadın.<br>Kulis\'ten ilk itirafını gönder.</div>';
+            } else {
+                for (i = 0; i < itiraflar.length; i++) {
+                    var it = itiraflar[i];
+                    var metin = it.content_full || it.content_short || '';
+                    var ozet = metin.length > 120 ? metin.slice(0, 120) + '…' : metin;
+                    var durumSinif = it.status === 'podyum' ? 'durum-podyum' : 'durum-kulis';
+                    var durumMetin = it.status === 'podyum' ? 'Podyum' : 'Kulis';
+                    var tarih = '';
+                    if (it.created_at) {
+                        try {
+                            tarih = new Date(it.created_at).toLocaleDateString('tr-TR');
+                        } catch (e2) {
+                            tarih = '';
+                        }
+                    }
+                    listeHtml +=
+                        '<div class="profil-itiraf" data-itiraf-id="' + it.id + '" data-itiraf-metin="' + encodeURIComponent(metin) + '">' +
+                        '<div class="profil-itiraf-gorunum">' +
+                        '<div class="profil-itiraf-ust">' +
+                        '<p class="profil-itiraf-metin">' + htmlEsc(ozet) + '</p>' +
+                        '<button type="button" class="profil-itiraf-duzenle-btn">Düzenle</button>' +
+                        '</div>' +
+                        '<div class="profil-itiraf-alt">' +
+                        '<span class="' + durumSinif + '">' + durumMetin + '</span>' +
+                        (tarih ? ' · ' + tarih : '') +
+                        (it.is_gizli ? ' · 🎭 Gizli' : '') +
+                        '</div></div>' +
+                        '<div class="profil-itiraf-form" hidden>' +
+                        '<textarea class="profil-itiraf-textarea" maxlength="10000"></textarea>' +
+                        '<div class="profil-itiraf-form-alt">' +
+                        '<button type="button" class="profil-itiraf-kaydet">Kaydet</button>' +
+                        '<button type="button" class="profil-itiraf-iptal">İptal</button>' +
+                        '</div></div></div>';
+                }
+            }
+
+            el.innerHTML =
+                '<div class="profil-kart ' + cins + '">' +
+                '<div class="profil-avatar-wrap">' +
+                '<button type="button" class="profil-avatar" id="profilAvatarBtn" aria-label="Profil fotoğrafı"></button>' +
+                '<div class="profil-avatar-actions">' +
+                '<button type="button" class="profil-avatar-btn" id="profilAvatarDegistir">Fotoğrafı değiştir</button>' +
+                '<button type="button" class="profil-avatar-btn profil-avatar-btn--kaldir" id="profilAvatarKaldir" hidden>Fotoğrafı kaldır</button>' +
+                '</div>' +
+                '<input type="file" id="profilAvatarInput" accept="image/jpeg,image/png,image/webp,image/gif" hidden>' +
+                '</div>' +
+                '<div class="profil-rumuz">' + htmlEsc(u.username) + '</div>' +
+                '<div class="profil-meta" id="profilMeta">' + htmlEsc(kullaniciMeta(u)) + '</div>' +
+                '<div class="profil-satir"><span>E-posta</span><span>' + htmlEsc(u.email || '—') + '</span></div>' +
+                '<div class="profil-satir"><span>Cinsiyet</span><span>' + htmlEsc(cinsiyetEtiketi(cins)) + '</span></div>' +
+                '<div class="profil-satir"><span>Doğum yılı</span><span>' + htmlEsc(u.dogumYili || '—') + '</span></div>' +
+                '<div class="profil-duzenle">' +
+                '<h2 class="profil-duzenle-baslik">Profil bilgileri</h2>' +
+                '<div class="profil-alan">' +
+                '<label for="profilYer">Yaşadığı şehir</label>' +
+                '<select class="profil-select" id="profilYer"></select>' +
+                '<div class="profil-alan profil-yurtdisi" id="profilYurtdisiWrap">' +
+                '<label for="profilYurtdisiSehir">Yurtdışı şehri</label>' +
+                '<input class="profil-input" type="text" id="profilYurtdisiSehir" maxlength="80" placeholder="Örn. Berlin, Londra">' +
+                '</div></div>' +
+                '<div class="profil-alan">' +
+                '<label for="profilMeslek">Meslek</label>' +
+                '<select class="profil-select" id="profilMeslek"></select>' +
+                '</div>' +
+                '<div class="profil-alan">' +
+                '<label for="profilMedeni">Medeni durum</label>' +
+                '<select class="profil-select" id="profilMedeni"></select>' +
+                '</div>' +
+                '<button type="button" class="profil-kaydet" id="profilKaydetBtn">Kaydet</button>' +
+                '</div>' +
+                '</div>' +
+                '<div class="profil-istat">' +
+                '<div class="profil-istat-kutu"><strong>' + kulisSay + '</strong><span>Kulis</span></div>' +
+                '<div class="profil-istat-kutu"><strong>' + podyumSay + '</strong><span>Podyum</span></div>' +
+                '<div class="profil-istat-kutu"><strong>' + itiraflar.length + '</strong><span>Toplam</span></div>' +
+                '</div>' +
+                '<h2 class="profil-bolum-baslik">İtiraflarım</h2>' +
+                listeHtml +
+                '<button type="button" class="profil-cikis" onclick="cikisYap()">Çıkış Yap</button>';
+
+            profilFormuBagla(u);
+            profilItiraflariBagla();
+        }
+
+        function profilYerSecenekleriDoldur(selectEl, secili) {
+            var i, opt, s;
+            opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'Belirtmek istemiyorum';
+            selectEl.appendChild(opt);
+            for (i = 0; i < Gunde5Profil.YER_SECENEKLERI.length; i++) {
+                s = Gunde5Profil.YER_SECENEKLERI[i];
+                opt = document.createElement('option');
+                opt.value = s.value;
+                opt.textContent = s.label;
+                selectEl.appendChild(opt);
+            }
+            if (secili) selectEl.value = secili;
+        }
+
+        function profilYurtdisiGoster() {
+            var yer = document.getElementById('profilYer');
+            var wrap = document.getElementById('profilYurtdisiWrap');
+            if (!yer || !wrap) return;
+            if (yer.value === 'yurtdisi') {
+                wrap.classList.add('goster');
+            } else {
+                wrap.classList.remove('goster');
+            }
+        }
+
+
+        function profilAvatarKaldirGoster(u) {
+            var kaldir = document.getElementById('profilAvatarKaldir');
+            if (!kaldir) return;
+            kaldir.hidden = !(u && u.avatarUrl);
+        }
+
+        function profilItirafOzet(metin) {
+            var m = String(metin || '');
+            return m.length > 120 ? m.slice(0, 120) + '…' : m;
+        }
+
+        function profilItirafTamMetin(kart) {
+            var raw = kart.getAttribute('data-itiraf-metin');
+            if (!raw) return '';
+            try {
+                return decodeURIComponent(raw);
+            } catch (e) {
+                return raw;
+            }
+        }
+
+        function profilItiraflariBagla() {
+            var kartlar = document.querySelectorAll('.profil-itiraf[data-itiraf-id]');
+            var i;
+            for (i = 0; i < kartlar.length; i++) {
+                (function (kart) {
+                    var id = kart.getAttribute('data-itiraf-id');
+                    var gorunum = kart.querySelector('.profil-itiraf-gorunum');
+                    var form = kart.querySelector('.profil-itiraf-form');
+                    var ta = kart.querySelector('.profil-itiraf-textarea');
+                    var metinEl = kart.querySelector('.profil-itiraf-metin');
+                    var duzenleBtn = kart.querySelector('.profil-itiraf-duzenle-btn');
+                    var kaydetBtn = kart.querySelector('.profil-itiraf-kaydet');
+                    var iptalBtn = kart.querySelector('.profil-itiraf-iptal');
+                    if (!duzenleBtn || !form || !gorunum || !ta) return;
+
+                    var tamMetin = profilItirafTamMetin(kart);
+                    ta.value = tamMetin;
+                    ta.defaultValue = tamMetin;
+
+                    function acForm() {
+                        ta.dataset.editStart = ta.value;
+                        gorunum.hidden = true;
+                        form.hidden = false;
+                        ta.focus();
+                    }
+                    function kapatForm() {
+                        form.hidden = true;
+                        gorunum.hidden = false;
+                    }
+
+                    duzenleBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        acForm();
+                    });
+                    if (iptalBtn) {
+                        iptalBtn.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            ta.value = ta.dataset.editStart != null ? ta.dataset.editStart : ta.defaultValue;
+                            kapatForm();
+                        });
+                    }
+                    if (!kaydetBtn) return;
+                    kaydetBtn.addEventListener('click', async function (e) {
+                        e.preventDefault();
+                        kaydetBtn.disabled = true;
+                        try {
+                            var row = await Gunde5DB.itirafGuncelle(id, ta.value);
+                            var tam = row.content_full || row.content_short || '';
+                            kart.setAttribute('data-itiraf-metin', encodeURIComponent(tam));
+                            ta.value = tam;
+                            ta.defaultValue = tam;
+                            if (metinEl) metinEl.textContent = profilItirafOzet(tam);
+                            kapatForm();
+                            Gunde5UI.showToast('İtiraf güncellendi.');
+                        } catch (err) {
+                            Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+                        }
+                        kaydetBtn.disabled = false;
+                    });
+                })(kartlar[i]);
+            }
+        }
+
+
+        function profilFormuBagla(u) {
+            var yerSel = document.getElementById('profilYer');
+            var meslekSel = document.getElementById('profilMeslek');
+            var medeniSel = document.getElementById('profilMedeni');
+            var ySehir = document.getElementById('profilYurtdisiSehir');
+            var avatarBtn = document.getElementById('profilAvatarBtn');
+            var avatarInput = document.getElementById('profilAvatarInput');
+            var kaydetBtn = document.getElementById('profilKaydetBtn');
+
+            Gunde5UI.uygulaAvatarElement(avatarBtn, u);
+            profilYerSecenekleriDoldur(yerSel, u.yasadigiYer || '');
+            Gunde5Profil.selectDoldur(meslekSel, Gunde5Profil.MESLEK_SECENEKLERI, u.meslek || '');
+            Gunde5Profil.selectDoldur(medeniSel, Gunde5Profil.MEDENI_SECENEKLERI, u.medeniDurum || '');
+            if (ySehir) ySehir.value = u.yurtdisiSehir || '';
+            profilYurtdisiGoster();
+
+            yerSel.onchange = profilYurtdisiGoster;
+            kaydetBtn.onclick = kaydetProfilBilgileri;
+
+            profilAvatarKaldirGoster(u);
+
+            var degistirBtn = document.getElementById('profilAvatarDegistir');
+            var kaldirBtn = document.getElementById('profilAvatarKaldir');
+            if (degistirBtn && avatarInput) {
+                degistirBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    avatarInput.click();
+                });
+            }
+            if (avatarInput) {
+                avatarInput.onchange = function () {
+                    var f = avatarInput.files && avatarInput.files[0];
+                    if (!f) return;
+                    avatarInput.value = '';
+                    avatarYukleVeGoster(f);
+                };
+            }
+            if (kaldirBtn) {
+                kaldirBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    avatarKaldirVeGoster();
+                });
+            }
+        }
+
+        async function avatarKaldirVeGoster() {
+            var kaldirBtn = document.getElementById('profilAvatarKaldir');
+            if (kaldirBtn) kaldirBtn.disabled = true;
+            try {
+                var u = await Gunde5DB.avatarKaldir();
+                Gunde5UI.uygulaAvatarElement(document.getElementById('profilAvatarBtn'), u);
+                Gunde5UI.uygulaAvatarElement(document.getElementById('headerProfilAvatar'), u);
+                profilAvatarKaldirGoster(u);
+                Gunde5UI.showToast('Profil fotoğrafı kaldırıldı.');
+            } catch (err) {
+                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+            }
+            if (kaldirBtn) kaldirBtn.disabled = false;
+        }
+
+        async function avatarYukleVeGoster(file) {
+            try {
+                var u = await Gunde5DB.avatarYukle(file);
+                Gunde5UI.uygulaAvatarElement(document.getElementById('profilAvatarBtn'), u);
+                Gunde5UI.uygulaAvatarElement(document.getElementById('headerProfilAvatar'), u);
+                var meta = document.getElementById('profilMeta');
+                if (meta) meta.textContent = kullaniciMeta(u);
+                profilAvatarKaldirGoster(u);
+                Gunde5UI.showToast('Profil fotoğrafı güncellendi.');
+            } catch (err) {
+                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+            }
+        }
+
+        async function kaydetProfilBilgileri() {
+            var yer = document.getElementById('profilYer').value;
+            var ySehir = document.getElementById('profilYurtdisiSehir').value;
+            var meslek = document.getElementById('profilMeslek').value;
+            var medeni = document.getElementById('profilMedeni').value;
+            try {
+                var u = await Gunde5DB.profilGuncelle({
+                    yasadigiYer: yer || null,
+                    yurtdisiSehir: yer === 'yurtdisi' ? ySehir : null,
+                    meslek: meslek || null,
+                    medeniDurum: medeni || null
+                });
+                var meta = document.getElementById('profilMeta');
+                if (meta) meta.textContent = kullaniciMeta(u);
+                Gunde5UI.showToast('Profil kaydedildi.');
+            } catch (err) {
+                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+            }
+        }
+
+        async function cikisYap() {
+
+            await Gunde5DB.cikisYap();
+            document.body.removeAttribute('data-user-gender');
+            window.location.href = 'kulis.html';
+        }
+
+        function doldurYilSecenekleri() {
+            var sel = document.getElementById('regBirthYear');
+            if (!sel || sel.options.length > 1) return;
+            var yil = new Date().getFullYear() - 18;
+            var minYil = 1940;
+            var opt;
+            while (yil >= minYil) {
+                opt = document.createElement('option');
+                opt.value = String(yil);
+                opt.textContent = String(yil);
+                sel.appendChild(opt);
+                yil -= 1;
+            }
+        }
+
+        function openAuthModal(mode) {
+            doldurYilSecenekleri();
+            var overlay = document.getElementById('authOverlay');
+            overlay.style.display = 'flex';
+            overlay.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            toggleAuthMode(mode || 'register');
+        }
+
+        function closeAuthModal() {
+            var overlay = document.getElementById('authOverlay');
+            overlay.style.display = 'none';
+            overlay.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        function toggleAuthMode(mode) {
+            var reg = document.getElementById('authRegister');
+            var log = document.getElementById('authLogin');
+            if (mode === 'login') {
+                reg.classList.remove('aktif');
+                log.classList.add('aktif');
+            } else {
+                log.classList.remove('aktif');
+                reg.classList.add('aktif');
+            }
+        }
+
+        function secAuthCinsiyet(cins) {
+            var panel = document.getElementById('authModalPanel');
+            var maleBtn = document.getElementById('regCinsMale');
+            var femaleBtn = document.getElementById('regCinsFemale');
+            panel.classList.remove('cins-female', 'cins-male');
+            maleBtn.classList.remove('secili-male');
+            femaleBtn.classList.remove('secili-female');
+            document.getElementById('regGender').value = cins;
+            if (cins === 'male') {
+                panel.classList.add('cins-male');
+                maleBtn.classList.add('secili-male');
+            } else {
+                panel.classList.add('cins-female');
+                femaleBtn.classList.add('secili-female');
+            }
+        }
+
+        function yasHesapla(dogumYili) {
+            return new Date().getFullYear() - parseInt(dogumYili, 10);
+        }
+
+        async function kayitOl() {
+            try {
+                var u = await Gunde5DB.kayitOl({
+                    username: document.getElementById('regUsername').value,
+                    email: document.getElementById('regEmail').value,
+                    password: document.getElementById('regPassword').value,
+                    dogumYili: document.getElementById('regBirthYear').value,
+                    gender: document.getElementById('regGender').value,
+                    kvkk: document.getElementById('authKvk').checked
+                });
+                var cins = (u && u.gender) ? u.gender : document.getElementById('regGender').value;
+                document.body.setAttribute('data-user-gender', cins);
+                closeAuthModal();
+                guncelleHeaderOturum();
+                await yukleProfil();
+                Gunde5UI.showToast('Hoş geldin, ' + (u && u.username ? u.username : '') + '!');
+            } catch (err) {
+                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+            }
+        }
+
+        async function girisYap() {
+            var email = document.getElementById('loginEmail').value.replace(/^\s+|\s+$/g, '');
+            var sifre = document.getElementById('loginPassword').value;
+            if (!email || !sifre) return;
+            try {
+                var u = await Gunde5DB.girisYap({ email: email, password: sifre });
+                if (u && u.gender) {
+                    document.body.setAttribute('data-user-gender', u.gender);
+                }
+                closeAuthModal();
+                guncelleHeaderOturum();
+                await yukleProfil();
+                Gunde5UI.showToast('Tekrar hoş geldin!');
+            } catch (err) {
+                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        document.getElementById('navYazBtn').addEventListener('click', function () {
+            if (!Gunde5UI.uyeMi()) {
+                Gunde5UI.showToast('İtiraf yazmak için üye girişi gerekir.', 'hata');
+                openAuthModal('register');
+                return;
+            }
+            window.location.href = 'kulis.html';
+        });
+
+        Gunde5DB.init().then(function () {
+            return yukleProfil();
+        }).catch(function (err) {
+            Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+        });
+    </script>
+</body>
+</html>

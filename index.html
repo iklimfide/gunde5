@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>gunde5.com - Günün En İyi 5 İtirafı</title>
+    <style>
+        :root {
+            --bg-main: #ffffff;
+            --bg-card: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #f3f4f6;
+            --header-bg: #ffffff;
+            --female-color: #db2777;
+            --female-bg: #fff1f2;
+            --female-border: #fecdd3;
+            --male-color: #2563eb;
+            --male-bg: #eff6ff;
+            --male-border: #bfdbfe;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding-bottom: 80px;
+        }
+
+        .ss-watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 54px;
+            font-weight: 900;
+            color: rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            white-space: nowrap;
+        }
+
+        @media print {
+            .ss-watermark { opacity: 0.12; }
+        }
+
+        header {
+            background-color: #1d9bf0;
+            color: #ffffff;
+            padding: 16px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            border-bottom: 1px solid #1a8cd8;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header span { color: #ffffff; }
+        header .header-auth-btn {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.45);
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .info-banner {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .info-banner h4 { font-size: 14px; color: #b45309; font-weight: 700; }
+        .countdown { font-size: 28px; font-weight: 800; color: #d97706; margin: 6px 0; letter-spacing: 1px; }
+        .info-banner p { font-size: 12px; color: #78350f; font-weight: 500; line-height: 1.4; }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            padding-left: 4px;
+        }
+        .page-title span { color: #d97706; }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+        .card::before {
+            content: 'gunde5.com';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(-32deg);
+            transform-origin: center center;
+            font-size: clamp(1.65rem, 8.5vw, 2.35rem);
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            line-height: 1;
+            color: #111827;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+        }
+        body.dark-mode .card::before {
+            color: #e7e9ea;
+            opacity: 0.07;
+        }
+        .card-header,
+        .card-body,
+        .card-footer,
+        .woxifly-row {
+            position: relative;
+            z-index: 1;
+        }
+
+        .card.female { background-color: var(--female-bg); border-color: var(--female-border); }
+        .card.male { background-color: var(--male-bg); border-color: var(--male-border); }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .user-block {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            color: white;
+            flex-shrink: 0;
+        }
+        .female .avatar { background-color: var(--female-color); }
+        .male .avatar { background-color: var(--male-color); }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+        .username {
+            font-size: 15px;
+            font-weight: 800;
+        }
+        .female .username { color: var(--female-color); }
+        .male .username { color: var(--male-color); }
+
+        .user-meta {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .view-counter {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        .woxifly-row {
+            margin-bottom: 12px;
+        }
+        .woxifly-btn {
+            background-color: var(--bg-main);
+            color: #00ba7c;
+            border: 1px solid #00ba7c;
+            padding: 5px 12px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 800;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .woxifly-btn:active { transform: scale(0.95); }
+
+        .card-body {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        .short-text { display: inline; }
+        .full-text { display: none; }
+        .read-more {
+            display: block;
+            font-weight: 700;
+            font-size: 13px;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+        .female .read-more { color: var(--female-color); }
+        .male .read-more { color: var(--male-color); }
+        a.read-more { text-decoration: none; }
+        a.read-more:hover { text-decoration: underline; }
+        .cevap-ozet {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+        .female .cevap-ozet { color: var(--female-color); }
+        .male .cevap-ozet { color: var(--male-color); }
+        .card-footer--podyum {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .vote-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .card-footer {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,0,0,0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .podyum-score {
+            font-size: 13px;
+            font-weight: 800;
+            color: #10b981;
+        }
+
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--header-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            z-index: 1000;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.02);
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+            color: #9ca3af;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .nav-item.active { color: var(--text-main); }
+        .nav-item .icon { font-size: 22px; margin-bottom: 2px; }
+        .nav-item--btn {
+            border: none;
+            background: transparent;
+            font: inherit;
+            width: 100%;
+        }
+
+        .itiraf-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(17, 24, 39, 0.32);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.22s ease, visibility 0.22s ease;
+        }
+        .itiraf-modal.acik {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        .itiraf-modal-panel {
+            position: absolute;
+            left: 50%;
+            bottom: 76px;
+            width: calc(100% - 32px);
+            max-width: 500px;
+            max-height: calc(100vh - 96px);
+            padding: 18px;
+            background: #ffffff;
+            border: 1px solid #f3f4f6;
+            border-radius: 20px;
+            box-shadow: 0 10px 36px rgba(0, 0, 0, 0.08);
+            transform: translateX(-50%) translateY(14px);
+            transition: transform 0.22s ease;
+        }
+        .itiraf-modal.acik .itiraf-modal-panel {
+            transform: translateX(-50%) translateY(0);
+        }
+        .itiraf-modal-ust {
+            display: block;
+            position: relative;
+            margin-bottom: 14px;
+            padding-right: 36px;
+        }
+        .itiraf-modal-baslik {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
+        }
+        .itiraf-modal-kapat {
+            position: absolute;
+            top: -4px;
+            right: 0;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: 1px solid #f3f4f6;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #6b7280;
+            font-size: 20px;
+            line-height: 1;
+            font-weight: 400;
+            cursor: pointer;
+        }
+        .itiraf-modal-kapat:active { transform: scale(0.94); }
+        .itiraf-textarea {
+            display: block;
+            width: 100%;
+            min-height: 220px;
+            max-height: calc(100vh - 220px);
+            padding: 14px 16px;
+            border: 1px solid #f3f4f6;
+            border-radius: 14px;
+            background: #ffffff;
+            color: #111827;
+            font-size: 15px;
+            line-height: 1.55;
+            font-weight: 500;
+            resize: vertical;
+            outline: none;
+        }
+        .itiraf-textarea:focus {
+            border-color: #e5e7eb;
+            box-shadow: 0 0 0 3px rgba(243, 244, 246, 0.9);
+        }
+        .itiraf-textarea::placeholder { color: #9ca3af; }
+        .itiraf-modal-alt {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .gizli-uye-sec {
+            margin-right: auto;
+            display: inline-flex;
+            align-items: center;
+            padding: 9px 14px;
+            border: 1px solid #f3f4f6;
+            border-radius: 20px;
+            background: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            color: #6b7280;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+        }
+        .gizli-uye-sec.aktif {
+            border-color: #ddd6fe;
+            background: #faf5ff;
+            color: #6d28d9;
+            box-shadow: 0 0 0 3px rgba(237, 233, 254, 0.7);
+        }
+        .gizli-uye-sec:active { transform: scale(0.97); }
+        .itiraf-gonder-btn {
+            padding: 10px 22px;
+            border: 1px solid #f3f4f6;
+            border-radius: 20px;
+            background: #ffffff;
+            font-size: 13px;
+            font-weight: 800;
+            color: #111827;
+            cursor: pointer;
+            transition: border-color 0.15s ease, transform 0.1s ease;
+        }
+        .itiraf-gonder-btn:active { transform: scale(0.97); }
+
+        .header-auth-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 1px solid var(--border-color);
+            background: var(--bg-main);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .header-auth-btn--kayit { left: 16px; }
+        .header-auth-btn--giris { left: 68px; }
+
+        .header-profil-link {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px 5px 6px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 800;
+            max-width: 46%;
+        }
+        .header-profil-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            color: #ffffff;
+            flex-shrink: 0;
+        }
+        .header-profil-link.cins-female .header-profil-avatar:not(.has-foto) { background-color: var(--female-color); }
+        .header-profil-link.cins-male .header-profil-avatar:not(.has-foto) { background-color: var(--male-color); }
+        .header-profil-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        .header-profil-avatar.has-foto {
+            background: transparent !important;
+            overflow: hidden;
+        }
+        #headerProfilRumuz {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .auth-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2100;
+            background: rgba(17, 24, 39, 0.32);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .auth-modal-panel {
+            --auth-accent: #2563eb;
+            --auth-accent-border: #93c5fd;
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            max-height: 92vh;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            padding: 28px 22px 22px;
+            transition: border-color 0.22s ease;
+        }
+        .auth-modal-panel.cins-female {
+            --auth-accent: var(--female-color);
+            --auth-accent-border: var(--female-border);
+            border-color: var(--female-border);
+        }
+        .auth-modal-panel.cins-male {
+            --auth-accent: var(--male-color);
+            --auth-accent-border: var(--male-border);
+            border-color: var(--male-border);
+        }
+        .auth-modal-kapat {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 50%;
+            background: #f9fafb;
+            color: #374151;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .auth-brand {
+            text-align: center;
+            margin-bottom: 22px;
+            padding-top: 4px;
+        }
+        .auth-brand-text {
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: #111827;
+        }
+        .auth-brand-text span { color: #ef4444; }
+        .auth-modal-baslik {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            text-align: center;
+            color: var(--text-main);
+        }
+        .auth-modal-alt-baslik {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+        .auth-etiket {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #9ca3af;
+            margin-bottom: 6px;
+        }
+        .auth-etiket--yil { margin-top: 2px; }
+        .auth-input,
+        .auth-select {
+            display: block;
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            border: 1.5px solid var(--auth-accent-border);
+            border-radius: 12px;
+            background: #ffffff;
+            color: var(--text-main);
+            font-size: 15px;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .auth-input:focus,
+        .auth-select:focus {
+            border-color: var(--auth-accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+        .auth-modal-panel.cins-female .auth-input:focus,
+        .auth-modal-panel.cins-female .auth-select:focus {
+            box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.12);
+        }
+        .auth-input::placeholder { color: #c4c9d2; }
+        .auth-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+        .auth-cins-satir {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .auth-cins-btn {
+            flex: 1;
+            padding: 12px 8px;
+            border: 1.5px solid var(--auth-accent-border);
+            border-radius: 12px;
+            background: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            color: #6b7280;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+        }
+        .auth-cins-btn.secili-female {
+            border-color: var(--female-color);
+            background: var(--female-bg);
+            color: var(--female-color);
+        }
+        .auth-cins-btn.secili-male {
+            border-color: var(--male-color);
+            background: var(--male-bg);
+            color: var(--male-color);
+        }
+        .auth-kvkk {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 18px;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .auth-kvkk input {
+            margin-top: 3px;
+            flex-shrink: 0;
+            accent-color: var(--auth-accent);
+        }
+        .auth-submit {
+            display: block;
+            width: 100%;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 12px;
+            background: var(--auth-accent);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background-color 0.22s ease, opacity 0.15s ease;
+        }
+        .auth-submit:active { opacity: 0.92; }
+        .auth-modal-panel.cins-female .auth-submit--kayit { background: var(--female-color); }
+        .auth-modal-panel.cins-male .auth-submit--kayit { background: var(--male-color); }
+        .auth-submit--giris { background: var(--auth-accent); }
+        .auth-gecis {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        .auth-gecis button {
+            border: none;
+            background: none;
+            padding: 0;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--auth-accent);
+            cursor: pointer;
+        }
+        .auth-modal-panel.cins-female .auth-gecis button { color: var(--female-color); }
+        .auth-modal-panel.cins-male .auth-gecis button { color: var(--male-color); }
+        .auth-view { display: none; }
+        .auth-view.aktif { display: block; }
+
+        .liste-bos {
+            text-align: center;
+            padding: 24px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+        .gunde5-toast {
+            display: none;
+            position: fixed;
+            left: 16px;
+            right: 16px;
+            bottom: 76px;
+            max-width: 468px;
+            margin: 0 auto;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: #111827;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            z-index: 3000;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        }
+        .gunde5-toast--hata { background: #991b1b; }
+    </style>
+</head>
+<body data-user-gender="male">
+
+    <div class="ss-watermark">gunde5.com</div>
+
+    <header>
+        <a href="profil.html" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+            <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
+            <span id="headerProfilRumuz">Müdavim</span>
+        </a>
+        <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
+        <button type="button" class="header-auth-btn header-auth-btn--giris" id="hdrGiris" onclick="openAuthModal('login')">Giriş</button>
+        gunde<span>5</span>.com
+    </header>
+
+    <div class="container">
+
+        <div class="info-banner">
+            <h4>Yeni Podyum İçin Geri Sayım</h4>
+            <div class="countdown" id="timer">00:00:00</div>
+            <p>Her gün saat 13:12'de (Türkiye saati) Kulis'te en çok net oy alan ilk 5 itiraf buraya tırmanır, geri kalan her şey sonsuza dek silinir!</p>
+        </div>
+
+        <h3 class="page-title">Günün En İyileri: <span>Podyum</span></h3>
+        <div id="podyumListe"></div>
+
+    </div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item active">
+            <div class="icon">🏆</div><span>Podyum</span>
+        </a>
+        <a href="kulis.html" class="nav-item">
+            <div class="icon">🔥</div><span>Kulis</span>
+        </a>
+        <button type="button" class="nav-item nav-item--btn" id="navYazBtn" aria-haspopup="dialog">
+            <div class="icon">✍️</div><span>İtiraf Yaz</span>
+        </button>
+        <button type="button" class="nav-item nav-item--btn" id="navProfilBtn">
+            <div class="icon">🏷️</div><span>Profil</span>
+        </button>
+    </div>
+
+    <div id="authOverlay" class="auth-overlay" aria-hidden="true">
+        <div class="auth-modal-panel" id="authModalPanel">
+            <button type="button" class="auth-modal-kapat" onclick="closeAuthModal()" aria-label="Kapat">×</button>
+            <div id="authRegister" class="auth-view aktif">
+                <div class="auth-brand">
+                    <div class="auth-brand-text">gunde<span>5</span>.com</div>
+                </div>
+                <div class="auth-cins-satir">
+                    <button type="button" class="auth-cins-btn" id="regCinsFemale" onclick="secAuthCinsiyet('female')">♀ KADIN</button>
+                    <button type="button" class="auth-cins-btn" id="regCinsMale" onclick="secAuthCinsiyet('male')">♂ ERKEK</button>
+                </div>
+                <input type="hidden" id="regGender" value="">
+                <label class="auth-etiket" for="regUsername">Kullanıcı Adı</label>
+                <input class="auth-input" type="text" id="regUsername" maxlength="15" minlength="5" placeholder="5–15 karakter" autocomplete="username">
+                <label class="auth-etiket" for="regEmail">E-Posta</label>
+                <input class="auth-input" type="email" id="regEmail" maxlength="80" placeholder="mail@adresin.com" autocomplete="email">
+                <label class="auth-etiket" for="regPassword">Şifre</label>
+                <input class="auth-input" type="password" id="regPassword" minlength="6" placeholder="Min. 6 karakter" autocomplete="new-password">
+                <label class="auth-etiket auth-etiket--yil" for="regBirthYear">Doğum tarihi: (Minimum 18 yaş gerekir.)</label>
+                <select class="auth-select" id="regBirthYear">
+                    <option value="">Yıl</option>
+                </select>
+                <label class="auth-kvkk">
+                    <input type="checkbox" id="authKvk">
+                    <span>Kullanıcı Sözleşmesi'ni ve KVKK Aydınlatma Metni'ni okudum, onaylıyorum.</span>
+                </label>
+                <button type="button" class="auth-submit auth-submit--kayit" onclick="kayitOl()">Kayıt Ol</button>
+                <p class="auth-gecis">Zaten üye misin? <button type="button" onclick="toggleAuthMode('login')">Giriş Yap</button></p>
+            </div>
+            <div id="authLogin" class="auth-view">
+                <div class="auth-brand">
+                    <div class="auth-brand-text">gunde<span>5</span>.com</div>
+                </div>
+                <h2 class="auth-modal-baslik">Üye Girişi</h2>
+                <p class="auth-modal-alt-baslik">E-posta ve şifrenle kulise dön.</p>
+                <label class="auth-etiket" for="loginEmail">E-Posta</label>
+                <input class="auth-input" type="email" id="loginEmail" maxlength="80" placeholder="mail@adresin.com" autocomplete="email">
+                <label class="auth-etiket" for="loginPassword">Şifre</label>
+                <input class="auth-input" type="password" id="loginPassword" placeholder="Şifren" autocomplete="current-password">
+                <button type="button" class="auth-submit auth-submit--giris" onclick="girisYap()">Giriş Yap</button>
+                <p class="auth-gecis">Hesabınız yok mu? <button type="button" onclick="toggleAuthMode('register')">Kayıt Ol</button></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="itiraf-modal" id="itirafModal" role="dialog" aria-modal="true" aria-labelledby="itirafModalBaslik" aria-hidden="true">
+        <div class="itiraf-modal-panel">
+            <div class="itiraf-modal-ust">
+                <h2 class="itiraf-modal-baslik" id="itirafModalBaslik">İtiraf Yaz</h2>
+                <button type="button" class="itiraf-modal-kapat" id="itirafModalKapat" aria-label="Kapat">×</button>
+            </div>
+            <textarea class="itiraf-textarea" id="itirafTextarea" placeholder="Tüm hikayeni buraya yaz…" rows="10"></textarea>
+            <div class="itiraf-modal-alt">
+                <button type="button" class="gizli-uye-sec" id="gizliUyeSec" aria-pressed="false">🎭 Gizli Üye olarak yaz</button>
+                <button type="button" class="itiraf-gonder-btn" id="itirafGonderBtn">Gönder</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/gunde5-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+    <script src="js/gunde5-profil.js"></script>
+    <script src="js/gunde5-ui.js"></script>
+    <script src="js/gunde5-db.js"></script>
+    <script src="js/gunde5-kart-cevap.js"></script>
+    <script src="js/gunde5-paylas.js"></script>
+    <script>
+        function guncelleHeaderOturum() {
+            var u = Gunde5DB.getGunde5User();
+            var kayit = document.getElementById('hdrKayit');
+            var giris = document.getElementById('hdrGiris');
+            var link = document.getElementById('headerProfilLink');
+            if (!kayit || !giris || !link) return;
+            if (u && u.username) {
+                kayit.style.display = 'none';
+                giris.style.display = 'none';
+                link.style.display = 'flex';
+                var cins = u.gender === 'male' ? 'male' : 'female';
+                link.className = 'header-profil-link cins-' + cins;
+                Gunde5UI.uygulaAvatarElement(document.getElementById('headerProfilAvatar'), u);
+                if (u.gender) {
+                    document.body.setAttribute('data-user-gender', cins);
+                }
+                var rumuz = u.username;
+                if (rumuz.length > 12) rumuz = rumuz.slice(0, 12) + '…';
+                document.getElementById('headerProfilRumuz').textContent = rumuz;
+            } else {
+                kayit.style.display = '';
+                giris.style.display = '';
+                link.style.display = 'none';
+            }
+        }
+
+        function doldurYilSecenekleri() {
+            var sel = document.getElementById('regBirthYear');
+            if (!sel || sel.options.length > 1) return;
+            var yil = new Date().getFullYear() - 18;
+            var minYil = 1940;
+            var opt;
+            while (yil >= minYil) {
+                opt = document.createElement('option');
+                opt.value = String(yil);
+                opt.textContent = String(yil);
+                sel.appendChild(opt);
+                yil -= 1;
+            }
+        }
+
+        function openAuthModal(mode) {
+            kapatItirafModal();
+            doldurYilSecenekleri();
+            var overlay = document.getElementById('authOverlay');
+            overlay.style.display = 'flex';
+            overlay.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            toggleAuthMode(mode || 'register');
+        }
+
+        function closeAuthModal() {
+            var overlay = document.getElementById('authOverlay');
+            overlay.style.display = 'none';
+            overlay.setAttribute('aria-hidden', 'true');
+            if (!document.getElementById('itirafModal').classList.contains('acik')) {
+                document.body.style.overflow = '';
+            }
+        }
+
+        function toggleAuthMode(mode) {
+            var reg = document.getElementById('authRegister');
+            var log = document.getElementById('authLogin');
+            if (mode === 'login') {
+                reg.classList.remove('aktif');
+                log.classList.add('aktif');
+            } else {
+                log.classList.remove('aktif');
+                reg.classList.add('aktif');
+            }
+        }
+
+        function secAuthCinsiyet(cins) {
+            var panel = document.getElementById('authModalPanel');
+            var maleBtn = document.getElementById('regCinsMale');
+            var femaleBtn = document.getElementById('regCinsFemale');
+            panel.classList.remove('cins-female', 'cins-male');
+            maleBtn.classList.remove('secili-male');
+            femaleBtn.classList.remove('secili-female');
+            document.getElementById('regGender').value = cins;
+            if (cins === 'male') {
+                panel.classList.add('cins-male');
+                maleBtn.classList.add('secili-male');
+            } else {
+                panel.classList.add('cins-female');
+                femaleBtn.classList.add('secili-female');
+            }
+        }
+
+        function yasHesapla(dogumYili) {
+            return new Date().getFullYear() - parseInt(dogumYili, 10);
+        }
+
+        async function kayitOl() {
+            try {
+                var u = await Gunde5DB.kayitOl({
+                    username: document.getElementById('regUsername').value,
+                    email: document.getElementById('regEmail').value,
+                    password: document.getElementById('regPassword').value,
+                    dogumYili: document.getElementById('regBirthYear').value,
+                    gender: document.getElementById('regGender').value,
+                    kvkk: document.getElementById('authKvk').checked
+                });
+                var cins = (u && u.gender) ? u.gender : document.getElementById('regGender').value;
+                document.body.setAttribute('data-user-gender', cins);
+                closeAuthModal();
+                guncelleHeaderOturum();
+                Gunde5UI.showToast('Hoş geldin, ' + (u && u.username ? u.username : '') + '!');
+            } catch (err) {
+                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+            }
+        }
+
+        async function girisYap() {
+            var email = document.getElementById('loginEmail').value.replace(/^\s+|\s+$/g, '');
+            var sifre = document.getElementById('loginPassword').value;
+            if (!email || !sifre) return;
+            try {
+                var u = await Gunde5DB.girisYap({ email: email, password: sifre });
+                if (u && u.gender) {
+                    document.body.setAttribute('data-user-gender', u.gender);
+                }
+                closeAuthModal();
+                guncelleHeaderOturum();
+                Gunde5UI.showToast('Tekrar hoş geldin!');
+            } catch (err) {
+                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+            }
+        }
+
+        function acItirafModal() {
+            if (!Gunde5UI.itirafUyeGerekli(openAuthModal)) {
+                return;
+            }
+            closeAuthModal();
+            var modal = document.getElementById('itirafModal');
+            modal.classList.add('acik');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            setTimeout(function () {
+                document.getElementById('itirafTextarea').focus();
+            }, 220);
+        }
+
+        function kapatItirafModal() {
+            var modal = document.getElementById('itirafModal');
+            modal.classList.remove('acik');
+            modal.setAttribute('aria-hidden', 'true');
+            if (document.getElementById('authOverlay').style.display !== 'flex') {
+                document.body.style.overflow = '';
+            }
+        }
+
+        document.getElementById('navYazBtn').addEventListener('click', acItirafModal);
+        document.getElementById('navProfilBtn').addEventListener('click', function () {
+            Gunde5UI.gitProfilSayfasi();
+        });
+        document.getElementById('itirafModalKapat').addEventListener('click', kapatItirafModal);
+        document.getElementById('gizliUyeSec').addEventListener('click', function () {
+            var btn = this;
+            btn.classList.toggle('aktif');
+            btn.setAttribute('aria-pressed', btn.classList.contains('aktif') ? 'true' : 'false');
+        });
+        document.getElementById('itirafGonderBtn').addEventListener('click', gonderItiraf);
+
+        function kullaniciCinsiyeti() {
+            var c = document.body.getAttribute('data-user-gender');
+            return c === 'male' ? 'male' : 'female';
+        }
+
+        function sifirlaItirafModal() {
+            document.getElementById('itirafTextarea').value = '';
+            var gizli = document.getElementById('gizliUyeSec');
+            gizli.classList.remove('aktif');
+            gizli.setAttribute('aria-pressed', 'false');
+        }
+
+        async function gonderItiraf() {
+            if (!Gunde5UI.itirafUyeGerekli(openAuthModal)) {
+                return;
+            }
+            var metin = document.getElementById('itirafTextarea').value.replace(/^\s+|\s+$/g, '');
+            if (!metin) {
+                document.getElementById('itirafTextarea').focus();
+                return;
+            }
+            var gizli = document.getElementById('gizliUyeSec').classList.contains('aktif');
+            sessionStorage.setItem('gunde5_bekleyen_itiraf', JSON.stringify({
+                metin: metin,
+                gizli: gizli,
+                gender: kullaniciCinsiyeti()
+            }));
+            sifirlaItirafModal();
+            kapatItirafModal();
+            window.location.href = 'kulis.html';
+        }
+
+        function expandCard(cardId) {
+            if (Gunde5KartCevap) Gunde5KartCevap.toggle(cardId, false);
+        }
+
+        Gunde5UI.baslatGeriSayim('timer');
+
+        Gunde5DB.init().then(function () {
+            guncelleHeaderOturum();
+            if (Gunde5Paylas) {
+                return Gunde5Paylas.paylasLinkiKontrolEt('podyum').then(function (devam) {
+                    if (!devam) return;
+                    return Gunde5DB.yuklePodyumListe('podyumListe');
+                });
+            }
+            return Gunde5DB.yuklePodyumListe('podyumListe');
+        }).then(function () {
+            if (Gunde5Paylas) return Gunde5Paylas.isleDerinBaglanti('podyum');
+        }).catch(function (err) {
+            Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/itiraf", "destination": "/itiraf/index.html" },
+    { "source": "/itiraf/:id", "destination": "/itiraf/index.html" }
+  ]
+}

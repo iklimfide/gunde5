@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İtiraf — gunde5.com</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0f1419;
+            color: #e7e9ea;
+            font-size: 14px;
+            font-weight: 600;
+        }
+    </style>
+    <script src="/js/gunde5-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+    <script src="/js/gunde5-db.js"></script>
+</head>
+<body>
+    <p>Yönlendiriliyor…</p>
+    <script>
+        (function () {
+            function kok(path) {
+                return new URL(path, window.location.origin).href;
+            }
+
+            function itirafIdBul() {
+                var parcalar = location.pathname.replace(/\/+$/, '').split('/');
+                var i;
+                for (i = 0; i < parcalar.length; i++) {
+                    if (parcalar[i] === 'itiraf' && parcalar[i + 1] && /^\d+$/.test(parcalar[i + 1])) {
+                        return parcalar[i + 1];
+                    }
+                }
+                var q = new URLSearchParams(location.search);
+                if (q.get('id') && /^\d+$/.test(q.get('id'))) return q.get('id');
+                if (q.get('itiraf') && /^\d+$/.test(q.get('itiraf'))) return q.get('itiraf');
+                return null;
+            }
+
+            function git404(id) {
+                var url = kok('/404.html');
+                if (id) url += '?itiraf=' + encodeURIComponent(id);
+                location.replace(url);
+            }
+
+            var id = itirafIdBul();
+            if (!id) {
+                git404(null);
+                return;
+            }
+
+            if (!window.Gunde5DB || !Gunde5DB.isConfigured || !Gunde5DB.isConfigured()) {
+                git404(id);
+                return;
+            }
+
+            Gunde5DB.init().then(function () {
+                return Gunde5DB.itirafGetir(id);
+            }).then(function (row) {
+                if (!row) {
+                    git404(id);
+                    return;
+                }
+                var sayfa = row.status === 'podyum' ? '/index.html' : '/kulis.html';
+                location.replace(kok(sayfa) + '?itiraf=' + encodeURIComponent(id));
+            }).catch(function () {
+                git404(id);
+            });
+        })();
+    </script>
+</body>
+</html>
