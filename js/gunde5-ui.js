@@ -64,10 +64,10 @@
         );
     }
 
-    function cevapOzetBtnHtml(adet) {
+    function cevapOzetBtnHtml(adet, herZamanGoster) {
         var n = parseInt(adet, 10) || 0;
         var lbl = n === 1 ? '1 yorum' : n + ' yorum';
-        var stil = n < 1 ? ' style="display:none"' : '';
+        var stil = !herZamanGoster && n < 1 ? ' style="display:none"' : '';
         return '<button type="button" class="cevap-ozet" data-cevap-ozet' + stil + '>' + htmlEsc(lbl) + '</button>';
     }
 
@@ -87,8 +87,143 @@
         return '<button type="button" class="card-menu-btn" onclick="acSikayetModal(\'' + kartId + '\')" aria-label="Şikayet et" title="Şikayet et"><span class="card-menu-dots" aria-hidden="true">&#8942;</span></button>';
     }
 
-    function paylasBtnHtml() {
-        return '<button type="button" class="vote-btn paylas-btn" onclick="paylasItirafFromCard(this)">\uD83D\uDD17 Payla\u015f</button>';
+    function formatSayac(n) {
+        n = parseInt(n, 10) || 0;
+        if (n >= 1000000) {
+            var mn = n / 1000000;
+            return (mn >= 10 ? Math.round(mn) : mn.toFixed(1).replace('.', ',')) + ' Mn';
+        }
+        if (n >= 1000) {
+            var b = n / 1000;
+            return (b >= 10 ? Math.round(b) : b.toFixed(1).replace('.', ',')) + ' B';
+        }
+        return String(n);
+    }
+
+    function sayiSpan(n, extraClass, dataAttrName) {
+        n = parseInt(n, 10);
+        if (isNaN(n) || n < 0) n = 0;
+        var cls = 'kart-aksiyon-sayi' + (extraClass ? ' ' + extraClass : '');
+        var attr = dataAttrName ? ' ' + dataAttrName + '=""' : '';
+        return '<span class="' + cls + '"' + attr + '>' + formatSayac(n) + '</span>';
+    }
+
+    function ikonSvg(path, filled) {
+        var fill = filled ? 'currentColor' : 'none';
+        var stroke = filled ? 'none' : 'currentColor';
+        var sw = filled ? '' : ' stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"';
+        return '<span class="kart-aksiyon-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '"' + sw + '>' + path + '</svg></span>';
+    }
+
+    var IKON_YORUM = '<path d="M12 21a9 9 0 1 0-8.5-6.2L3 21l6.2-1.5A8.96 8.96 0 0 0 12 21z"/>';
+    var IKON_BEGENME = '<path d="M10 15v4a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-4l3.4-5.2a1 1 0 0 0-.8-1.6H6.4a1 1 0 0 0-.8 1.6L10 15z"/><path d="M5 21h14"/>';
+    var IKON_BEGENI = '<path d="M12 20.25s-6.5-4.35-8.5-8.5C1.5 7.5 4.5 4.5 8 6c1.9 1 3 2.5 4 2.5s2.1-1.5 4-2.5c3.5-1.5 6.5 1.5 4.5 5.75-2 4.15-8.5 8.5-8.5 8.5z"/>';
+    var IKON_GORUNTULENME = '<path d="M3 19V9h2v10H3zm4 0V5h2v14H7zm4 0v-7h2v7h-2zm4 0V3h2v16h-2zm4 0v-6h2v6h-2z"/>';
+    var IKON_KAYDET = '<path d="M6 4h12v16l-6-4-6 4V4z"/>';
+    var IKON_PAYLAS = '<path d="M12 5v14"/><path d="M7 10l5-5 5 5"/><path d="M5 19v2h14v-2"/>';
+
+    function getKaydedilenIds() {
+        try {
+            var raw = global.localStorage.getItem('gunde5_kaydedilenler');
+            var arr = raw ? JSON.parse(raw) : [];
+            return Array.isArray(arr) ? arr.map(String) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function isItirafKayitli(itirafId) {
+        return getKaydedilenIds().indexOf(String(itirafId)) >= 0;
+    }
+
+    function toggleKaydet(itirafId, btn) {
+        if (!uyeMi()) {
+            showToast('Kaydetmek için giriş yapmalısın.', 'hata');
+            if (typeof global.openAuthModal === 'function') global.openAuthModal('login');
+            return;
+        }
+        var sid = String(itirafId);
+        var ids = getKaydedilenIds();
+        var i = ids.indexOf(sid);
+        if (i >= 0) {
+            ids.splice(i, 1);
+            showToast('Kayıttan çıkarıldı.');
+        } else {
+            ids.push(sid);
+            showToast('Kaydedildi.');
+        }
+        global.localStorage.setItem('gunde5_kaydedilenler', JSON.stringify(ids));
+        if (btn) btn.classList.toggle('aktif', i < 0);
+    }
+
+    function toggleKaydetFromCard(btn) {
+        var card = btn && btn.closest ? btn.closest('.card') : null;
+        if (!card) return;
+        toggleKaydet(card.getAttribute('data-id'), btn);
+    }
+
+    global.toggleKaydetFromCard = toggleKaydetFromCard;
+
+    function injectKartAksiyonStyles() {
+        var css =
+            '.card-footer{padding-top:10px;border-top:1px solid rgba(0,0,0,0.06)}' +
+            'body.dark-mode .card-footer{border-top-color:rgba(255,255,255,0.06)}' +
+            '.kart-aksiyonlar{display:flex;align-items:center;justify-content:space-between;width:100%;gap:2px}' +
+            '.kart-aksiyon{display:inline-flex;align-items:center;gap:4px;border:none;background:transparent;color:var(--text-muted);padding:8px;margin:0;border-radius:999px;cursor:pointer;font-size:13px;font-weight:400;font-family:inherit;line-height:1;transition:color .15s ease,background .15s ease}' +
+            '.kart-aksiyon:hover{color:#1d9bf0;background:rgba(29,155,240,0.1)}' +
+            '.kart-aksiyon--begeni:hover,.kart-aksiyon--begeni.aktif{color:#f91880}' +
+            '.kart-aksiyon--begenme:hover,.kart-aksiyon--begenme.aktif{color:#f4212e}' +
+            '.kart-aksiyon--kaydet:hover,.kart-aksiyon--kaydet.aktif{color:#1d9bf0}' +
+            '.kart-aksiyon--kaydet.aktif svg{fill:currentColor;stroke:currentColor}' +
+            '.kart-aksiyon--goruntulenme{cursor:default;pointer-events:none}' +
+            '.kart-aksiyon--goruntulenme:hover{color:var(--text-muted);background:transparent}' +
+            '.kart-aksiyon-sayi{font-variant-numeric:tabular-nums;min-width:1ch;font-size:13px;font-weight:400;color:var(--text-muted)}' +
+            '.kart-aksiyon--begeni .up-num{color:#f91880}' +
+            '.kart-aksiyon--begenme .down-num{color:#f4212e}' +
+            '.kart-aksiyon-ikon{display:inline-flex;width:18px;height:18px;flex-shrink:0}' +
+            '.kart-aksiyon-ikon svg{width:18px;height:18px;display:block}';
+        var s = document.getElementById('gunde5-kart-aksiyon-styles');
+        if (!s) {
+            s = document.createElement('style');
+            s.id = 'gunde5-kart-aksiyon-styles';
+            document.head.appendChild(s);
+        }
+        s.textContent = css;
+    }
+
+    function kartAksiyonBarHtml(kartId, up, down, cevapSayisi, goruntulenme) {
+        injectKartAksiyonStyles();
+        var kayitliCls = isItirafKayitli(kartId) ? ' aktif' : '';
+        var upN = up != null ? up : 0;
+        var downN = down != null ? down : 0;
+        var cevapN = cevapSayisi != null ? cevapSayisi : 0;
+        var gorN = goruntulenme != null ? goruntulenme : 0;
+        return (
+            '<div class="kart-aksiyonlar">' +
+                '<button type="button" class="kart-aksiyon kart-aksiyon--yorum" data-cevap-yaz aria-label="Yorumlar">' +
+                    ikonSvg(IKON_YORUM, false) +
+                    sayiSpan(cevapN, '', 'data-cevap-sayi') +
+                '</button>' +
+                '<button type="button" class="kart-aksiyon kart-aksiyon--begenme" onclick="vote(\'' + kartId + '\', -1)" aria-label="Beğenmedim">' +
+                    ikonSvg(IKON_BEGENME, false) +
+                    sayiSpan(downN, 'down-num', '') +
+                '</button>' +
+                '<button type="button" class="kart-aksiyon kart-aksiyon--begeni" onclick="vote(\'' + kartId + '\', 1)" aria-label="Beğendim">' +
+                    ikonSvg(IKON_BEGENI, false) +
+                    sayiSpan(upN, 'up-num', '') +
+                '</button>' +
+                '<span class="kart-aksiyon kart-aksiyon--goruntulenme" aria-label="Görüntülenme">' +
+                    ikonSvg(IKON_GORUNTULENME, true) +
+                    '<span class="kart-aksiyon-sayi v-num">' + formatSayac(gorN) + '</span>' +
+                '</span>' +
+                '<button type="button" class="kart-aksiyon kart-aksiyon--kaydet' + kayitliCls + '" onclick="toggleKaydetFromCard(this)" aria-label="Kaydet" aria-pressed="' + (kayitliCls ? 'true' : 'false') + '">' +
+                    ikonSvg(IKON_KAYDET, false) +
+                '</button>' +
+                '<button type="button" class="kart-aksiyon kart-aksiyon--paylas" onclick="paylasItirafFromCard(this)" aria-label="Paylaş">' +
+                    ikonSvg(IKON_PAYLAS, false) +
+                '</button>' +
+            '</div>'
+        );
     }
 
     function injectSikayetStyles() {
@@ -96,8 +231,11 @@
         var s = document.createElement('style');
         s.id = 'gunde5-sikayet-styles';
         s.textContent =
-            '.card-header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:8px}' +
-            '.card-menu-btn{width:34px;height:34px;padding:0;border:1px solid var(--border-color);border-radius:50%;background:var(--bg-card);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}' +
+            '.card-header{gap:12px}' +
+            '.card-header-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;margin-left:4px}' +
+            '.view-counter{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;white-space:nowrap;font-size:11px;font-weight:700;color:var(--text-muted);padding:6px 11px;border-radius:14px;background:rgba(17,24,39,0.05);border:1px solid var(--border-color);line-height:1}' +
+            'body.dark-mode .view-counter{background:rgba(255,255,255,0.06)}' +
+            '.card-menu-btn{width:36px;height:36px;padding:0;border:1px solid var(--border-color);border-radius:50%;background:var(--bg-card);color:var(--text-muted);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}' +
             '.card-menu-btn:active{transform:scale(0.94)}' +
             '.card-menu-dots{font-size:20px;line-height:1;font-weight:900;letter-spacing:0}' +
             '.sikayet-modal{position:fixed;inset:0;z-index:2200;background:rgba(17,24,39,0.32);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility .22s ease}' +
@@ -171,17 +309,54 @@
         document.body.style.overflow = 'hidden';
     }
 
+    function authModalAcikMi() {
+        var overlay = document.getElementById('authOverlay');
+        if (!overlay) return false;
+        return overlay.style.display === 'flex' || overlay.classList.contains('acik');
+    }
+
+    function itirafModalAcikMi() {
+        var modal = document.getElementById('itirafModal');
+        return !!(modal && modal.classList.contains('acik'));
+    }
+
+    function guncelleModalScrollKilidi() {
+        document.body.style.overflow = (authModalAcikMi() || itirafModalAcikMi()) ? 'hidden' : '';
+    }
+
+    function closeAuthModal() {
+        var overlay = document.getElementById('authOverlay');
+        if (!overlay) return;
+        overlay.style.display = 'none';
+        overlay.classList.remove('acik');
+        overlay.setAttribute('aria-hidden', 'true');
+        guncelleModalScrollKilidi();
+    }
+
+    function kapatItirafModal() {
+        var modal = document.getElementById('itirafModal');
+        if (!modal) return;
+        modal.classList.remove('acik');
+        modal.setAttribute('aria-hidden', 'true');
+        guncelleModalScrollKilidi();
+    }
+
+    function oturumModallariKapat() {
+        closeAuthModal();
+        kapatItirafModal();
+    }
+
+    global.closeAuthModal = closeAuthModal;
+    global.kapatItirafModal = kapatItirafModal;
+    global.oturumModallariKapat = oturumModallariKapat;
+
     function kapatSikayetModal() {
         var modal = document.getElementById('sikayetModal');
         if (!modal) return;
         modal.classList.remove('acik');
         modal.setAttribute('aria-hidden', 'true');
         sikayetItirafId = null;
-        var itirafAcik = document.getElementById('itirafModal') && document.getElementById('itirafModal').classList.contains('acik');
-        var authAcik = document.getElementById('authOverlay') && document.getElementById('authOverlay').style.display === 'flex';
-        if (!itirafAcik && !authAcik) {
-            document.body.style.overflow = '';
-        }
+        guncelleModalScrollKilidi();
     }
 
     async function gonderSikayet() {
@@ -219,18 +394,16 @@
 
     function renderKulisCard(row) {
         var cins = row.gender === 'male' ? 'male' : 'female';
-        var avatar = cins === 'female' ? '\u2640' : '\u2642';
         var rumuz = row.username || 'Müdavim';
-        var woxi = row.is_gizli ? 'GizliUye' : rumuz;
         var bol = metinBol(row.content_full || row.content_short || '');
         var kartId = String(row.id);
         var devamHtml = devamBtnHtml(bol.devam);
         var fullHtml = bol.devam
             ? '<span class="full-text">' + htmlEsc(row.content_full || '') + '</span>'
             : '';
-        var cevapOzeti = cevapOzetBtnHtml(row.cevap_sayisi);
         var up = row.up_votes != null ? row.up_votes : 0;
         var down = row.down_votes != null ? row.down_votes : 0;
+        var goruntulenme = row.up_votes != null ? (row.up_votes * 420 + 12000) : 12000;
 
         var kart = document.createElement('div');
         kart.className = 'card ' + cins + (bol.devam ? ' uzun-metin' : '');
@@ -239,14 +412,13 @@
         kart.innerHTML =
             '<div class="card-header">' +
                 '<div class="user-block">' +
-                    '<div class="avatar">' + avatar + '</div>' +
+                    '<div class="avatar"></div>' +
                     '<div class="user-details">' +
                         '<span class="username">' + htmlEsc(rumuz) + '</span>' +
                         kullaniciMetaHtml(row) +
                     '</div>' +
                 '</div>' +
                 '<div class="card-header-actions">' +
-                    '<a href="https://woxifly.com/mesaj/' + encodeURIComponent(woxi) + '" target="_blank" rel="noopener" class="woxifly-btn">\uD83D\uDCAC Woxifly DM</a>' +
                     cardMenuBtnHtml(kartId) +
                 '</div>' +
             '</div>' +
@@ -254,70 +426,59 @@
                 '<span class="short-text">' + htmlEsc(bol.kisa) + '</span>' +
                 fullHtml +
                 devamHtml +
-                cevapOzeti +
             '</div>' +
             '<div class="card-footer">' +
-                '<div class="vote-group">' +
-                    '<button type="button" class="vote-btn vote-btn--begeni" onclick="vote(\'' + kartId + '\', 1)">\uD83D\uDC4D Beğendim (<span class="up-num">' + up + '</span>)</button>' +
-                    '<button type="button" class="vote-btn vote-btn--begenme" onclick="vote(\'' + kartId + '\', -1)">\uD83D\uDC4E Beğenmedim (<span class="down-num">' + down + '</span>)</button>' +
-                    '<button type="button" class="vote-btn cevap-btn" data-cevap-yaz>\uD83D\uDCAC Cevap yaz</button>' +
-                    paylasBtnHtml() +
-                '</div>' +
+                kartAksiyonBarHtml(kartId, up, down, row.cevap_sayisi, goruntulenme) +
             '</div>' +
             kartDetayShell();
+        avatarKartUygula(kart.querySelector('.avatar'), row);
         return kart;
     }
 
-    var podyumRozet = ['\uD83D\uDC51 Bugünün En İyi 1. İtirafı', '\uD83E\uDD48 Bugünün En İyi 2. İtirafı', '\uD83E\uDD49 Bugünün En İyi 3. İtirafı', '\uD83D\uDD25 Bugünün En İyi 4. İtirafı', '\uD83D\uDD25 Bugünün En İyi 5. İtirafı'];
+    var podyumRozet = ['\uD83D\uDC51 Günün 1.si', '\uD83E\uDD48 Günün 2.si', '\uD83E\uDD49 Günün 3.si', 'Günün 4.si', 'Günün 5.si'];
 
     function renderPodyumCard(row, sira) {
         var cins = row.gender === 'male' ? 'male' : 'female';
-        var avatar = cins === 'female' ? '\u2640' : '\u2642';
         var rumuz = row.username || 'Müdavim';
-        var woxi = row.is_gizli ? 'GizliUye' : rumuz;
         var bol = metinBol(row.content_full || row.content_short || '');
         var kartId = String(row.id);
         var rozet = podyumRozet[sira] || podyumRozet[4];
         var goruntulenme = row.up_votes != null ? (row.up_votes * 420 + 12000) : 12000;
+        var up = row.up_votes != null ? row.up_votes : 0;
+        var down = row.down_votes != null ? row.down_votes : 0;
         var devamHtml = devamBtnHtml(bol.devam);
         var fullHtml = bol.devam
             ? '<span class="full-text">' + htmlEsc(row.content_full || '') + '</span>'
             : '';
-        var cevapOzeti = cevapOzetBtnHtml(row.cevap_sayisi);
-
         var kart = document.createElement('div');
-        kart.className = 'card ' + cins + (bol.devam ? ' uzun-metin' : '');
+        kart.className = 'card podyum-kart ' + cins + (bol.devam ? ' uzun-metin' : '');
         kart.setAttribute('data-id', kartId);
         kart.setAttribute('data-status', 'podyum');
+        kart.setAttribute('data-podyum-sira', String(sira));
         kart.innerHTML =
+            '<div class="podyum-rozet">' + htmlEsc(rozet) + '</div>' +
             '<div class="card-header">' +
                 '<div class="user-block">' +
-                    '<div class="avatar">' + avatar + '</div>' +
+                    '<div class="avatar"></div>' +
                     '<div class="user-details">' +
                         '<span class="username">' + htmlEsc(rumuz) + '</span>' +
                         kullaniciMetaHtml(row) +
                     '</div>' +
                 '</div>' +
                 '<div class="card-header-actions">' +
-                    '<div class="view-counter">\uD83D\uDC41\uFE0F <span class="v-num">' + goruntulenme.toLocaleString('tr-TR') + '</span></div>' +
                     cardMenuBtnHtml(kartId) +
                 '</div>' +
-            '</div>' +
-            '<div class="woxifly-row">' +
-                '<a href="https://woxifly.com/mesaj/' + encodeURIComponent(woxi) + '" target="_blank" rel="noopener" class="woxifly-btn">\uD83D\uDCAC Woxifly DM</a>' +
             '</div>' +
             '<div class="card-body">' +
                 '<span class="short-text">' + htmlEsc(bol.kisa) + '</span>' +
                 fullHtml +
                 devamHtml +
-                cevapOzeti +
             '</div>' +
-            '<div class="card-footer card-footer--podyum">' +
-                '<span class="podyum-score">' + rozet + '</span>' +
-                '<button type="button" class="vote-btn cevap-btn cevap-btn--podyum" data-cevap-yaz>\uD83D\uDCAC Cevap yaz</button>' +
-                paylasBtnHtml() +
+            '<div class="card-footer">' +
+                kartAksiyonBarHtml(kartId, up, down, row.cevap_sayisi, goruntulenme) +
             '</div>' +
             kartDetayShell();
+        avatarKartUygula(kart.querySelector('.avatar'), row);
         return kart;
     }
 
@@ -415,6 +576,55 @@
         setInterval(guncelle, 1000);
     }
 
+    function avatarKartUygula(el, row) {
+        if (!el || !row) return;
+        var cins = row.gender === 'male' ? 'male' : 'female';
+        uygulaAvatarElement(el, {
+            gender: cins,
+            avatarUrl: row.is_gizli ? null : (row.avatar_url || null)
+        });
+    }
+
+    function toggleHeaderMenu(ev) {
+        if (ev) ev.stopPropagation();
+        var panel = document.getElementById('headerMenuPanel');
+        var btn = document.getElementById('headerMenuBtn');
+        if (!panel) return;
+        var acik = panel.hidden;
+        panel.hidden = !acik;
+        if (btn) btn.setAttribute('aria-expanded', acik ? 'true' : 'false');
+    }
+
+    function closeHeaderMenu() {
+        var panel = document.getElementById('headerMenuPanel');
+        var btn = document.getElementById('headerMenuBtn');
+        if (!panel) return;
+        panel.hidden = true;
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+
+    function initHeaderMenu() {
+        document.addEventListener('click', function (e) {
+            var panel = document.getElementById('headerMenuPanel');
+            if (!panel || panel.hidden) return;
+            var wrap = document.querySelector('.header-menu-wrap');
+            if (wrap && !wrap.contains(e.target)) closeHeaderMenu();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeHeaderMenu();
+        });
+    }
+
+    function headerMenuAuthClick(mode) {
+        closeHeaderMenu();
+        if (typeof global.openAuthModal === 'function') global.openAuthModal(mode);
+    }
+
+    function headerMenuTemaClick() {
+        closeHeaderMenu();
+        if (typeof global.toggleTheme === 'function') global.toggleTheme();
+    }
+
     function uygulaAvatarElement(el, u) {
         if (!el) return;
         var cins = u && u.gender === 'male' ? 'male' : 'female';
@@ -424,8 +634,11 @@
                 el.textContent = '';
                 img = document.createElement('img');
                 img.alt = '';
+                img.loading = 'lazy';
+                img.decoding = 'async';
                 el.appendChild(img);
             }
+            img.loading = 'lazy';
             img.src = u.avatarUrl;
             el.classList.add('has-foto');
             return;
@@ -448,9 +661,26 @@
         gitProfilSayfasi: gitProfilSayfasi,
         itirafUyeGerekli: itirafUyeGerekli,
         uygulaAvatarElement: uygulaAvatarElement,
+        closeAuthModal: closeAuthModal,
+        kapatItirafModal: kapatItirafModal,
+        oturumModallariKapat: oturumModallariKapat,
         hedefSaatTr: hedefSaatTr,
         baslatGeriSayim: baslatGeriSayim,
         PODYUM_TR_SAAT: PODYUM_TR_SAAT,
-        PODYUM_TR_DAKIKA: PODYUM_TR_DAKIKA
+        PODYUM_TR_DAKIKA: PODYUM_TR_DAKIKA,
+        toggleHeaderMenu: toggleHeaderMenu,
+        closeHeaderMenu: closeHeaderMenu,
+        initHeaderMenu: initHeaderMenu,
+        headerMenuAuthClick: headerMenuAuthClick,
+        headerMenuTemaClick: headerMenuTemaClick,
+        formatSayac: formatSayac,
+        toggleKaydet: toggleKaydet,
+        isItirafKayitli: isItirafKayitli
     };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initHeaderMenu);
+    } else {
+        initHeaderMenu();
+    }
 })(window);

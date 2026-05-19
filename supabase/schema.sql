@@ -29,13 +29,25 @@ create table if not exists public.itiraflar (
     yurtdisi_sehir varchar(80),
     meslek varchar(40),
     medeni_durum varchar(40),
+    avatar_url text,
     content_short varchar(140) not null,
     content_full text not null,
     up_votes int not null default 0,
     down_votes int not null default 0,
     status varchar(10) not null default 'kulis' check (status in ('kulis', 'podyum')),
+    podyum_sira smallint,
+    podyum_donem varchar(32),
     is_gizli boolean not null default false
 );
+
+create table if not exists public.site_ayar (
+    anahtar text primary key,
+    deger text not null,
+    updated_at timestamptz not null default now()
+);
+alter table public.site_ayar enable row level security;
+drop policy if exists site_ayar_select_all on public.site_ayar;
+create policy site_ayar_select_all on public.site_ayar for select using (true);
 
 create index if not exists itiraflar_status_created_idx on public.itiraflar (status, created_at desc);
 create index if not exists itiraflar_user_idx on public.itiraflar (user_id, created_at desc);
@@ -99,6 +111,18 @@ drop policy if exists uye_select_all on public.uye;
 drop policy if exists uye_select_own on public.uye;
 create policy uye_select_own on public.uye for select to authenticated
     using (auth.uid() = id);
+
+grant select on public.uye to anon;
+
+drop policy if exists uye_select_kart on public.uye;
+create policy uye_select_kart on public.uye
+    for select to anon, authenticated
+    using (
+        exists (
+            select 1 from public.itiraflar i
+            where i.user_id = uye.id and i.is_gizli = false
+        )
+    );
 
 drop policy if exists uye_insert_own on public.uye;
 create policy uye_insert_own on public.uye for insert to authenticated

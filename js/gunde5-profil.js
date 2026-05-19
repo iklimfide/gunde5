@@ -126,7 +126,7 @@
         return yerEtiketi(row.yasadigi_yer);
     }
 
-    /** Kulis/Podyum kartı — yalnızca doldurulmuş profil alanları (itiraf snapshot). */
+    /** Kulis/Podyum kartı — güncel profil (uye) alanları; gizlide yalnızca yaş. */
     function kartMetaSatir(row) {
         if (!row) return '';
         if (row.is_gizli) {
@@ -136,6 +136,10 @@
         if (row.age) parcalar.push(row.age + ' Yaş');
         var yer = yasadigiYerSatirdan(row);
         if (yer) parcalar.push(yer);
+        if (row.meslek) {
+            var m = meslekEtiketi(row.meslek);
+            if (m) parcalar.push(m);
+        }
         return parcalar.join(' • ');
     }
 

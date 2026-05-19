@@ -24,7 +24,9 @@ Bunlardan biri:
 
 ## Podyum seçimi (13:12 Türkiye saati)
 
-Şimdilik podyum itirafları `status = 'podyum'` ile listelenir. Günlük geçiş için ileride Supabase **cron + Edge Function** veya manuel SQL:
+Şimdilik podyum itirafları `status = 'podyum'` ile listelenir. **Manuel top 5:** `podyum-2026-05-19.sql` (veya güncel tarihli dosya) dosyasını SQL Editor'da çalıştırın.
+
+Günlük otomatik geçiş için ileride Supabase **cron + Edge Function** veya manuel SQL:
 
 ```sql
 -- Örnek: en yüksek net oy alan 5 kulis → podyum

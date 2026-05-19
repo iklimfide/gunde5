@@ -63,32 +63,100 @@
             top: 0;
             z-index: 100;
         }
-        header span { color: #ffffff; }
+        .header-brand {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .header-brand:hover { opacity: 0.92; }
+        .header-brand-red { color: #ef4444; }
         header .header-auth-btn {
             background: rgba(255, 255, 255, 0.18);
             border-color: rgba(255, 255, 255, 0.45);
             color: #ffffff;
         }
 
-        .theme-toggle {
+        .header-sol {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 110;
+        }
+        .header-sag {
             position: absolute;
             right: 16px;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0.45);
-            color: #ffffff;
-            padding: 6px 12px;
-            border-radius: 14px;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 110;
         }
-
-        .header-auth-btn {
+        .header-menu-wrap { position: relative; }
+        .header-menu-btn {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 0;
+        }
+        .header-menu-bar {
+            display: block;
+            width: 18px;
+            height: 2px;
+            background: #ffffff;
+            border-radius: 1px;
+        }
+        .header-menu-panel {
             position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
+            top: calc(100% + 8px);
+            left: 0;
+            right: auto;
+            min-width: 168px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+            padding: 8px;
+            z-index: 200;
+        }
+        body.dark-mode .header-menu-panel {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+        }
+        .header-menu-nav { display: flex; flex-direction: column; gap: 2px; }
+        .header-auth-btns {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-auth-btns[hidden] { display: none !important; }
+        .header-menu-link {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #111827;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: left;
+            border: none;
+            background: transparent;
+            width: 100%;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        body.dark-mode .header-menu-link { color: var(--text-main); }
+        .header-menu-link:hover { background: #f3f4f6; }
+        body.dark-mode .header-menu-link:hover { background: #2f3336; }
+        .header-auth-btn {
             border: 1px solid rgba(255, 255, 255, 0.45);
             background: rgba(255, 255, 255, 0.18);
             color: #ffffff;
@@ -97,27 +165,21 @@
             font-size: 11px;
             font-weight: 800;
             cursor: pointer;
+            white-space: nowrap;
         }
-        .header-auth-btn--kayit { left: 16px; }
-        .header-auth-btn--giris { left: 68px; }
-
+        .header-auth-btn--giris {
+            background: #ffffff;
+            color: #1d9bf0;
+            border-color: #ffffff;
+        }
         .header-profil-link {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
             display: none;
             align-items: center;
-            gap: 8px;
-            padding: 5px 12px 5px 6px;
-            border-radius: 20px;
+            padding: 4px;
+            border-radius: 50%;
             background: rgba(255, 255, 255, 0.18);
             border: 1px solid rgba(255, 255, 255, 0.45);
-            color: #ffffff;
             text-decoration: none;
-            font-size: 12px;
-            font-weight: 800;
-            max-width: 40%;
         }
         .header-profil-avatar {
             width: 26px;
@@ -133,12 +195,6 @@
         }
         .header-profil-link.cins-female .header-profil-avatar { background-color: var(--female-color); }
         .header-profil-link.cins-male .header-profil-avatar { background-color: var(--male-color); }
-        #headerProfilRumuz {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
         .container {
             max-width: 500px;
             margin: 0 auto;
@@ -709,14 +765,33 @@
 <body>
 
     <header>
-        <a href="profil.html" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
-            <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
-            <span id="headerProfilRumuz">Müdavim</span>
-        </a>
-        <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
-        <button type="button" class="header-auth-btn header-auth-btn--giris" id="hdrGiris" onclick="openAuthModal('login')">Giriş</button>
-        gunde<span>5</span>.com
-        <button class="theme-toggle" type="button" onclick="toggleTheme()">🌓 Mod</button>
+        <div class="header-sol">
+            <div class="header-menu-wrap">
+                <button type="button" class="header-menu-btn" id="headerMenuBtn" aria-label="Menü" aria-expanded="false" aria-controls="headerMenuPanel" onclick="Gunde5UI.toggleHeaderMenu(event)">
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                </button>
+                <div class="header-menu-panel" id="headerMenuPanel" hidden>
+                    <nav class="header-menu-nav" aria-label="Site menüsü">
+                        <a href="index.html" class="header-menu-link">🏆 Podyum</a>
+                        <a href="kulis.html" class="header-menu-link">🔥 Kulis</a>
+                        <a href="profil.html" class="header-menu-link" id="headerMenuProfil" hidden>👤 Profilim</a>
+                        <button type="button" class="header-menu-link" onclick="Gunde5UI.headerMenuTemaClick()">🌓 Mod</button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <a href="index.html" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <div class="header-sag">
+            <div class="header-auth-btns" id="headerAuthBtns">
+                <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
+                <button type="button" class="header-auth-btn header-auth-btn--giris" id="hdrGiris" onclick="openAuthModal('login')">Giriş</button>
+            </div>
+            <a href="profil.html" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+                <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
+            </a>
+        </div>
     </header>
 
     <div class="container">
@@ -725,17 +800,14 @@
     </div>
 
     <div class="bottom-nav">
+        <button type="button" class="nav-item nav-item--btn" id="navYazBtn">
+            <div class="icon">✍️</div><span>İtiraf Yaz</span>
+        </button>
         <a href="index.html" class="nav-item">
             <div class="icon">🏆</div><span>Podyum</span>
         </a>
         <a href="kulis.html" class="nav-item">
             <div class="icon">🔥</div><span>Kulis</span>
-        </a>
-        <button type="button" class="nav-item nav-item--btn" id="navYazBtn">
-            <div class="icon">✍️</div><span>İtiraf Yaz</span>
-        </button>
-        <a href="profil.html" class="nav-item active">
-            <div class="icon">🏷️</div><span>Profil</span>
         </a>
     </div>
 
@@ -816,27 +888,27 @@
 
         function guncelleHeaderOturum() {
             var u = Gunde5DB.getGunde5User();
-            var kayit = document.getElementById('hdrKayit');
-            var giris = document.getElementById('hdrGiris');
             var link = document.getElementById('headerProfilLink');
-            if (!kayit || !giris || !link) return;
+            var authBtns = document.getElementById('headerAuthBtns');
+            var menuProfil = document.getElementById('headerMenuProfil');
+            if (!link) return;
+            Gunde5UI.closeHeaderMenu();
             if (u && u.username) {
-                kayit.style.display = 'none';
-                giris.style.display = 'none';
+                if (authBtns) authBtns.hidden = true;
+                if (menuProfil) menuProfil.hidden = false;
                 link.style.display = 'flex';
+                document.body.classList.add('oturum-acik');
                 var cins = u.gender === 'male' ? 'male' : 'female';
                 link.className = 'header-profil-link cins-' + cins;
                 Gunde5UI.uygulaAvatarElement(document.getElementById('headerProfilAvatar'), u);
                 if (u.gender) {
                     document.body.setAttribute('data-user-gender', cins);
                 }
-                var rumuz = u.username;
-                if (rumuz.length > 12) rumuz = rumuz.slice(0, 12) + '…';
-                document.getElementById('headerProfilRumuz').textContent = rumuz;
             } else {
-                kayit.style.display = '';
-                giris.style.display = '';
+                if (authBtns) authBtns.hidden = false;
+                if (menuProfil) menuProfil.hidden = true;
                 link.style.display = 'none';
+                document.body.classList.remove('oturum-acik');
             }
         }
 
@@ -1192,16 +1264,10 @@
             doldurYilSecenekleri();
             var overlay = document.getElementById('authOverlay');
             overlay.style.display = 'flex';
+            overlay.classList.add('acik');
             overlay.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
             toggleAuthMode(mode || 'register');
-        }
-
-        function closeAuthModal() {
-            var overlay = document.getElementById('authOverlay');
-            overlay.style.display = 'none';
-            overlay.setAttribute('aria-hidden', 'true');
-            document.body.style.overflow = '';
         }
 
         function toggleAuthMode(mode) {
@@ -1249,7 +1315,7 @@
                 });
                 var cins = (u && u.gender) ? u.gender : document.getElementById('regGender').value;
                 document.body.setAttribute('data-user-gender', cins);
-                closeAuthModal();
+                Gunde5UI.oturumModallariKapat();
                 guncelleHeaderOturum();
                 await yukleProfil();
                 Gunde5UI.showToast('Hoş geldin, ' + (u && u.username ? u.username : '') + '!');
@@ -1267,7 +1333,7 @@
                 if (u && u.gender) {
                     document.body.setAttribute('data-user-gender', u.gender);
                 }
-                closeAuthModal();
+                Gunde5UI.oturumModallariKapat();
                 guncelleHeaderOturum();
                 await yukleProfil();
                 Gunde5UI.showToast('Tekrar hoş geldin!');

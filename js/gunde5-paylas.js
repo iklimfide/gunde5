@@ -8,7 +8,6 @@
         var s = document.createElement('style');
         s.id = 'gunde5-paylas-styles';
         s.textContent =
-            'button.vote-btn.paylas-btn{margin-left:0}' +
             '.card.card--paylas-hedef{animation:g5-paylas-vurgu 1.6s ease}' +
             '@keyframes g5-paylas-vurgu{0%,100%{box-shadow:none}35%{box-shadow:0 0 0 3px rgba(29,155,240,0.45)}}';
         document.head.appendChild(s);
@@ -77,15 +76,24 @@
         if (!liste || !UI) return null;
 
         var sayilar = await DB.kokCevapSayilari([row.id]);
-        row.cevap_sayisi = sayilar[row.id] || 0;
+        row.cevap_sayisi = sayilar[String(row.id)] != null ? sayilar[String(row.id)] : 0;
 
         var kart = sayfa === 'podyum' ? UI.renderPodyumCard(row, 4) : UI.renderKulisCard(row);
         kart.classList.add('card--paylas-hedef');
         if (liste.firstChild && liste.firstChild.classList && liste.firstChild.classList.contains('liste-bos')) {
             liste.innerHTML = '';
         }
-        liste.insertBefore(kart, liste.firstChild);
-        if (global.Gunde5KartCevap) global.Gunde5KartCevap.initSayfa();
+        var ilk = liste.firstChild;
+        if (ilk && ilk.id === 'kulisLazySentinel') {
+            liste.insertBefore(kart, ilk);
+        } else {
+            liste.insertBefore(kart, liste.firstChild);
+        }
+        if (global.Gunde5KartCevap && global.Gunde5KartCevap.baglaKart) {
+            global.Gunde5KartCevap.baglaKart(kart);
+        } else if (global.Gunde5KartCevap) {
+            global.Gunde5KartCevap.initSayfa();
+        }
         return kart;
     }
 

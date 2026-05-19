@@ -32,13 +32,23 @@ for each row execute function public.itiraf_oy_sayaci();
 revoke all on function public.itiraf_oy_sayaci() from public;
 revoke all on function public.itiraf_oy_sayaci() from anon, authenticated;
 
--- 3) uye: anon tablo okuması kapalı
-revoke select on public.uye from anon;
+-- 3) uye: anon yalnızca kart profili (RLS ile); tam profil kendi oturumunda
+grant select on public.uye to anon;
 
 drop policy if exists uye_select_all on public.uye;
 drop policy if exists uye_select_own on public.uye;
 create policy uye_select_own on public.uye for select to authenticated
     using (auth.uid() = id);
+
+drop policy if exists uye_select_kart on public.uye;
+create policy uye_select_kart on public.uye
+    for select to anon, authenticated
+    using (
+        exists (
+            select 1 from public.itiraflar i
+            where i.user_id = uye.id and i.is_gizli = false
+        )
+    );
 
 drop policy if exists itiraf_oylar_update_own on public.itiraf_oylar;
 create policy itiraf_oylar_update_own on public.itiraf_oylar for update

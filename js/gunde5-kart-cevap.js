@@ -45,6 +45,7 @@
             '.kart-ic-yorum-gonder{padding:6px 12px;border:none;border-radius:8px;background:#1d9bf0;color:#fff;font-size:12px;font-weight:800;cursor:pointer}' +
             '.kart-cevap-daha{display:block;width:100%;margin-top:4px;padding:10px;border:1px dashed var(--border-color);border-radius:10px;background:transparent;color:var(--text-muted);font-size:12px;font-weight:700;cursor:pointer}' +
             'button.cevap-ozet{display:inline-block;margin-top:8px;border:none;background:none;font-size:12px;font-weight:700;cursor:pointer;padding:0}' +
+            '.card-footer button.cevap-ozet,.card-footer--podyum button.cevap-ozet{margin-top:0}' +
             '.female button.cevap-ozet{color:var(--female-color)}' +
             '.male button.cevap-ozet{color:var(--male-color)}' +
             'button.read-more{border:none;background:none;font:inherit;cursor:pointer;padding:0}' +
@@ -80,9 +81,21 @@
     }
 
     function guncelleCevapOzet(card, adet) {
-        var btn = card.querySelector('[data-cevap-ozet]');
-        if (!btn) return;
+        if (!card) return;
         var n = parseInt(adet, 10) || 0;
+        var fmt = UI && UI.formatSayac ? UI.formatSayac(n) : String(n);
+        var sayi = card.querySelector('[data-cevap-sayi]');
+        var yorumBtn = card.querySelector('[data-cevap-yaz]');
+        if (sayi) {
+            sayi.textContent = fmt;
+            return;
+        }
+        var btn = card.querySelector('[data-cevap-ozet]');
+        if (!btn) {
+            if (n < 1 || !yorumBtn) return;
+            yorumBtn.insertAdjacentHTML('beforeend', '<span class="kart-aksiyon-sayi" data-cevap-sayi="">' + fmt + '</span>');
+            return;
+        }
         if (n < 1) {
             btn.style.display = 'none';
             return;
@@ -310,6 +323,7 @@
     global.Gunde5KartCevap = {
         toggle: toggle,
         initSayfa: initSayfa,
+        baglaKart: baglaKart,
         guncelleCevapOzet: guncelleCevapOzet
     };
     global.toggleKartDetay = toggle;

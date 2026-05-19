@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -63,26 +63,16 @@
             top: 0;
             z-index: 100;
         }
-        header span { color: #ffffff; }
+        .header-brand {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .header-brand:hover { opacity: 0.92; }
+        .header-brand-red { color: #ef4444; }
         header .header-auth-btn {
             background: rgba(255, 255, 255, 0.18);
             border-color: rgba(255, 255, 255, 0.45);
             color: #ffffff;
-        }
-
-        .theme-toggle {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0.45);
-            color: #ffffff;
-            padding: 6px 12px;
-            border-radius: 14px;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
         }
 
         .container {
@@ -155,9 +145,34 @@
         .card-header,
         .card-body,
         .card-footer,
-        .woxifly-row {
+        .card-header-actions {
             position: relative;
             z-index: 1;
+        }
+        .card-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            margin-left: 4px;
+        }
+        .view-counter {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+            white-space: nowrap;
+            padding: 6px 11px;
+            border-radius: 14px;
+            background: rgba(17, 24, 39, 0.05);
+            border: 1px solid var(--border-color);
+            line-height: 1;
+        }
+        body.dark-mode .view-counter {
+            background: rgba(255, 255, 255, 0.06);
         }
 
         .card.female { background-color: var(--female-bg); border-color: var(--female-border); }
@@ -167,12 +182,15 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 12px;
             margin-bottom: 14px;
         }
         .user-block {
             display: flex;
             align-items: center;
             gap: 12px;
+            flex: 1;
+            min-width: 0;
         }
         .avatar {
             width: 38px;
@@ -185,18 +203,30 @@
             font-size: 16px;
             color: white;
             flex-shrink: 0;
+            overflow: hidden;
         }
-        .female .avatar { background-color: var(--female-color); }
-        .male .avatar { background-color: var(--male-color); }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .avatar.has-foto { background: var(--border-color) !important; }
+        .female .avatar:not(.has-foto) { background-color: var(--female-color); }
+        .male .avatar:not(.has-foto) { background-color: var(--male-color); }
 
         .user-details {
             display: flex;
             flex-direction: column;
             gap: 2px;
+            min-width: 0;
         }
         .username {
             font-size: 15px;
             font-weight: 800;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .female .username { color: var(--female-color); }
         .male .username { color: var(--male-color); }
@@ -493,39 +523,111 @@
             color: var(--text-main);
         }
 
-        .header-auth-btn {
+        .header-sol {
             position: absolute;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            border: 1px solid var(--border-color);
-            background: var(--bg-main);
-            color: var(--text-main);
+            z-index: 110;
+        }
+        .header-sag {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 110;
+        }
+        .header-menu-wrap { position: relative; }
+        .header-menu-btn {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 0;
+        }
+        .header-menu-bar {
+            display: block;
+            width: 18px;
+            height: 2px;
+            background: #ffffff;
+            border-radius: 1px;
+        }
+        .header-menu-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: auto;
+            min-width: 168px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+            padding: 8px;
+            z-index: 200;
+        }
+        body.dark-mode .header-menu-panel {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+        }
+        .header-menu-nav { display: flex; flex-direction: column; gap: 2px; }
+        .header-auth-btns {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-auth-btns[hidden] { display: none !important; }
+        .header-menu-link {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #111827;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: left;
+            border: none;
+            background: transparent;
+            width: 100%;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        body.dark-mode .header-menu-link { color: var(--text-main); }
+        .header-menu-link:hover { background: #f3f4f6; }
+        body.dark-mode .header-menu-link:hover { background: #2f3336; }
+        .header-auth-btn {
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
             padding: 6px 10px;
             border-radius: 14px;
             font-size: 11px;
             font-weight: 800;
             cursor: pointer;
+            white-space: nowrap;
         }
-        .header-auth-btn--kayit { left: 16px; }
-        .header-auth-btn--giris { left: 68px; }
-
+        .header-auth-btn--giris {
+            background: #ffffff;
+            color: #1d9bf0;
+            border-color: #ffffff;
+        }
         .header-profil-link {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
             display: none;
             align-items: center;
-            gap: 8px;
-            padding: 5px 12px 5px 6px;
-            border-radius: 20px;
+            padding: 4px;
+            border-radius: 50%;
             background: rgba(255, 255, 255, 0.18);
             border: 1px solid rgba(255, 255, 255, 0.45);
-            color: #ffffff;
             text-decoration: none;
-            font-size: 12px;
-            font-weight: 800;
-            max-width: 40%;
         }
         .header-profil-avatar {
             width: 26px;
@@ -551,12 +653,6 @@
             background: transparent !important;
             overflow: hidden;
         }
-        #headerProfilRumuz {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
         .auth-overlay {
             display: none;
             position: fixed;
@@ -815,14 +911,33 @@
 <body data-user-gender="female">
 
     <header>
-        <a href="profil.html" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
-            <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
-            <span id="headerProfilRumuz">Müdavim</span>
-        </a>
-        <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
-        <button type="button" class="header-auth-btn header-auth-btn--giris" id="hdrGiris" onclick="openAuthModal('login')">Giriş</button>
-        gunde<span>5</span>.com
-        <button class="theme-toggle" type="button" onclick="toggleTheme()">🌓 Mod</button>
+        <div class="header-sol">
+            <div class="header-menu-wrap">
+                <button type="button" class="header-menu-btn" id="headerMenuBtn" aria-label="Menü" aria-expanded="false" aria-controls="headerMenuPanel" onclick="Gunde5UI.toggleHeaderMenu(event)">
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                </button>
+                <div class="header-menu-panel" id="headerMenuPanel" hidden>
+                    <nav class="header-menu-nav" aria-label="Site menüsü">
+                        <a href="index.html" class="header-menu-link">🏆 Podyum</a>
+                        <a href="kulis.html" class="header-menu-link">🔥 Kulis</a>
+                        <a href="profil.html" class="header-menu-link" id="headerMenuProfil" hidden>👤 Profilim</a>
+                        <button type="button" class="header-menu-link" onclick="Gunde5UI.headerMenuTemaClick()">🌓 Mod</button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <a href="index.html" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <div class="header-sag">
+            <div class="header-auth-btns" id="headerAuthBtns">
+                <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
+                <button type="button" class="header-auth-btn header-auth-btn--giris" id="hdrGiris" onclick="openAuthModal('login')">Giriş</button>
+            </div>
+            <a href="profil.html" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+                <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
+            </a>
+        </div>
     </header>
 
     <div class="container">
@@ -833,26 +948,21 @@
             <p>Oylama çubuklarını patlatan itiraflar Podyum'a tırmanır. Kalan her şey her gün saat 13:12'de (Türkiye saati) sonsuza dek silinir!</p>
         </div>
 
-        <h3 class="page-title">Canlı Akış: <span>Kulis</span></h3>
-
         <div id="kulisListe"></div>
 
 
     </div>
 
     <div class="bottom-nav">
+        <button type="button" class="nav-item nav-item--btn" id="navYazBtn" aria-haspopup="dialog">
+            <div class="icon">✍️</div><span>İtiraf Yaz</span>
+        </button>
         <a href="index.html" class="nav-item">
             <div class="icon">🏆</div><span>Podyum</span>
         </a>
         <a href="kulis.html" class="nav-item active">
             <div class="icon">🔥</div><span>Kulis</span>
         </a>
-        <button type="button" class="nav-item nav-item--btn" id="navYazBtn" aria-haspopup="dialog">
-            <div class="icon">✍️</div><span>İtiraf Yaz</span>
-        </button>
-        <button type="button" class="nav-item nav-item--btn" id="navProfilBtn">
-            <div class="icon">🏷️</div><span>Profil</span>
-        </button>
     </div>
 
     <div id="authOverlay" class="auth-overlay" aria-hidden="true">
@@ -919,52 +1029,45 @@
     <script src="js/gunde5-profil.js"></script>
     <script src="js/gunde5-ui.js"></script>
     <script src="js/gunde5-db.js"></script>
+    <script src="js/gunde5-lazy-liste.js"></script>
     <script src="js/gunde5-kart-cevap.js"></script>
     <script src="js/gunde5-paylas.js"></script>
     <script>
         function guncelleHeaderOturum() {
             var u = Gunde5DB.getGunde5User();
-            var kayit = document.getElementById('hdrKayit');
-            var giris = document.getElementById('hdrGiris');
             var link = document.getElementById('headerProfilLink');
-            if (!kayit || !giris || !link) return;
+            var authBtns = document.getElementById('headerAuthBtns');
+            var menuProfil = document.getElementById('headerMenuProfil');
+            if (!link) return;
+            Gunde5UI.closeHeaderMenu();
             if (u && u.username) {
-                kayit.style.display = 'none';
-                giris.style.display = 'none';
+                if (authBtns) authBtns.hidden = true;
+                if (menuProfil) menuProfil.hidden = false;
                 link.style.display = 'flex';
+                document.body.classList.add('oturum-acik');
                 var cins = u.gender === 'male' ? 'male' : 'female';
                 link.className = 'header-profil-link cins-' + cins;
                 Gunde5UI.uygulaAvatarElement(document.getElementById('headerProfilAvatar'), u);
                 if (u.gender) {
                     document.body.setAttribute('data-user-gender', cins);
                 }
-                var rumuz = u.username;
-                if (rumuz.length > 12) rumuz = rumuz.slice(0, 12) + '\u2026';
-                document.getElementById('headerProfilRumuz').textContent = rumuz;
             } else {
-                kayit.style.display = '';
-                giris.style.display = '';
+                if (authBtns) authBtns.hidden = false;
+                if (menuProfil) menuProfil.hidden = true;
                 link.style.display = 'none';
+                document.body.classList.remove('oturum-acik');
             }
         }
 
         function openAuthModal(mode) {
-            kapatItirafModal();
+            Gunde5UI.kapatItirafModal();
             doldurYilSecenekleri();
             var overlay = document.getElementById('authOverlay');
             overlay.style.display = 'flex';
+            overlay.classList.add('acik');
             overlay.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
             toggleAuthMode(mode || 'register');
-        }
-
-        function closeAuthModal() {
-            var overlay = document.getElementById('authOverlay');
-            overlay.style.display = 'none';
-            overlay.setAttribute('aria-hidden', 'true');
-            if (!document.getElementById('itirafModal').classList.contains('acik')) {
-                document.body.style.overflow = '';
-            }
         }
 
         function toggleAuthMode(mode) {
@@ -1027,7 +1130,7 @@
                 });
                 var cins = (u && u.gender) ? u.gender : document.getElementById('regGender').value;
                 document.body.setAttribute('data-user-gender', cins);
-                closeAuthModal();
+                Gunde5UI.oturumModallariKapat();
                 guncelleHeaderOturum();
                 var retKayit = sessionStorage.getItem('gunde5_auth_return');
                 if (retKayit) {
@@ -1050,7 +1153,7 @@
                 if (u && u.gender) {
                     document.body.setAttribute('data-user-gender', u.gender);
                 }
-                closeAuthModal();
+                Gunde5UI.oturumModallariKapat();
                 guncelleHeaderOturum();
                 var retGiris = sessionStorage.getItem('gunde5_auth_return');
                 if (retGiris) {
@@ -1068,7 +1171,7 @@
             if (!Gunde5UI.itirafUyeGerekli(openAuthModal)) {
                 return;
             }
-            closeAuthModal();
+            Gunde5UI.closeAuthModal();
             var modal = document.getElementById('itirafModal');
             modal.classList.add('acik');
             modal.setAttribute('aria-hidden', 'false');
@@ -1078,20 +1181,8 @@
             }, 220);
         }
 
-        function kapatItirafModal() {
-            var modal = document.getElementById('itirafModal');
-            modal.classList.remove('acik');
-            modal.setAttribute('aria-hidden', 'true');
-            if (document.getElementById('authOverlay').style.display !== 'flex') {
-                document.body.style.overflow = '';
-            }
-        }
-
         document.getElementById('navYazBtn').addEventListener('click', acItirafModal);
-        document.getElementById('navProfilBtn').addEventListener('click', function () {
-            Gunde5UI.gitProfilSayfasi();
-        });
-        document.getElementById('itirafModalKapat').addEventListener('click', kapatItirafModal);
+        document.getElementById('itirafModalKapat').addEventListener('click', Gunde5UI.kapatItirafModal);
         document.getElementById('gizliUyeSec').addEventListener('click', function () {
             var btn = this;
             btn.classList.toggle('aktif');
@@ -1120,11 +1211,28 @@
             btn.disabled = true;
             try {
                 var row = await Gunde5DB.itirafGonder(metin, gizli);
-                var kart = Gunde5UI.renderKulisCard(row);
-                var liste = document.getElementById('kulisListe');
-                if (liste && liste.firstChild && liste.firstChild.classList && liste.firstChild.classList.contains('liste-bos')) { liste.innerHTML = ''; }
-                if (liste) { liste.insertBefore(kart, liste.firstChild); }
-                sifirlaItirafModal(); kapatItirafModal();
+                sifirlaItirafModal();
+                Gunde5UI.kapatItirafModal();
+                try {
+                    var kart = Gunde5UI.renderKulisCard(row);
+                    var liste = document.getElementById('kulisListe');
+                    if (liste && liste.firstChild && liste.firstChild.classList && liste.firstChild.classList.contains('liste-bos')) {
+                        liste.innerHTML = '';
+                    }
+                    if (liste) {
+                        var ilk = liste.firstChild;
+                        if (ilk && ilk.id === 'kulisLazySentinel') {
+                            liste.insertBefore(kart, ilk);
+                        } else {
+                            liste.insertBefore(kart, liste.firstChild);
+                        }
+                        if (Gunde5KartCevap && Gunde5KartCevap.baglaKart) {
+                            Gunde5KartCevap.baglaKart(kart);
+                        }
+                    }
+                } catch (kartErr) {
+                    Gunde5UI.showToast('İtiraf gönderildi; listeyi yenile.', 'hata');
+                }
                 Gunde5UI.showToast('İtiraf kulise düştü!');
             } catch (err) { Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata'); }
             btn.disabled = false;
@@ -1143,8 +1251,10 @@
                 var sonuc = await Gunde5DB.oyVer(cardId, score);
                 var card = document.querySelector('.card[data-id="' + cardId + '"]');
                 if (card && sonuc) {
-                    card.querySelector('.up-num').textContent = sonuc.up_votes;
-                    card.querySelector('.down-num').textContent = sonuc.down_votes;
+                    var upEl = card.querySelector('.up-num');
+                    var downEl = card.querySelector('.down-num');
+                    if (upEl) upEl.textContent = Gunde5UI.formatSayac(sonuc.up_votes);
+                    if (downEl) downEl.textContent = Gunde5UI.formatSayac(sonuc.down_votes);
                 }
             } catch (err) {
                 Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
@@ -1176,12 +1286,21 @@
                 var data = JSON.parse(raw);
                 if (!data.metin || !Gunde5DB.getGunde5User()) return;
                 return Gunde5DB.itirafGonder(data.metin, !!data.gizli).then(function (row) {
+                    var kart = Gunde5UI.renderKulisCard(row);
                     var liste = document.getElementById('kulisListe');
                     if (liste) {
                         if (liste.firstChild && liste.firstChild.classList && liste.firstChild.classList.contains('liste-bos')) {
                             liste.innerHTML = '';
                         }
-                        liste.insertBefore(Gunde5UI.renderKulisCard(row), liste.firstChild);
+                        var ilk = liste.firstChild;
+                        if (ilk && ilk.id === 'kulisLazySentinel') {
+                            liste.insertBefore(kart, ilk);
+                        } else {
+                            liste.insertBefore(kart, liste.firstChild);
+                        }
+                        if (Gunde5KartCevap && Gunde5KartCevap.baglaKart) {
+                            Gunde5KartCevap.baglaKart(kart);
+                        }
                     }
                     Gunde5UI.showToast('İtiraf kulise düştü!');
                 });

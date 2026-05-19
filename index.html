@@ -65,7 +65,12 @@
             top: 0;
             z-index: 100;
         }
-        header span { color: #ffffff; }
+        .header-brand {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .header-brand:hover { opacity: 0.92; }
+        .header-brand-red { color: #ef4444; }
         header .header-auth-btn {
             background: rgba(255, 255, 255, 0.18);
             border-color: rgba(255, 255, 255, 0.45);
@@ -97,6 +102,107 @@
             padding-left: 4px;
         }
         .page-title span { color: #d97706; }
+
+        .podyum-sampiyonlar {
+            margin-bottom: 24px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #e8c547;
+            box-shadow:
+                0 4px 24px rgba(180, 120, 0, 0.18),
+                0 0 0 1px rgba(255, 255, 255, 0.45) inset;
+        }
+        .podyum-sampiyonlar-banner {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 16px 16px;
+            background: linear-gradient(145deg, #fffbeb 0%, #fde68a 38%, #f5c842 72%, #e8b923 100%);
+            border-bottom: 1px solid rgba(180, 120, 0, 0.28);
+            position: relative;
+        }
+        .podyum-sampiyonlar-banner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, transparent 55%);
+            pointer-events: none;
+        }
+        .podyum-sampiyonlar-trophy {
+            flex-shrink: 0;
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            line-height: 1;
+            background: linear-gradient(160deg, #fff 0%, #fef3c7 100%);
+            border: 2px solid rgba(217, 119, 6, 0.35);
+            border-radius: 50%;
+            box-shadow: 0 3px 10px rgba(146, 90, 0, 0.22);
+            position: relative;
+            z-index: 1;
+        }
+        .podyum-sampiyonlar-metin {
+            flex: 1;
+            min-width: 0;
+            position: relative;
+            z-index: 1;
+        }
+        .podyum-sampiyonlar-etiket {
+            margin: 0 0 4px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #92400e;
+            opacity: 0.9;
+        }
+        .podyum-sampiyonlar-baslik {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.25;
+            color: #78350f;
+            letter-spacing: -0.02em;
+        }
+        .podyum-sampiyonlar-liste {
+            padding: 14px 12px 6px;
+            background: linear-gradient(180deg, #fffdf5 0%, #fffbeb 100%);
+        }
+        .podyum-sampiyonlar-liste .card {
+            border-color: rgba(217, 119, 6, 0.22);
+            box-shadow: 0 2px 10px rgba(180, 120, 0, 0.08);
+        }
+        .podyum-sampiyonlar-liste .liste-bos {
+            margin: 0 0 12px;
+            padding: 20px 12px;
+            text-align: center;
+            color: #92400e;
+            font-weight: 600;
+        }
+        body.dark-mode .podyum-sampiyonlar {
+            border-color: #b8860b;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+        }
+        body.dark-mode .podyum-sampiyonlar-banner {
+            background: linear-gradient(145deg, #3d3010 0%, #5c4512 35%, #7a5c14 70%, #9a7318 100%);
+            border-bottom-color: rgba(251, 191, 36, 0.2);
+        }
+        body.dark-mode .podyum-sampiyonlar-trophy {
+            background: linear-gradient(160deg, #5c4512 0%, #7a5c14 100%);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+        body.dark-mode .podyum-sampiyonlar-etiket {
+            color: #fde68a;
+        }
+        body.dark-mode .podyum-sampiyonlar-baslik {
+            color: #fef3c7;
+        }
+        body.dark-mode .podyum-sampiyonlar-liste {
+            background: linear-gradient(180deg, #2a2210 0%, #1f1a0d 100%);
+        }
 
         .card {
             background: var(--bg-card);
@@ -133,7 +239,9 @@
         .card-header,
         .card-body,
         .card-footer,
-        .woxifly-row {
+        .woxifly-row,
+        .podyum-rozet,
+        .card-header-actions {
             position: relative;
             z-index: 1;
         }
@@ -145,7 +253,15 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 12px;
             margin-bottom: 12px;
+        }
+        .card-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            margin-left: 4px;
         }
         .user-block {
             display: flex;
@@ -165,9 +281,17 @@
             font-size: 16px;
             color: white;
             flex-shrink: 0;
+            overflow: hidden;
         }
-        .female .avatar { background-color: var(--female-color); }
-        .male .avatar { background-color: var(--male-color); }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .avatar.has-foto { background: var(--border-color) !important; }
+        .female .avatar:not(.has-foto) { background-color: var(--female-color); }
+        .male .avatar:not(.has-foto) { background-color: var(--male-color); }
 
         .user-details {
             display: flex;
@@ -178,6 +302,9 @@
         .username {
             font-size: 15px;
             font-weight: 800;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .female .username { color: var(--female-color); }
         .male .username { color: var(--male-color); }
@@ -189,14 +316,22 @@
         }
 
         .view-counter {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             color: var(--text-muted);
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             flex-shrink: 0;
-            margin-left: 8px;
+            white-space: nowrap;
+            padding: 6px 11px;
+            border-radius: 14px;
+            background: rgba(17, 24, 39, 0.05);
+            border: 1px solid var(--border-color);
+            line-height: 1;
+        }
+        body.dark-mode .view-counter {
+            background: rgba(255, 255, 255, 0.06);
         }
 
         .woxifly-row {
@@ -244,23 +379,100 @@
         }
         .female .cevap-ozet { color: var(--female-color); }
         .male .cevap-ozet { color: var(--male-color); }
+        .card.podyum-kart {
+            padding-top: 0;
+        }
+        .podyum-rozet {
+            margin: 0 -18px 14px;
+            padding: 11px 16px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            color: #78350f;
+            background: linear-gradient(135deg, #fffbeb 0%, #fde68a 55%, #f5c842 100%);
+            border-bottom: 1px solid rgba(217, 119, 6, 0.28);
+            border-radius: 19px 19px 0 0;
+        }
+        .card.podyum-kart[data-podyum-sira="0"] .podyum-rozet {
+            color: #713f12;
+            background: linear-gradient(135deg, #fef9c3 0%, #fcd34d 45%, #f59e0b 100%);
+        }
+        body.dark-mode .podyum-rozet {
+            color: #fde68a;
+            background: linear-gradient(135deg, #422006 0%, #78350f 55%, #92400e 100%);
+            border-bottom-color: rgba(251, 191, 36, 0.35);
+        }
+        body.dark-mode .card.podyum-kart[data-podyum-sira="0"] .podyum-rozet {
+            color: #fffbeb;
+            background: linear-gradient(135deg, #713f12 0%, #b45309 50%, #d97706 100%);
+        }
         .card-footer--podyum {
+            display: block;
+            padding-top: 14px;
+        }
+        .card-footer--podyum .vote-group {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
             flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 12px;
+            row-gap: 10px;
+            width: 100%;
+            justify-content: flex-start;
+        }
+        .vote-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            width: 100%;
         }
         .vote-btn {
             border: 1px solid var(--border-color);
             background: var(--bg-card);
             color: var(--text-main);
-            padding: 6px 14px;
+            padding: 8px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 700;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            line-height: 1.2;
+        }
+        .vote-btn span.up-num { color: #00ba7c; font-weight: 800; }
+        .vote-btn span.down-num { color: #f4212e; font-weight: 800; }
+        .card-footer--podyum button.cevap-ozet,
+        .card-footer button.cevap-ozet {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 0;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+            cursor: pointer;
+            line-height: 1.2;
+        }
+        button.cevap-ozet {
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 0;
+        }
+        .card-body button.cevap-ozet {
+            margin-top: 8px;
+            padding: 0;
+            border: none;
+            background: none;
         }
 
         .card-footer {
@@ -272,13 +484,6 @@
             align-items: center;
             gap: 8px;
         }
-        .podyum-score {
-            font-size: 13px;
-            font-weight: 800;
-            color: #10b981;
-        }
-
-
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -438,39 +643,111 @@
         }
         .itiraf-gonder-btn:active { transform: scale(0.97); }
 
-        .header-auth-btn {
+        .header-sol {
             position: absolute;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            border: 1px solid var(--border-color);
-            background: var(--bg-main);
-            color: var(--text-main);
+            z-index: 110;
+        }
+        .header-sag {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 110;
+        }
+        .header-menu-wrap { position: relative; }
+        .header-menu-btn {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 0;
+        }
+        .header-menu-bar {
+            display: block;
+            width: 18px;
+            height: 2px;
+            background: #ffffff;
+            border-radius: 1px;
+        }
+        .header-menu-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: auto;
+            min-width: 168px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+            padding: 8px;
+            z-index: 200;
+        }
+        body.dark-mode .header-menu-panel {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+        }
+        .header-menu-nav { display: flex; flex-direction: column; gap: 2px; }
+        .header-auth-btns {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-auth-btns[hidden] { display: none !important; }
+        .header-menu-link {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #111827;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: left;
+            border: none;
+            background: transparent;
+            width: 100%;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        body.dark-mode .header-menu-link { color: var(--text-main); }
+        .header-menu-link:hover { background: #f3f4f6; }
+        body.dark-mode .header-menu-link:hover { background: #2f3336; }
+        .header-auth-btn {
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
             padding: 6px 10px;
             border-radius: 14px;
             font-size: 11px;
             font-weight: 800;
             cursor: pointer;
+            white-space: nowrap;
         }
-        .header-auth-btn--kayit { left: 16px; }
-        .header-auth-btn--giris { left: 68px; }
-
+        .header-auth-btn--giris {
+            background: #ffffff;
+            color: #1d9bf0;
+            border-color: #ffffff;
+        }
         .header-profil-link {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
             display: none;
             align-items: center;
-            gap: 8px;
-            padding: 5px 12px 5px 6px;
-            border-radius: 20px;
+            padding: 4px;
+            border-radius: 50%;
             background: rgba(255, 255, 255, 0.18);
             border: 1px solid rgba(255, 255, 255, 0.45);
-            color: #ffffff;
             text-decoration: none;
-            font-size: 12px;
-            font-weight: 800;
-            max-width: 46%;
         }
         .header-profil-avatar {
             width: 26px;
@@ -496,12 +773,6 @@
             background: transparent !important;
             overflow: hidden;
         }
-        #headerProfilRumuz {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
         .auth-overlay {
             display: none;
             position: fixed;
@@ -733,13 +1004,32 @@
     <div class="ss-watermark">gunde5.com</div>
 
     <header>
-        <a href="profil.html" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
-            <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
-            <span id="headerProfilRumuz">Müdavim</span>
-        </a>
-        <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
-        <button type="button" class="header-auth-btn header-auth-btn--giris" id="hdrGiris" onclick="openAuthModal('login')">Giriş</button>
-        gunde<span>5</span>.com
+        <div class="header-sol">
+            <div class="header-menu-wrap">
+                <button type="button" class="header-menu-btn" id="headerMenuBtn" aria-label="Menü" aria-expanded="false" aria-controls="headerMenuPanel" onclick="Gunde5UI.toggleHeaderMenu(event)">
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                </button>
+                <div class="header-menu-panel" id="headerMenuPanel" hidden>
+                    <nav class="header-menu-nav" aria-label="Site menüsü">
+                        <a href="index.html" class="header-menu-link">🏆 Podyum</a>
+                        <a href="kulis.html" class="header-menu-link">🔥 Kulis</a>
+                        <a href="profil.html" class="header-menu-link" id="headerMenuProfil" hidden>👤 Profilim</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <a href="index.html" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <div class="header-sag">
+            <div class="header-auth-btns" id="headerAuthBtns">
+                <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
+                <button type="button" class="header-auth-btn header-auth-btn--giris" id="hdrGiris" onclick="openAuthModal('login')">Giriş</button>
+            </div>
+            <a href="profil.html" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+                <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
+            </a>
+        </div>
     </header>
 
     <div class="container">
@@ -750,24 +1040,29 @@
             <p>Her gün saat 13:12'de (Türkiye saati) Kulis'te en çok net oy alan ilk 5 itiraf buraya tırmanır, geri kalan her şey sonsuza dek silinir!</p>
         </div>
 
-        <h3 class="page-title">Günün En İyileri: <span>Podyum</span></h3>
-        <div id="podyumListe"></div>
+        <section class="podyum-sampiyonlar" id="podyumSampiyonlar" hidden aria-labelledby="podyumDonemBaslik">
+            <header class="podyum-sampiyonlar-banner">
+                <span class="podyum-sampiyonlar-trophy" aria-hidden="true">🏆</span>
+                <div class="podyum-sampiyonlar-metin">
+                    <p class="podyum-sampiyonlar-etiket">Günün şampiyonları</p>
+                    <h2 class="podyum-sampiyonlar-baslik" id="podyumDonemBaslik"></h2>
+                </div>
+            </header>
+            <div id="podyumListe" class="podyum-sampiyonlar-liste"></div>
+        </section>
 
     </div>
 
     <div class="bottom-nav">
+        <button type="button" class="nav-item nav-item--btn" id="navYazBtn" aria-haspopup="dialog">
+            <div class="icon">✍️</div><span>İtiraf Yaz</span>
+        </button>
         <a href="index.html" class="nav-item active">
             <div class="icon">🏆</div><span>Podyum</span>
         </a>
         <a href="kulis.html" class="nav-item">
             <div class="icon">🔥</div><span>Kulis</span>
         </a>
-        <button type="button" class="nav-item nav-item--btn" id="navYazBtn" aria-haspopup="dialog">
-            <div class="icon">✍️</div><span>İtiraf Yaz</span>
-        </button>
-        <button type="button" class="nav-item nav-item--btn" id="navProfilBtn">
-            <div class="icon">🏷️</div><span>Profil</span>
-        </button>
     </div>
 
     <div id="authOverlay" class="auth-overlay" aria-hidden="true">
@@ -839,27 +1134,27 @@
     <script>
         function guncelleHeaderOturum() {
             var u = Gunde5DB.getGunde5User();
-            var kayit = document.getElementById('hdrKayit');
-            var giris = document.getElementById('hdrGiris');
             var link = document.getElementById('headerProfilLink');
-            if (!kayit || !giris || !link) return;
+            var authBtns = document.getElementById('headerAuthBtns');
+            var menuProfil = document.getElementById('headerMenuProfil');
+            if (!link) return;
+            Gunde5UI.closeHeaderMenu();
             if (u && u.username) {
-                kayit.style.display = 'none';
-                giris.style.display = 'none';
+                if (authBtns) authBtns.hidden = true;
+                if (menuProfil) menuProfil.hidden = false;
                 link.style.display = 'flex';
+                document.body.classList.add('oturum-acik');
                 var cins = u.gender === 'male' ? 'male' : 'female';
                 link.className = 'header-profil-link cins-' + cins;
                 Gunde5UI.uygulaAvatarElement(document.getElementById('headerProfilAvatar'), u);
                 if (u.gender) {
                     document.body.setAttribute('data-user-gender', cins);
                 }
-                var rumuz = u.username;
-                if (rumuz.length > 12) rumuz = rumuz.slice(0, 12) + '…';
-                document.getElementById('headerProfilRumuz').textContent = rumuz;
             } else {
-                kayit.style.display = '';
-                giris.style.display = '';
+                if (authBtns) authBtns.hidden = false;
+                if (menuProfil) menuProfil.hidden = true;
                 link.style.display = 'none';
+                document.body.classList.remove('oturum-acik');
             }
         }
 
@@ -879,22 +1174,14 @@
         }
 
         function openAuthModal(mode) {
-            kapatItirafModal();
+            Gunde5UI.kapatItirafModal();
             doldurYilSecenekleri();
             var overlay = document.getElementById('authOverlay');
             overlay.style.display = 'flex';
+            overlay.classList.add('acik');
             overlay.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
             toggleAuthMode(mode || 'register');
-        }
-
-        function closeAuthModal() {
-            var overlay = document.getElementById('authOverlay');
-            overlay.style.display = 'none';
-            overlay.setAttribute('aria-hidden', 'true');
-            if (!document.getElementById('itirafModal').classList.contains('acik')) {
-                document.body.style.overflow = '';
-            }
         }
 
         function toggleAuthMode(mode) {
@@ -942,7 +1229,7 @@
                 });
                 var cins = (u && u.gender) ? u.gender : document.getElementById('regGender').value;
                 document.body.setAttribute('data-user-gender', cins);
-                closeAuthModal();
+                Gunde5UI.oturumModallariKapat();
                 guncelleHeaderOturum();
                 Gunde5UI.showToast('Hoş geldin, ' + (u && u.username ? u.username : '') + '!');
             } catch (err) {
@@ -959,7 +1246,7 @@
                 if (u && u.gender) {
                     document.body.setAttribute('data-user-gender', u.gender);
                 }
-                closeAuthModal();
+                Gunde5UI.oturumModallariKapat();
                 guncelleHeaderOturum();
                 Gunde5UI.showToast('Tekrar hoş geldin!');
             } catch (err) {
@@ -971,7 +1258,7 @@
             if (!Gunde5UI.itirafUyeGerekli(openAuthModal)) {
                 return;
             }
-            closeAuthModal();
+            Gunde5UI.closeAuthModal();
             var modal = document.getElementById('itirafModal');
             modal.classList.add('acik');
             modal.setAttribute('aria-hidden', 'false');
@@ -981,20 +1268,8 @@
             }, 220);
         }
 
-        function kapatItirafModal() {
-            var modal = document.getElementById('itirafModal');
-            modal.classList.remove('acik');
-            modal.setAttribute('aria-hidden', 'true');
-            if (document.getElementById('authOverlay').style.display !== 'flex') {
-                document.body.style.overflow = '';
-            }
-        }
-
         document.getElementById('navYazBtn').addEventListener('click', acItirafModal);
-        document.getElementById('navProfilBtn').addEventListener('click', function () {
-            Gunde5UI.gitProfilSayfasi();
-        });
-        document.getElementById('itirafModalKapat').addEventListener('click', kapatItirafModal);
+        document.getElementById('itirafModalKapat').addEventListener('click', Gunde5UI.kapatItirafModal);
         document.getElementById('gizliUyeSec').addEventListener('click', function () {
             var btn = this;
             btn.classList.toggle('aktif');
@@ -1030,12 +1305,31 @@
                 gender: kullaniciCinsiyeti()
             }));
             sifirlaItirafModal();
-            kapatItirafModal();
+            Gunde5UI.kapatItirafModal();
             window.location.href = 'kulis.html';
         }
 
         function expandCard(cardId) {
             if (Gunde5KartCevap) Gunde5KartCevap.toggle(cardId, false);
+        }
+
+        async function vote(cardId, score) {
+            if (!Gunde5DB.getGunde5User()) {
+                openAuthModal('login');
+                return;
+            }
+            try {
+                var sonuc = await Gunde5DB.oyVer(cardId, score);
+                var card = document.querySelector('.card[data-id="' + cardId + '"]');
+                if (card && sonuc) {
+                    var upEl = card.querySelector('.up-num');
+                    var downEl = card.querySelector('.down-num');
+                    if (upEl) upEl.textContent = Gunde5UI.formatSayac(sonuc.up_votes);
+                    if (downEl) downEl.textContent = Gunde5UI.formatSayac(sonuc.down_votes);
+                }
+            } catch (err) {
+                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+            }
         }
 
         Gunde5UI.baslatGeriSayim('timer');
