@@ -106,6 +106,20 @@
             color: var(--text-main);
             font-weight: 700;
         }
+        .not-found-metin a {
+            color: var(--text-main);
+            font-weight: 700;
+            text-decoration: underline;
+        }
+        .saat-vurgu {
+            font-weight: 900;
+            color: #d97706;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.03em;
+        }
+        body.dark-mode .saat-vurgu {
+            color: #fbbf24;
+        }
         .not-found-aksiyonlar {
             display: flex;
             flex-direction: column;
@@ -150,8 +164,8 @@
         <p class="not-found-kod">404</p>
         <h1>Giyotin çoktan inmiş</h1>
         <p class="not-found-metin">
-            Üzgünüz ama <strong>13.12'de</strong> giyotin çoktan inmiş ve aradığınız itirafı sonsuza dek silip atmış.
-            Yenilerini kaçırmamak için oyla, yorum yaz ve podyuma çıkmasını sağla.
+            Üzgünüz ama <strong class="saat-vurgu">13.12</strong>'de giyotin çoktan inmiş ve aradığınız hikayeyi sonsuza dek silip atmış.
+            Yenilerini kaçırmamak için oyla, yorum yaz ve <a href="index.html">Podyum</a>a çıkmasını sağla.
         </p>
         <div class="not-found-aksiyonlar">
             <a href="kulis.html" class="not-found-btn not-found-btn--birincil">Kulis sayfasına git ve oylamaya katıl</a>

@@ -545,6 +545,14 @@
             line-height: 1.5;
             margin-bottom: 16px;
         }
+        .profil-bos a,
+        .profil-itiraf-alt a,
+        .profil-istat-kutu a {
+            color: inherit;
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
 
         .profil-guest {
             text-align: center;
@@ -784,6 +792,12 @@
         .auth-cins-btn.secili-male { border-color: var(--male-color); background: var(--male-bg); color: var(--male-color); }
         .auth-kvkk { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 18px; font-size: 11px; line-height: 1.5; color: #6b7280; font-weight: 500; }
         .auth-kvkk input { margin-top: 3px; flex-shrink: 0; accent-color: var(--auth-accent); }
+        .auth-kvkk a {
+            color: var(--auth-accent);
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
         .auth-submit {
             display: block;
             width: 100%;
@@ -805,7 +819,14 @@
         .auth-view { display: none; }
         .auth-view.aktif { display: block; }
 
-        .liste-bos, .gunde5-toast { /* profil */ }
+        .liste-bos {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+            line-height: 1.5;
+            text-align: center;
+        }
+        .gunde5-toast { /* profil */ }
         .gunde5-toast {
             display: none;
             position: fixed;
@@ -841,6 +862,7 @@
                         <a href="index.html" class="header-menu-link">🏆 Podyum</a>
                         <a href="kulis.html" class="header-menu-link">🔥 Kulis</a>
                         <a href="profil.html" class="header-menu-link" id="headerMenuProfil" hidden>👤 Profilim</a>
+                        <a href="kvkk.html" class="header-menu-link">📋 KVKK</a>
                         <button type="button" class="header-menu-link" onclick="Gunde5UI.headerMenuTemaClick()">🌓 Mod</button>
                     </nav>
                 </div>
@@ -905,7 +927,7 @@
                 </select>
                 <label class="auth-kvkk">
                     <input type="checkbox" id="authKvk">
-                    <span>Kullanıcı Sözleşmesi'ni ve KVKK Aydınlatma Metni'ni okudum, onaylıyorum.</span>
+                    <span><a href="kvkk.html#sozlesme" target="_blank" rel="noopener" onclick="event.stopPropagation()">Kullanıcı Sözleşmesi</a>'ni ve <a href="kvkk.html#aydinlatma" target="_blank" rel="noopener" onclick="event.stopPropagation()">KVKK Aydınlatma Metni</a>'ni okudum, onaylıyorum.</span>
                 </label>
                 <button type="button" class="auth-submit auth-submit--kayit" onclick="kayitOl()">Kayıt Ol</button>
                 <p class="auth-gecis">Zaten üye misin? <button type="button" onclick="toggleAuthMode('login')">Giriş Yap</button></p>
@@ -1016,13 +1038,14 @@
             }
 
             if (itiraflar.length === 0) {
-                listeHtml = '<div class="profil-bos">Henüz itiraf yazmadın.<br>Kulis\'ten ilk itirafını gönder.</div>';
+                listeHtml = '<div class="profil-bos">Henüz hikaye yazmadın.<br><a href="kulis.html">Kulis</a>\'ten ilk hikayeni gönder.</div>';
             } else {
                 for (i = 0; i < itiraflar.length; i++) {
                     var it = itiraflar[i];
                     var metin = it.content_full || it.content_short || '';
                     var ozet = metin.length > 120 ? metin.slice(0, 120) + '…' : metin;
                     var durumSinif = it.status === 'podyum' ? 'durum-podyum' : 'durum-kulis';
+                    var durumHref = it.status === 'podyum' ? 'index.html' : 'kulis.html';
                     var durumMetin = it.status === 'podyum' ? 'Podyum' : 'Kulis';
                     var tarih = '';
                     if (it.created_at) {
@@ -1040,7 +1063,7 @@
                         '<button type="button" class="profil-itiraf-duzenle-btn">Düzenle</button>' +
                         '</div>' +
                         '<div class="profil-itiraf-alt">' +
-                        '<span class="' + durumSinif + '">' + durumMetin + '</span>' +
+                        '<span class="' + durumSinif + '"><a href="' + durumHref + '">' + durumMetin + '</a></span>' +
                         (tarih ? ' · ' + tarih : '') +
                         (it.is_gizli ? ' · 🎭 Gizli' : '') +
                         '</div></div>' +
@@ -1089,11 +1112,11 @@
                 '</div>' +
                 '</div>' +
                 '<div class="profil-istat">' +
-                '<div class="profil-istat-kutu"><strong>' + kulisSay + '</strong><span>Kulis</span></div>' +
-                '<div class="profil-istat-kutu"><strong>' + podyumSay + '</strong><span>Podyum</span></div>' +
+                '<div class="profil-istat-kutu"><strong>' + kulisSay + '</strong><span><a href="kulis.html">Kulis</a></span></div>' +
+                '<div class="profil-istat-kutu"><strong>' + podyumSay + '</strong><span><a href="index.html">Podyum</a></span></div>' +
                 '<div class="profil-istat-kutu"><strong>' + itiraflar.length + '</strong><span>Toplam</span></div>' +
                 '</div>' +
-                '<h2 class="profil-bolum-baslik">İtiraflarım</h2>' +
+                '<h2 class="profil-bolum-baslik">Hikayelerim</h2>' +
                 listeHtml +
                 '<button type="button" class="profil-cikis" onclick="cikisYap()">Çıkış Yap</button>';
 
@@ -1203,7 +1226,7 @@
                             ta.defaultValue = tam;
                             if (metinEl) metinEl.textContent = profilItirafOzet(tam);
                             kapatForm();
-                            Gunde5UI.showToast('İtiraf güncellendi.');
+                            Gunde5UI.showToast('Hikaye güncellendi.');
                         } catch (err) {
                             Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
                         }
@@ -1418,7 +1441,7 @@
 
         document.getElementById('navYazBtn').addEventListener('click', function () {
             if (!Gunde5UI.uyeMi()) {
-                Gunde5UI.showToast('İtiraf yazmak için üye girişi gerekir.', 'hata');
+                Gunde5UI.showToast('Hikaye yazmak için üye girişi gerekir.', 'hata');
                 openAuthModal('register');
                 return;
             }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>gunde5.com - Günün En İyi 5 İtirafı</title>
+    <title>gunde5.com - Günün En İyi 5 Hikayesi</title>
     <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -1004,6 +1004,12 @@
             flex-shrink: 0;
             accent-color: var(--auth-accent);
         }
+        .auth-kvkk a {
+            color: var(--auth-accent);
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
         .auth-submit {
             display: block;
             width: 100%;
@@ -1045,7 +1051,7 @@
         .liste-bos {
             text-align: center;
             padding: 24px 16px;
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 600;
             color: var(--text-muted);
             line-height: 1.5;
@@ -1088,6 +1094,7 @@
                         <a href="index.html" class="header-menu-link">🏆 Podyum</a>
                         <a href="kulis.html" class="header-menu-link">🔥 Kulis</a>
                         <a href="profil.html" class="header-menu-link" id="headerMenuProfil" hidden>👤 Profilim</a>
+                        <a href="kvkk.html" class="header-menu-link">📋 KVKK</a>
                     </nav>
                 </div>
             </div>
@@ -1109,8 +1116,8 @@
         <div class="info-banner">
             <h4>Yeni şampiyonların belirlenmesi için</h4>
             <div class="countdown" id="timer">00:00:00</div>
-            <p>Yarın saat tam 13:12'de giyotin inecek ve yeni şampiyonlar <a href="index.html">Podyum</a>'a çıkacak.</p>
-            <p>Şampiyon 5 podyuma çıkar, geri kalanlar sonsuza dek silinir. Sen de hikayeni yaz, yarışa katıl, şampiyon olup podyuma çık.</p>
+            <p>Yarın saat tam <strong class="saat-vurgu">13:12</strong>'de giyotin inecek ve yeni şampiyonlar <a href="index.html">Podyum</a>'a çıkacak.</p>
+            <p>Şampiyon 5 <a href="index.html">Podyum</a>a çıkar, geri kalanlar sonsuza dek silinir. Sen de hikayeni yaz, yarışa katıl, şampiyon olup <a href="index.html">Podyum</a>a çık.</p>
         </div>
 
         <section class="podyum-sampiyonlar" id="podyumSampiyonlar" hidden aria-labelledby="podyumTopEtiket podyumDonemBaslik">
@@ -1168,7 +1175,7 @@
                 </select>
                 <label class="auth-kvkk">
                     <input type="checkbox" id="authKvk">
-                    <span>Kullanıcı Sözleşmesi'ni ve KVKK Aydınlatma Metni'ni okudum, onaylıyorum.</span>
+                    <span><a href="kvkk.html#sozlesme" target="_blank" rel="noopener" onclick="event.stopPropagation()">Kullanıcı Sözleşmesi</a>'ni ve <a href="kvkk.html#aydinlatma" target="_blank" rel="noopener" onclick="event.stopPropagation()">KVKK Aydınlatma Metni</a>'ni okudum, onaylıyorum.</span>
                 </label>
                 <button type="button" class="auth-submit auth-submit--kayit" onclick="kayitOl()">Kayıt Ol</button>
                 <p class="auth-gecis">Zaten üye misin? <button type="button" onclick="toggleAuthMode('login')">Giriş Yap</button></p>

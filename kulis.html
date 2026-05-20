@@ -907,6 +907,12 @@
             flex-shrink: 0;
             accent-color: var(--auth-accent);
         }
+        .auth-kvkk a {
+            color: var(--auth-accent);
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
         .auth-submit {
             display: block;
             width: 100%;
@@ -954,7 +960,7 @@
         .liste-bos {
             text-align: center;
             padding: 24px 16px;
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 600;
             color: var(--text-muted);
             line-height: 1.5;
@@ -991,7 +997,7 @@
         }
         .kulis-bos-paragraf {
             margin: 0 0 12px;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             line-height: 1.55;
             color: var(--text-muted);
@@ -1001,7 +1007,7 @@
         }
         .kulis-bos-uyari {
             margin-bottom: 0;
-            font-size: 13px;
+            font-size: 16px;
             font-style: italic;
         }
         .kulis-bos-link {
@@ -1052,6 +1058,7 @@
                         <a href="index.html" class="header-menu-link">🏆 Podyum</a>
                         <a href="kulis.html" class="header-menu-link">🔥 Kulis</a>
                         <a href="profil.html" class="header-menu-link" id="headerMenuProfil" hidden>👤 Profilim</a>
+                        <a href="kvkk.html" class="header-menu-link">📋 KVKK</a>
                         <button type="button" class="header-menu-link" onclick="Gunde5UI.headerMenuTemaClick()">🌓 Mod</button>
                     </nav>
                 </div>
@@ -1074,8 +1081,8 @@
         <div class="info-banner">
             <h4>Yeni şampiyonların belirlenmesi için</h4>
             <div class="countdown" id="countdown">00:00:00</div>
-            <p>Yarın saat tam 13:12'de giyotin inecek ve yeni şampiyonlar <a href="index.html">Podyum</a>'a çıkacak.</p>
-            <p>Şampiyon 5 podyuma çıkar, geri kalanlar sonsuza dek silinir. Sen de hikayeni yaz, yarışa katıl, şampiyon olup podyuma çık.</p>
+            <p>Yarın saat tam <strong class="saat-vurgu">13:12</strong>'de giyotin inecek ve yeni şampiyonlar <a href="index.html">Podyum</a>'a çıkacak.</p>
+            <p>Şampiyon 5 <a href="index.html">Podyum</a>a çıkar, geri kalanlar sonsuza dek silinir. Sen de hikayeni yaz, yarışa katıl, şampiyon olup <a href="index.html">Podyum</a>a çık.</p>
         </div>
 
         <div id="kulisListe"></div>
@@ -1125,7 +1132,7 @@
                 </select>
                 <label class="auth-kvkk">
                     <input type="checkbox" id="authKvk">
-                    <span>Kullanıcı Sözleşmesi'ni ve KVKK Aydınlatma Metni'ni okudum, onaylıyorum.</span>
+                    <span><a href="kvkk.html#sozlesme" target="_blank" rel="noopener" onclick="event.stopPropagation()">Kullanıcı Sözleşmesi</a>'ni ve <a href="kvkk.html#aydinlatma" target="_blank" rel="noopener" onclick="event.stopPropagation()">KVKK Aydınlatma Metni</a>'ni okudum, onaylıyorum.</span>
                 </label>
                 <button type="button" class="auth-submit auth-submit--kayit" onclick="kayitOl()">Kayıt Ol</button>
                 <p class="auth-gecis">Zaten üye misin? <button type="button" onclick="toggleAuthMode('login')">Giriş Yap</button></p>
@@ -1368,9 +1375,9 @@
                         if (Gunde5UI.kulisBarajGuncelle) Gunde5UI.kulisBarajGuncelle(liste);
                     }
                 } catch (kartErr) {
-                    Gunde5UI.showToast('İtiraf gönderildi; listeyi yenile.', 'hata');
+                    Gunde5UI.showToast('Hikaye gönderildi; listeyi yenile.', 'hata');
                 }
-                Gunde5UI.showToast('İtiraf kulise düştü!');
+                Gunde5UI.showToast('Hikaye kulise düştü!');
             } catch (err) { Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata'); }
             btn.disabled = false;
         }
@@ -1436,7 +1443,7 @@
                         }
                         if (Gunde5UI.kulisBarajGuncelle) Gunde5UI.kulisBarajGuncelle(liste);
                     }
-                    Gunde5UI.showToast('İtiraf kulise düştü!');
+                    Gunde5UI.showToast('Hikaye kulise düştü!');
                 });
             } catch (e) { /* sessiz */ }
         }).catch(function (err) {

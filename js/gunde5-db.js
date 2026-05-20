@@ -446,19 +446,19 @@
 
     async function itirafGuncelle(itirafId, metin) {
         var u = getGunde5User();
-        if (!u || !u.id) throw new Error('İtiraf düzenlemek için giriş yapmalısın.');
+        if (!u || !u.id) throw new Error('Hikaye düzenlemek için giriş yapmalısın.');
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
 
         var id = parseInt(itirafId, 10);
-        if (!id) throw new Error('Geçersiz itiraf.');
+        if (!id) throw new Error('Geçersiz hikaye.');
 
         var tam = String(metin || '').replace(/^\s+|\s+$/g, '');
         if (!tam) throw new Error('Metin boş olamaz.');
 
         var mevcut = await sb.from('itiraflar').select('id, is_gizli').eq('id', id).eq('user_id', u.id).is('silindi_at', null).maybeSingle();
         if (mevcut.error) throw mevcut.error;
-        if (!mevcut.data) throw new Error('Bu itirafı düzenleyemezsin.');
+        if (!mevcut.data) throw new Error('Bu hikayeyi düzenleyemezsin.');
 
         var kisa = tam.length <= 140 ? tam : tam.slice(0, 137) + '...';
         var payload = {
@@ -493,10 +493,10 @@
 
         var sessionRes = await sb.auth.getSession();
         if (!sessionRes.data.session) {
-            throw new Error('İtiraf yazmak için giriş yapmalısın.');
+            throw new Error('Hikaye yazmak için giriş yapmalısın.');
         }
         var u = await loadProfile(sessionRes.data.session.user.id);
-        if (!u || !u.id) throw new Error('İtiraf yazmak için giriş yapmalısın.');
+        if (!u || !u.id) throw new Error('Hikaye yazmak için giriş yapmalısın.');
 
         var tam = String(metin).replace(/^\s+|\s+$/g, '');
         if (!tam) throw new Error('Metin boş olamaz.');
@@ -539,7 +539,7 @@
         });
         if (res.error) {
             if (res.error.code === '23505') {
-                throw new Error('Bu itiraf için zaten şikayet gönderdin.');
+                throw new Error('Bu hikaye için zaten şikayet gönderdin.');
             }
             throw res.error;
         }
@@ -553,7 +553,7 @@
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
         var nid = parseInt(id, 10);
-        if (!nid) throw new Error('Geçersiz itiraf.');
+        if (!nid) throw new Error('Geçersiz hikaye.');
         var res = await sb.from('itiraflar').select('*').eq('id', nid).is('silindi_at', null).maybeSingle();
         if (res.error) throw res.error;
         if (!res.data) return null;
@@ -701,7 +701,7 @@
             .is('silindi_at', null)
             .maybeSingle();
         if (itirafRes.error) throw itirafRes.error;
-        if (!itirafRes.data) throw new Error('İtiraf bulunamadı veya süresi dolmuş.');
+        if (!itirafRes.data) throw new Error('Hikaye bulunamadı veya süresi dolmuş.');
 
         var parentId = null;
         if (parentCevapId) {
@@ -1060,7 +1060,7 @@
             el.innerHTML = '';
             if (!rows.length) {
                 if (sampiyonlarEl) sampiyonlarEl.hidden = true;
-                el.innerHTML = Gunde5UI.bosListe('Henüz podyum itirafı yok. Kulis\'te oyları patlat!');
+                el.innerHTML = Gunde5UI.podyumBosMesajiHtml();
                 return;
             }
             if (sampiyonlarEl) sampiyonlarEl.hidden = false;

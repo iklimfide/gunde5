@@ -28,7 +28,7 @@
         s.id = 'gunde5-lazy-liste-styles';
         s.textContent =
             '.lazy-sentinel{padding:20px 16px 32px;text-align:center;min-height:48px}' +
-            '.lazy-durum{margin:0;font-size:13px;font-weight:600;color:var(--text-muted)}' +
+            '.lazy-durum{margin:0;font-size:16px;font-weight:600;color:var(--text-muted)}' +
             '.lazy-durum--hata{color:#dc2626}';
         document.head.appendChild(s);
     }
@@ -144,13 +144,13 @@
                 sentinelGuncelle('');
                 observerDurdur();
             } else {
-                sentinelGuncelle('Aşağı kaydır, daha fazla itiraf yükle');
+                sentinelGuncelle('Aşağı kaydır, daha fazla hikaye yükle');
             }
         } catch (err) {
             if (state.offset === 0) {
                 var hataEl = listeEl();
                 if (hataEl) {
-                    hataEl.innerHTML = UI.bosListe(DB.hataMesaji ? DB.hataMesaji(err) : 'İtiraflar yüklenemedi.');
+                    hataEl.innerHTML = UI.bosListe(DB.hataMesaji ? DB.hataMesaji(err) : 'Hikayeler yüklenemedi.');
                 }
             }
             sentinelGuncelle(DB.hataMesaji ? DB.hataMesaji(err) : 'Yüklenemedi', true);
@@ -190,7 +190,7 @@
 
         sentinelOlustur();
         barajGuncelle();
-        sentinelGuncelle(state.bitti ? '' : 'Aşağı kaydır, daha fazla itiraf yükle');
+        sentinelGuncelle(state.bitti ? '' : 'Aşağı kaydır, daha fazla hikaye yükle');
         if (!state.bitti) {
             observerBaslat();
         }

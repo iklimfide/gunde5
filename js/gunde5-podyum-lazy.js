@@ -23,7 +23,7 @@
             '.podyum-gun-aralik .podyum-sampiyonlar-etiket{margin:0 0 6px}' +
             '.podyum-gun-aralik .podyum-sampiyonlar-baslik{margin:0 0 12px}' +
             '.podyum-lazy-sentinel{padding:16px 8px 24px;text-align:center;min-height:40px}' +
-            '.podyum-lazy-durum{margin:0;font-size:13px;font-weight:600;color:#92400e}' +
+            '.podyum-lazy-durum{margin:0;font-size:16px;font-weight:600;color:#92400e}' +
             '.podyum-lazy-durum--hata{color:#dc2626}' +
             'body.dark-mode .podyum-lazy-durum{color:#fbbf24}';
         document.head.appendChild(s);
@@ -189,7 +189,7 @@
                 if (sampiyonlarEl) sampiyonlarEl.hidden = true;
                 var liste = document.getElementById(state.konteynerId);
                 if (liste) {
-                    liste.innerHTML = UI.bosListe('Henüz podyum itirafı yok. Kulis\'te oyları patlat!');
+                    liste.innerHTML = UI.podyumBosMesajiHtml();
                 }
                 observerDurdur();
                 return;
@@ -255,7 +255,7 @@
         if (!state.donemler.length) {
             var sampiyonlarEl = document.getElementById('podyumSampiyonlar');
             if (sampiyonlarEl) sampiyonlarEl.hidden = true;
-            el.innerHTML = UI.bosListe('Henüz podyum itirafı yok. Kulis\'te oyları patlat!');
+            el.innerHTML = UI.podyumBosMesajiHtml();
             return;
         }
 

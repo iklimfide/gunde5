@@ -48,22 +48,54 @@
         return '<p class="liste-bos">' + htmlEsc(mesaj) + '</p>';
     }
 
+    function bosListeHtml(html) {
+        return '<p class="liste-bos">' + html + '</p>';
+    }
+
+    var LINK_KULIS = '<a href="kulis.html" class="sayfa-link">Kulis</a>';
+    var LINK_PODYUM = '<a href="index.html" class="sayfa-link">Podyum</a>';
+    var SAAT_1312 = '<strong class="saat-vurgu">13:12</strong>';
+    var SAAT_1312_NOKTA = '<strong class="saat-vurgu">13.12</strong>';
+
+    function podyumBosMesajiHtml() {
+        injectSayfaLinkStyles();
+        return bosListeHtml('Henüz podyum hikayesi yok. ' + LINK_KULIS + '\'te oyları patlat!');
+    }
+
+    function injectSayfaLinkStyles() {
+        var css =
+            '.sayfa-link{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px}' +
+            '.sayfa-link:hover{opacity:0.88}' +
+            '.saat-vurgu{font-weight:900;color:#d97706;font-variant-numeric:tabular-nums;letter-spacing:0.03em}' +
+            'body.dark-mode .saat-vurgu{color:#fbbf24}' +
+            '.info-banner .saat-vurgu,.kulis-bos-paragraf .saat-vurgu{color:#b45309}' +
+            'body.dark-mode .info-banner .saat-vurgu,body.dark-mode .kulis-bos-paragraf .saat-vurgu{color:#fbbf24}';
+        var s = document.getElementById('gunde5-sayfa-link-styles');
+        if (!s) {
+            s = document.createElement('style');
+            s.id = 'gunde5-sayfa-link-styles';
+            document.head.appendChild(s);
+        }
+        s.textContent = css;
+    }
+
     var KULIS_BARAJ = 3;
     var KULIS_GIYOTIN_ID = 'kulisGiyotinBaraj';
 
     function kulisBosIcerikHtml() {
+        injectSayfaLinkStyles();
         return (
-            '<h2 class="kulis-bos-baslik">Giyotin Görevini Yaptı, Kulis Temizlendi!</h2>' +
-            '<p class="kulis-bos-paragraf">Bugün saat 13:12 oldu ve giyotin acımasızca indi. Dünün tüm hesabı kesildi; barajı geçemeyen her şey sonsuza dek silindi!</p>' +
-            '<p class="kulis-bos-paragraf">20/05/2026 gününün o en fiyakalı, en çok konuşulan şampiyonları artık podyumda yerini aldı.</p>' +
+            '<h2 class="kulis-bos-baslik">Giyotin Görevini Yaptı, ' + LINK_KULIS + ' Temizlendi!</h2>' +
+            '<p class="kulis-bos-paragraf">Bugün saat ' + SAAT_1312 + ' oldu ve giyotin acımasızca indi. Dünün tüm hesabı kesildi; barajı geçemeyen her şey sonsuza dek silindi!</p>' +
+            '<p class="kulis-bos-paragraf">20/05/2026 gününün o en fiyakalı, en çok konuşulan şampiyonları artık ' + LINK_PODYUM + 'da yerini aldı.</p>' +
             '<p class="kulis-bos-paragraf kulis-bos-cta">' +
-            '👉 Günün şampiyonlarını görmek için hemen <a href="index.html" class="kulis-bos-link" data-kulis-podyum>Podyum\'a tıkla</a>!' +
+            '👉 Günün şampiyonlarını görmek için hemen <a href="index.html" class="kulis-bos-link sayfa-link" data-kulis-podyum>Podyum\'a tıkla</a>!' +
             '</p>' +
-            '<p class="kulis-bos-paragraf">"Yarın 13.12\'ye kadar olan büyük yarışta ben de olmalıyım diyorsan:</p>' +
+            '<p class="kulis-bos-paragraf">"Yarın ' + SAAT_1312_NOKTA + '\'ye kadar olan büyük yarışta ben de olmalıyım diyorsan:</p>' +
             '<p class="kulis-bos-paragraf kulis-bos-cta">' +
             '✍️ <a href="#" class="kulis-bos-link" data-kulis-hikaye>Hikayeni yaz ve oylamaya sun!</a>' +
             '</p>' +
-            '<p class="kulis-bos-paragraf kulis-bos-uyari">Unutma hikayen yarın ya şampiyon olur podyuma çıkar ya da sonsuza dek silinir. Giyotin yarın tam 13.12\'de yine inecek.</p>'
+            '<p class="kulis-bos-paragraf kulis-bos-uyari">Unutma hikayen yarın ya şampiyon olur ' + LINK_PODYUM + 'a çıkar ya da sonsuza dek silinir. Giyotin yarın tam ' + SAAT_1312_NOKTA + '\'de yine inecek.</p>'
         );
     }
 
@@ -164,7 +196,8 @@
     var sikayetItirafId = null;
 
     function cardMenuBtnHtml(kartId) {
-        return '<button type="button" class="card-menu-btn" onclick="acSikayetModal(\'' + kartId + '\')" aria-label="Şikayet et" title="Şikayet et"><span class="card-menu-dots" aria-hidden="true">&#8942;</span></button>';
+        return '<span class="kart-marka" aria-hidden="true">gunde5.com</span>' +
+            '<button type="button" class="card-menu-btn" onclick="acSikayetModal(\'' + kartId + '\')" aria-label="Şikayet et" title="Şikayet et"><span class="card-menu-dots" aria-hidden="true">&#8942;</span></button>';
     }
 
     function formatSayac(n) {
@@ -300,7 +333,7 @@
             '.card-footer{padding-top:10px;border-top:1px solid rgba(0,0,0,0.06)}' +
             'body.dark-mode .card-footer{border-top-color:rgba(255,255,255,0.06)}' +
             '.kart-aksiyonlar{display:flex;align-items:center;justify-content:space-between;width:100%;gap:2px}' +
-            '.kart-aksiyon{display:inline-flex;align-items:center;gap:4px;border:none;background:transparent;color:var(--text-muted);padding:8px;margin:0;border-radius:999px;cursor:pointer;font-size:13px;font-weight:400;font-family:inherit;line-height:1;transition:color .15s ease,background .15s ease}' +
+            '.kart-aksiyon{display:inline-flex;align-items:center;gap:4px;border:none;background:transparent;color:var(--text-muted);padding:8px;margin:0;border-radius:999px;cursor:pointer;font-size:16px;font-weight:400;font-family:inherit;line-height:1;transition:color .15s ease,background .15s ease}' +
             '.kart-aksiyon:hover{color:#1d9bf0;background:rgba(29,155,240,0.1)}' +
             '.kart-aksiyon--begeni:hover,.kart-aksiyon--begenme:hover{background:rgba(0,0,0,0.05)}' +
             'body.dark-mode .kart-aksiyon--begeni:hover,body.dark-mode .kart-aksiyon--begenme:hover{background:rgba(255,255,255,0.08)}' +
@@ -311,7 +344,7 @@
             '.kart-aksiyon--kaydet.aktif svg{fill:currentColor;stroke:currentColor}' +
             '.kart-aksiyon--goruntulenme{cursor:default;pointer-events:none}' +
             '.kart-aksiyon--goruntulenme:hover{color:var(--text-muted);background:transparent}' +
-            '.kart-aksiyon-sayi{font-variant-numeric:tabular-nums;min-width:1ch;font-size:13px;font-weight:400;color:var(--text-muted);transition:transform .2s ease,color .2s ease}' +
+            '.kart-aksiyon-sayi{font-variant-numeric:tabular-nums;min-width:1ch;font-size:16px;font-weight:400;color:var(--text-muted);transition:transform .2s ease,color .2s ease}' +
             '.kart-aksiyon-sayi.g5-stat-tick{transform:scale(1.1);color:var(--text-main)}' +
             '.kart-aksiyon-ikon{display:inline-flex;width:18px;height:18px;flex-shrink:0}' +
             '.kart-aksiyon-ikon svg{width:18px;height:18px;display:block}';
@@ -365,7 +398,9 @@
         s.id = 'gunde5-sikayet-styles';
         s.textContent =
             '.card-header{gap:12px}' +
-            '.card-header-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;margin-left:4px}' +
+            '.card-header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:4px}' +
+            '.kart-marka{font-size:11px;font-weight:800;letter-spacing:-0.02em;color:var(--text-muted);opacity:0.88;white-space:nowrap;user-select:none;line-height:1}' +
+            'body.dark-mode .kart-marka{opacity:0.72}' +
             '.view-counter{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;white-space:nowrap;font-size:11px;font-weight:700;color:var(--text-muted);padding:6px 11px;border-radius:14px;background:rgba(17,24,39,0.05);border:1px solid var(--border-color);line-height:1}' +
             'body.dark-mode .view-counter{background:rgba(255,255,255,0.06)}' +
             '.card-menu-btn{width:36px;height:36px;padding:0;border:1px solid var(--border-color);border-radius:50%;background:var(--bg-card);color:var(--text-muted);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}' +
@@ -404,7 +439,7 @@
             '<div class="sikayet-modal-panel">' +
             '<div class="sikayet-modal-ust">' +
             '<h2 class="sikayet-modal-baslik" id="sikayetModalBaslik">Şikayet Et</h2>' +
-            '<p class="sikayet-modal-alt">Bu itirafı neden uygunsuz bulduğunu seç. Ekibimiz inceler.</p>' +
+            '<p class="sikayet-modal-alt">Bu hikayeyi neden uygunsuz bulduğunu seç. Ekibimiz inceler.</p>' +
             '<button type="button" class="sikayet-modal-kapat" onclick="kapatSikayetModal()" aria-label="Kapat">×</button>' +
             '</div>' +
             '<label class="sikayet-etiket" for="sikayetSebep">Sebep</label>' +
@@ -669,7 +704,7 @@
 
     function itirafUyeGerekli(openAuthFn) {
         if (uyeMi()) return true;
-        showToast('İtiraf yazmak için üye girişi gerekir.', 'hata');
+        showToast('Hikaye yazmak için üye girişi gerekir.', 'hata');
         if (typeof openAuthFn === 'function') openAuthFn('register');
         return false;
     }
@@ -834,6 +869,8 @@
         metinBol: metinBol,
         showToast: showToast,
         bosListe: bosListe,
+        bosListeHtml: bosListeHtml,
+        podyumBosMesajiHtml: podyumBosMesajiHtml,
         kulisBosHtml: kulisBosHtml,
         kulisBarajGuncelle: kulisBarajGuncelle,
         kulisAktifKartSayisi: kulisAktifKartSayisi,
@@ -874,4 +911,5 @@
     } else {
         initHeaderMenu();
     }
+    injectSayfaLinkStyles();
 })(window);
