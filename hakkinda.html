@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hakkında — gunde5.com</title>
+    <link rel="icon" href="favicon.ico" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <style>
+        :root {
+            --bg-main: #f7f7f7;
+            --bg-card: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --header-bg: rgba(255, 255, 255, 0.92);
+            --female-color: #ff3c7e;
+            --male-color: #2563eb;
+        }
+        body.dark-mode {
+            --bg-main: #0f1419;
+            --bg-card: #0b0f14;
+            --text-main: #e7e9ea;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255,255,255,0.10);
+            --header-bg: rgba(11, 15, 20, 0.92);
+        }
+        body {
+            margin: 0;
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding-bottom: 92px;
+        }
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 1200;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: var(--header-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .header-brand {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+        .header-brand-red { color: #f4212e; }
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 18px 16px 28px;
+        }
+        .page-title {
+            font-size: 22px;
+            margin: 10px 0 12px;
+            letter-spacing: -0.02em;
+        }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px 14px;
+            margin: 12px 0;
+        }
+        .card h2 {
+            font-size: 15px;
+            margin: 0 0 8px;
+        }
+        .card p {
+            margin: 0 0 10px;
+            color: var(--text-muted);
+            line-height: 1.55;
+            font-size: 13.5px;
+            font-weight: 600;
+        }
+        .card p:last-child { margin-bottom: 0; }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            min-height: 64px;
+            padding: 0 2px 8px;
+            background: var(--header-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 2px;
+            z-index: 1000;
+            box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.03);
+        }
+        .nav-item {
+            flex: 1 1 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 6px 2px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            color: #9ca3af;
+            cursor: pointer;
+            text-decoration: none;
+            line-height: 1.05;
+        }
+        .nav-item > span {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .nav-item.active { color: var(--text-main); }
+        .nav-item .icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+            flex-shrink: 0;
+        }
+        .nav-item--btn {
+            border: none;
+            background: transparent;
+            font: inherit;
+            width: auto;
+            color: inherit;
+        }
+        .nav-item--fab {
+            flex: 0 0 auto;
+            width: clamp(72px, 22vw, 96px);
+            min-height: 68px;
+            margin-bottom: 14px;
+            padding: 10px 6px 12px;
+            justify-content: center;
+            align-self: flex-end;
+            border-radius: 18px;
+            background: linear-gradient(
+                165deg,
+                rgba(255, 255, 255, 0.97) 0%,
+                rgba(248, 250, 252, 0.99) 50%,
+                rgba(241, 245, 249, 0.96) 100%
+            );
+            border: 1px solid rgba(15, 23, 42, 0.07);
+            box-shadow:
+                0 10px 28px rgba(15, 23, 42, 0.08),
+                0 2px 10px rgba(29, 155, 240, 0.14);
+            color: var(--text-main);
+            transform: translateY(-8px);
+        }
+        body.dark-mode .nav-item--fab {
+            background: linear-gradient(
+                165deg,
+                rgba(34, 44, 58, 0.98) 0%,
+                rgba(18, 24, 32, 0.99) 100%
+            );
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow:
+                0 12px 32px rgba(0, 0, 0, 0.45),
+                0 2px 12px rgba(29, 155, 240, 0.2);
+        }
+        .nav-item--fab .icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        .nav-item--fab > span {
+            font-size: 9.5px;
+            font-weight: 900;
+            letter-spacing: -0.22px;
+            white-space: nowrap;
+        }
+        .mini-link {
+            color: inherit;
+            text-decoration: underline;
+            text-decoration-thickness: 1.5px;
+            text-underline-offset: 2px;
+        }
+    </style>
+    <script src="js/gunde5-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+    <script src="js/gunde5-ui.js"></script>
+    <script src="js/gunde5-db.js"></script>
+</head>
+<body>
+    <header class="header">
+        <a href="index.html" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <a href="profil.html" class="header-brand" style="font-weight:800;font-size:12px;color:var(--text-muted);text-decoration:none">Profil</a>
+    </header>
+
+    <div class="container">
+        <h1 class="page-title">Hakkında</h1>
+
+        <div class="card">
+            <h2>gunde5 nedir?</h2>
+            <p>Kulis’te itiraflar akar, her gün 13:12 (Türkiye saati) en güçlü 5 hikaye Podyum’a çıkar. Kalanlar soft delete olur, sonra da 30 gün içinde temizlenir.</p>
+        </div>
+
+        <div class="card">
+            <h2>Gizlilik</h2>
+            <p>İtiraflar herkese açıktır. Gizli Üye seçersen rumuzun “Gizli Üye” olarak görünür. Detaylar ve kurallar yakında bu sayfada genişletilecek.</p>
+        </div>
+
+        <div class="card">
+            <h2>İletişim</h2>
+            <p>Şimdilik en hızlı yol: bir itiraf/yorum üzerinden geri bildirim bırakmak. (Resmî bir e-posta/kanal eklenince buraya konur.)</p>
+        </div>
+    </div>
+
+    <div class="bottom-nav" role="navigation" aria-label="Ana menü">
+        <a href="kulis.html" class="nav-item">
+            <div class="icon">🔥</div><span>Kulis</span>
+        </a>
+        <a href="hakkinda.html" class="nav-item active">
+            <div class="icon">ℹ️</div><span>Hakkında</span>
+        </a>
+        <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn" aria-haspopup="dialog">
+            <div class="icon">✍️</div><span>Hikaye Yaz</span>
+        </button>
+        <a href="index.html" class="nav-item">
+            <div class="icon">🏆</div><span>Podyum</span>
+        </a>
+        <a href="profil.html" class="nav-item">
+            <div class="icon">👤</div><span>Profilim</span>
+        </a>
+    </div>
+
+    <!-- Kulis/Index ile aynı itiraf modal akışı -->
+    <div class="itiraf-modal" id="itirafModal" role="dialog" aria-modal="true" aria-labelledby="itirafModalBaslik" aria-hidden="true" style="display:none"></div>
+
+    <script>
+        // Minimal: itiraf yaz butonu kullanıcı girişine göre kulise yönlendirir (modal UX'ini bozmadan).
+        // Bu sayfada komple auth/modal HTML'i kopyalamamak için, "Hikaye Yaz"ı kulis akışına bırakıyoruz.
+        document.getElementById('navYazBtn').addEventListener('click', function () {
+            window.location.href = 'kulis.html';
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,36 @@
+---
+description: Podyum UI/DB tasarımı mühürlü — kullanıcı onayı olmadan değiştirme
+alwaysApply: true
+---
+
+# Podyum tasarımı (mühürlü)
+
+Kullanıcı bu tasarımı onayladı. **Başlık, layout, lazy-load akışı veya podyum veri modeli değişikliği yapmadan önce kullanıcıya sor.** Onay olmadan uygulama.
+
+## Anasayfa (index.html + JS)
+
+- **Üst altın bant** (`#podyumSampiyonlar` / `#podyumTopEtiket` / `#podyumDonemBaslik`):
+  - `TOP 5`
+  - Alt satır: `podyumDonemAltSatir` → örn. `20/05/2026 ŞAMPİYONLARI`
+- **En yeni günün 5 kartı** doğrudan `#podyumListe` içinde; ekstra gün başlığı bloğu yok.
+- **Aşağı kaydırınca** eski günler (`gunde5-podyum-lazy.js`):
+  - Sıra: yeniden eskiye (kronolojik)
+  - Her eski gün: `TOP 5` + `h2.podyum-sampiyonlar-baslik` (aynı metin stili, yeni başlık icadı yok)
+- Yükleme: `Gunde5PodyumLazy.init` → `podyumDonemleriListele` + `podyumDonemKartlari`
+
+## Veritabanı (değişmez iş kuralları)
+
+- **Podyumdan veri silinmez / kulise inmez** (`podyum-koruma.sql` trigger).
+- Günlük 13:12 (`podyum_gunluk_gecis`): sadece kulisten yeni top 5 eklenir; mevcut `status = 'podyum'` satırlarına dokunulmaz.
+- Gün etiketi: `podyum_donem` = `YYYY-MM-DD`.
+
+## Dokunulurken dikkat (izin gerekir)
+
+- `index.html` podyum CSS/HTML yapısı
+- `js/gunde5-podyum-lazy.js`, `js/gunde5-db.js` (podyum* fonksiyonları), `js/gunde5-ui.js` (`renderPodyumCard`)
+- `supabase/saat-1312-podyum.sql`, `podyum-koruma.sql`
+
+## İzin gerektirmeyen
+
+- Bug fix (çökme, `await` eksikliği, yanlış sıralama veri hatası) — davranışı bozmadan.
+- Kulis / profil / diğer sayfalar (podyum bölümüne dokunmadan).

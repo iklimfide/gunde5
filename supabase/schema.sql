@@ -34,11 +34,64 @@ create table if not exists public.itiraflar (
     content_full text not null,
     up_votes int not null default 0,
     down_votes int not null default 0,
+    -- Gizli algoritma alanları (UI'da gösterilmez)
+    -- b: net oy (up - down)
+    -- r: puan P = (up - down) + (yorum_sayisi * 5)
+    b int not null default 0,
+    r int not null default 0,
+    -- soft delete (kulis temizliği için)
+    silindi_at timestamptz,
+    tekil_goruntulenme int not null default 0,
+    sayfa_goruntulenme int not null default 0,
     status varchar(10) not null default 'kulis' check (status in ('kulis', 'podyum')),
     podyum_sira smallint,
     podyum_donem varchar(32),
     is_gizli boolean not null default false
 );
+
+-- Günlük 13:12 geçişi — güncel tanım: supabase/saat-1312-podyum.sql
+create or replace function public.podyum_gunluk_gecis()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_donem text;
+    v_baslik text;
+begin
+    v_donem := to_char(now() at time zone 'Europe/Istanbul', 'YYYY-MM-DD');
+    v_baslik := to_char(now() at time zone 'Europe/Istanbul', 'DD/MM/YYYY')
+        || ' Şampiyonları — Top 5';
+
+    with sirali as (
+        select i.id,
+            row_number() over (
+                order by
+                    (i.up_votes - i.down_votes)
+                    + coalesce((
+                        select count(*)::int from public.itiraf_cevaplar c where c.itiraf_id = i.id
+                    ), 0) * 5 desc,
+                    i.created_at asc
+            ) as sira
+        from public.itiraflar i
+        where i.status = 'kulis' and i.silindi_at is null
+    )
+    update public.itiraflar i
+    set status = 'podyum', podyum_sira = s.sira::smallint, podyum_donem = v_donem, silindi_at = null
+    from sirali s
+    where i.id = s.id and s.sira <= 5;
+
+    update public.itiraflar set silindi_at = now()
+    where status = 'kulis' and silindi_at is null;
+
+    insert into public.site_ayar (anahtar, deger) values ('podyum_baslik', v_baslik)
+    on conflict (anahtar) do update set deger = excluded.deger, updated_at = now();
+end;
+$$;
+
+revoke all on function public.podyum_gunluk_gecis() from public;
+revoke all on function public.podyum_gunluk_gecis() from anon, authenticated;
 
 create table if not exists public.site_ayar (
     anahtar text primary key,
@@ -52,6 +105,72 @@ create policy site_ayar_select_all on public.site_ayar for select using (true);
 create index if not exists itiraflar_status_created_idx on public.itiraflar (status, created_at desc);
 create index if not exists itiraflar_user_idx on public.itiraflar (user_id, created_at desc);
 
+-- Tekil ziyaretçi kaydı (viewer_key başına bir kez)
+create table if not exists public.itiraf_goruntulenmeler (
+    itiraf_id bigint not null references public.itiraflar (id) on delete cascade,
+    viewer_key text not null,
+    created_at timestamptz not null default now(),
+    primary key (itiraf_id, viewer_key)
+);
+
+create index if not exists itiraf_goruntulenmeler_itiraf_idx on public.itiraf_goruntulenmeler (itiraf_id);
+
+alter table public.itiraf_goruntulenmeler enable row level security;
+revoke all on public.itiraf_goruntulenmeler from public, anon, authenticated;
+
+create or replace function public.itiraf_goruntulenme_kaydet(p_itiraf_id bigint, p_viewer_key text)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_key text;
+    v_tekil_artis int;
+begin
+    if p_itiraf_id is null then
+        return null;
+    end if;
+    v_key := left(trim(coalesce(p_viewer_key, '')), 128);
+    if length(v_key) < 8 then
+        return null;
+    end if;
+    if not exists (select 1 from public.itiraflar i where i.id = p_itiraf_id) then
+        return null;
+    end if;
+
+    update public.itiraflar
+    set sayfa_goruntulenme = sayfa_goruntulenme + 1
+    where id = p_itiraf_id;
+
+    with ins as (
+        insert into public.itiraf_goruntulenmeler (itiraf_id, viewer_key)
+        values (p_itiraf_id, v_key)
+        on conflict (itiraf_id, viewer_key) do nothing
+        returning 1
+    )
+    select count(*)::int into v_tekil_artis from ins;
+
+    if v_tekil_artis > 0 then
+        update public.itiraflar
+        set tekil_goruntulenme = tekil_goruntulenme + v_tekil_artis
+        where id = p_itiraf_id;
+    end if;
+
+    return (
+        select json_build_object(
+            'sayfa_goruntulenme', i.sayfa_goruntulenme,
+            'tekil_goruntulenme', i.tekil_goruntulenme
+        )
+        from public.itiraflar i
+        where i.id = p_itiraf_id
+    );
+end;
+$$;
+
+revoke all on function public.itiraf_goruntulenme_kaydet(bigint, text) from public;
+grant execute on function public.itiraf_goruntulenme_kaydet(bigint, text) to anon, authenticated;
+
 -- Oy kayıtları (üye başına bir oy)
 create table if not exists public.itiraf_oylar (
     id bigserial primary key,
@@ -61,6 +180,45 @@ create table if not exists public.itiraf_oylar (
     created_at timestamptz not null default now(),
     unique (itiraf_id, user_id)
 );
+
+-- Puan hesaplama: b ve r kolonlarını güncelle
+create or replace function public.itiraf_puan_guncelle(p_itiraf_id bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_yorum int;
+    v_b int;
+    v_r int;
+begin
+    if p_itiraf_id is null then
+        return;
+    end if;
+
+    select count(*)::int
+    into v_yorum
+    from public.itiraf_cevaplar c
+    where c.itiraf_id = p_itiraf_id;
+
+    select (coalesce(i.up_votes, 0) - coalesce(i.down_votes, 0))
+    into v_b
+    from public.itiraflar i
+    where i.id = p_itiraf_id;
+
+    v_r := v_b + (coalesce(v_yorum, 0) * 5);
+
+    update public.itiraflar
+    set
+        b = v_b,
+        r = v_r
+    where id = p_itiraf_id;
+end;
+$$;
+
+revoke all on function public.itiraf_puan_guncelle(bigint) from public;
+revoke all on function public.itiraf_puan_guncelle(bigint) from anon, authenticated;
 
 -- Oy sayacı (yalnızca trigger; REST/RPC ile çağrılamaz)
 create or replace function public.itiraf_oy_sayaci()
@@ -78,6 +236,7 @@ begin
         up_votes = (select count(*)::int from public.itiraf_oylar o where o.itiraf_id = v_itiraf_id and o.oy = 1),
         down_votes = (select count(*)::int from public.itiraf_oylar o where o.itiraf_id = v_itiraf_id and o.oy = -1)
     where i.id = v_itiraf_id;
+    perform public.itiraf_puan_guncelle(v_itiraf_id);
     return coalesce(new, old);
 end;
 $$;
@@ -89,6 +248,38 @@ for each row execute function public.itiraf_oy_sayaci();
 
 revoke all on function public.itiraf_oy_sayaci() from public;
 revoke all on function public.itiraf_oy_sayaci() from anon, authenticated;
+
+-- Yorum/cevap değişince puanı güncelle (itiraf_cevaplar.sql da çalıştırılıyorsa bu trigger orada da tanımlanabilir)
+create or replace function public.itiraf_cevap_puan_sayaci()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_new bigint;
+    v_old bigint;
+begin
+    v_new := case when tg_op <> 'DELETE' then new.itiraf_id else null end;
+    v_old := case when tg_op <> 'INSERT' then old.itiraf_id else null end;
+
+    if v_new is not null then
+        perform public.itiraf_puan_guncelle(v_new);
+    end if;
+    if v_old is not null and v_old <> v_new then
+        perform public.itiraf_puan_guncelle(v_old);
+    end if;
+    return coalesce(new, old);
+end;
+$$;
+
+drop trigger if exists trg_itiraf_cevap_puan_sayaci on public.itiraf_cevaplar;
+create trigger trg_itiraf_cevap_puan_sayaci
+after insert or update or delete on public.itiraf_cevaplar
+for each row execute function public.itiraf_cevap_puan_sayaci();
+
+revoke all on function public.itiraf_cevap_puan_sayaci() from public;
+revoke all on function public.itiraf_cevap_puan_sayaci() from anon, authenticated;
 
 drop function if exists public.oy_ver(bigint, integer);
 drop function if exists public.eposta_rumuzdan(text);

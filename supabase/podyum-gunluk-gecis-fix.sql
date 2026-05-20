@@ -1,0 +1,2 @@
+-- Bu dosya artık kullanılmıyor. Bunun yerine çalıştır:
+--   supabase/saat-1312-podyum.sql

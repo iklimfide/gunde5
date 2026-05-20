@@ -179,6 +179,42 @@
         if (begenme) begenme.classList.toggle('aktif', o === -1);
     }
 
+    /** Podyum hibrit canlandırma: yalnızca sayıları günceller (oy düğmesi durumu değişmez). */
+    function kartPodyumIstatistikEnjekteEt(card, istatistik) {
+        if (!card || !istatistik) return;
+        function tikla(span) {
+            if (!span) return;
+            span.classList.remove('g5-stat-tick');
+            void span.offsetWidth;
+            span.classList.add('g5-stat-tick');
+            setTimeout(function () {
+                span.classList.remove('g5-stat-tick');
+            }, 220);
+        }
+        if (istatistik.up_votes !== undefined) {
+            var upEl = card.querySelector('.up-num');
+            if (upEl) {
+                tikla(upEl);
+                upEl.textContent = formatSayac(istatistik.up_votes);
+            }
+        }
+        if (istatistik.down_votes !== undefined) {
+            var downEl = card.querySelector('.down-num');
+            if (downEl) {
+                tikla(downEl);
+                downEl.textContent = formatSayac(istatistik.down_votes);
+            }
+        }
+        if (istatistik.cevap_sayisi !== undefined || istatistik.comment_count !== undefined) {
+            var c = istatistik.cevap_sayisi !== undefined ? istatistik.cevap_sayisi : istatistik.comment_count;
+            var cevapEl = card.querySelector('[data-cevap-sayi]');
+            if (cevapEl) {
+                tikla(cevapEl);
+                cevapEl.textContent = formatSayac(c);
+            }
+        }
+    }
+
     function injectKartAksiyonStyles() {
         var css =
             '.card-footer{padding-top:10px;border-top:1px solid rgba(0,0,0,0.06)}' +
@@ -195,7 +231,8 @@
             '.kart-aksiyon--kaydet.aktif svg{fill:currentColor;stroke:currentColor}' +
             '.kart-aksiyon--goruntulenme{cursor:default;pointer-events:none}' +
             '.kart-aksiyon--goruntulenme:hover{color:var(--text-muted);background:transparent}' +
-            '.kart-aksiyon-sayi{font-variant-numeric:tabular-nums;min-width:1ch;font-size:13px;font-weight:400;color:var(--text-muted)}' +
+            '.kart-aksiyon-sayi{font-variant-numeric:tabular-nums;min-width:1ch;font-size:13px;font-weight:400;color:var(--text-muted);transition:transform .2s ease,color .2s ease}' +
+            '.kart-aksiyon-sayi.g5-stat-tick{transform:scale(1.1);color:var(--text-main)}' +
             '.kart-aksiyon-ikon{display:inline-flex;width:18px;height:18px;flex-shrink:0}' +
             '.kart-aksiyon-ikon svg{width:18px;height:18px;display:block}';
         var s = document.getElementById('gunde5-kart-aksiyon-styles');
@@ -228,9 +265,9 @@
                     oyEmojiHtml('\uD83D\uDC4E') +
                     sayiSpan(downN, 'down-num', '') +
                 '</button>' +
-                '<span class="kart-aksiyon kart-aksiyon--goruntulenme" aria-label="Görüntülenme">' +
+                '<span class="kart-aksiyon kart-aksiyon--goruntulenme" aria-label="Sayfa görüntülenmesi">' +
                     ikonSvg(IKON_GORUNTULENME, true) +
-                    '<span class="kart-aksiyon-sayi v-num">' + formatSayac(gorN) + '</span>' +
+                    '<span class="kart-aksiyon-sayi v-num" data-sayfa-goruntulenme>' + formatSayac(gorN) + '</span>' +
                 '</span>' +
                 '<button type="button" class="kart-aksiyon kart-aksiyon--kaydet' + kayitliCls + '" onclick="toggleKaydetFromCard(this)" aria-label="Kaydet" aria-pressed="' + (kayitliCls ? 'true' : 'false') + '">' +
                     ikonSvg(IKON_KAYDET, false) +
@@ -419,7 +456,7 @@
             : '';
         var up = row.up_votes != null ? row.up_votes : 0;
         var down = row.down_votes != null ? row.down_votes : 0;
-        var goruntulenme = row.up_votes != null ? (row.up_votes * 420 + 12000) : 12000;
+        var goruntulenme = row.sayfa_goruntulenme != null ? row.sayfa_goruntulenme : 0;
 
         var kart = document.createElement('div');
         kart.className = 'card ' + cins + (bol.devam ? ' uzun-metin' : '');
@@ -453,13 +490,40 @@
 
     var podyumRozet = ['\uD83D\uDC51 Günün 1.si', '\uD83E\uDD48 Günün 2.si', '\uD83E\uDD49 Günün 3.si', 'Günün 4.si', 'Günün 5.si'];
 
+    function podyumDonemTarihMs(donem) {
+        var s = String(donem || '').trim();
+        var iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (iso) {
+            return Date.UTC(parseInt(iso[1], 10), parseInt(iso[2], 10) - 1, parseInt(iso[3], 10));
+        }
+        var tr = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (tr) {
+            return Date.UTC(parseInt(tr[3], 10), parseInt(tr[2], 10) - 1, parseInt(tr[1], 10));
+        }
+        var tr2 = s.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+        if (tr2) {
+            return Date.UTC(parseInt(tr2[3], 10), parseInt(tr2[2], 10) - 1, parseInt(tr2[1], 10));
+        }
+        return 0;
+    }
+
+    function podyumDonemleriKronolojikSirala(donemler) {
+        return (donemler || []).slice().sort(function (a, b) {
+            return podyumDonemTarihMs(b) - podyumDonemTarihMs(a);
+        });
+    }
+
     function renderPodyumCard(row, sira) {
         var cins = row.gender === 'male' ? 'male' : 'female';
         var rumuz = row.username || 'Müdavim';
         var bol = metinBol(row.content_full || row.content_short || '');
         var kartId = String(row.id);
-        var rozet = podyumRozet[sira] || podyumRozet[4];
-        var goruntulenme = row.up_votes != null ? (row.up_votes * 420 + 12000) : 12000;
+        var siraIdx = sira;
+        if (siraIdx == null || isNaN(siraIdx)) {
+            siraIdx = Math.max(0, (parseInt(row.podyum_sira, 10) || 1) - 1);
+        }
+        var rozet = podyumRozet[siraIdx] || podyumRozet[4];
+        var goruntulenme = row.sayfa_goruntulenme != null ? row.sayfa_goruntulenme : 0;
         var up = row.up_votes != null ? row.up_votes : 0;
         var down = row.down_votes != null ? row.down_votes : 0;
         var devamHtml = devamBtnHtml(bol.devam);
@@ -470,7 +534,10 @@
         kart.className = 'card podyum-kart ' + cins + (bol.devam ? ' uzun-metin' : '');
         kart.setAttribute('data-id', kartId);
         kart.setAttribute('data-status', 'podyum');
-        kart.setAttribute('data-podyum-sira', String(sira));
+        kart.setAttribute('data-podyum-sira', String(siraIdx));
+        if (row.podyum_donem) {
+            kart.setAttribute('data-podyum-donem', String(row.podyum_donem));
+        }
         kart.innerHTML =
             '<div class="podyum-rozet">' + htmlEsc(rozet) + '</div>' +
             '<div class="card-header">' +
@@ -572,6 +639,22 @@
         return new Date(hedef);
     }
 
+    /**
+     * Şu anki podyum döneminin başlangıcı: son geçmiş 13:12 TR (Europe/Istanbul), ms UTC.
+     * Önbellek anahtarı için kullanılır.
+     */
+    function sonPodyumTrAniUtc() {
+        var simdi = Date.now();
+        var p = trZamanParcalari(new Date(simdi));
+        var bugun1312 = trAnlikUtc(p.year, p.month, p.day, PODYUM_TR_SAAT, PODYUM_TR_DAKIKA, 0);
+        if (simdi >= bugun1312) {
+            return bugun1312;
+        }
+        var oncekiGunBas = trAnlikUtc(p.year, p.month, p.day, 0, 0, 0) - 1;
+        var d = trZamanParcalari(new Date(oncekiGunBas));
+        return trAnlikUtc(d.year, d.month, d.day, PODYUM_TR_SAAT, PODYUM_TR_DAKIKA, 0);
+    }
+
     function padSayi(n) {
         return n < 10 ? '0' + n : String(n);
     }
@@ -671,6 +754,8 @@
         bosListe: bosListe,
         renderKulisCard: renderKulisCard,
         renderPodyumCard: renderPodyumCard,
+        podyumDonemTarihMs: podyumDonemTarihMs,
+        podyumDonemleriKronolojikSirala: podyumDonemleriKronolojikSirala,
         kullaniciMetaSatir: kullaniciMetaSatir,
         kullaniciMetaHtml: kullaniciMetaHtml,
         uyeMi: uyeMi,
@@ -681,6 +766,7 @@
         kapatItirafModal: kapatItirafModal,
         oturumModallariKapat: oturumModallariKapat,
         hedefSaatTr: hedefSaatTr,
+        sonPodyumTrAniUtc: sonPodyumTrAniUtc,
         baslatGeriSayim: baslatGeriSayim,
         PODYUM_TR_SAAT: PODYUM_TR_SAAT,
         PODYUM_TR_DAKIKA: PODYUM_TR_DAKIKA,
@@ -691,6 +777,7 @@
         headerMenuTemaClick: headerMenuTemaClick,
         formatSayac: formatSayac,
         kartOyArayuzunuGuncelle: kartOyArayuzunuGuncelle,
+        kartPodyumIstatistikEnjekteEt: kartPodyumIstatistikEnjekteEt,
         toggleKaydet: toggleKaydet,
         isItirafKayitli: isItirafKayitli
     };

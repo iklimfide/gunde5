@@ -1,0 +1,1 @@
+-- Bu dosya yerine çalıştır: podyum-19-5-geri-yukle.sql

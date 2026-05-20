@@ -35,7 +35,7 @@
         body {
             background-color: var(--bg-main);
             color: var(--text-main);
-            padding-bottom: 80px;
+            padding-bottom: 92px;
         }
 
         .ss-watermark {
@@ -155,21 +155,22 @@
             z-index: 1;
         }
         .podyum-sampiyonlar-etiket {
-            margin: 0 0 4px;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.12em;
+            margin: 0 0 6px;
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
-            color: #92400e;
-            opacity: 0.9;
+            color: #78350f;
+            line-height: 1.1;
         }
         .podyum-sampiyonlar-baslik {
             margin: 0;
-            font-size: 18px;
-            font-weight: 800;
-            line-height: 1.25;
+            font-size: 20px;
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
             color: #78350f;
-            letter-spacing: -0.02em;
         }
         .podyum-sampiyonlar-liste {
             padding: 14px 12px 6px;
@@ -202,7 +203,7 @@
             color: #fde68a;
         }
         body.dark-mode .podyum-sampiyonlar-baslik {
-            color: #fef3c7;
+            color: #fde68a;
         }
         body.dark-mode .podyum-sampiyonlar-liste {
             background: linear-gradient(180deg, #2a2210 0%, #1f1a0d 100%);
@@ -505,33 +506,92 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 64px;
+            min-height: 64px;
+            padding: 0 2px 8px;
             background: var(--header-bg);
             border-top: 1px solid var(--border-color);
             display: flex;
-            justify-content: space-around;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 2px;
             z-index: 1000;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.02);
+            box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.03);
         }
         .nav-item {
-            flex: 1;
+            flex: 1 1 0;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            font-size: 11px;
+            justify-content: flex-end;
+            padding: 6px 2px 8px;
+            font-size: 10px;
             font-weight: 800;
             color: #9ca3af;
             cursor: pointer;
             text-decoration: none;
+            line-height: 1.05;
+        }
+        .nav-item > span {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .nav-item.active { color: var(--text-main); }
-        .nav-item .icon { font-size: 22px; margin-bottom: 2px; }
+        .nav-item .icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+            flex-shrink: 0;
+        }
         .nav-item--btn {
             border: none;
             background: transparent;
             font: inherit;
-            width: 100%;
+            width: auto;
+        }
+        .nav-item--fab {
+            flex: 0 0 auto;
+            width: clamp(72px, 22vw, 96px);
+            min-height: 68px;
+            margin-bottom: 14px;
+            padding: 10px 6px 12px;
+            justify-content: center;
+            align-self: flex-end;
+            border-radius: 18px;
+            background: linear-gradient(
+                165deg,
+                rgba(255, 255, 255, 0.97) 0%,
+                rgba(248, 250, 252, 0.99) 50%,
+                rgba(241, 245, 249, 0.96) 100%
+            );
+            border: 1px solid rgba(15, 23, 42, 0.07);
+            box-shadow:
+                0 10px 28px rgba(15, 23, 42, 0.08),
+                0 2px 10px rgba(29, 155, 240, 0.14);
+            color: var(--text-main);
+            transform: translateY(-8px);
+        }
+        body.dark-mode .nav-item--fab {
+            background: linear-gradient(
+                165deg,
+                rgba(34, 44, 58, 0.98) 0%,
+                rgba(18, 24, 32, 0.99) 100%
+            );
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow:
+                0 12px 32px rgba(0, 0, 0, 0.45),
+                0 2px 12px rgba(29, 155, 240, 0.2);
+        }
+        .nav-item--fab .icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        .nav-item--fab > span {
+            font-size: 9.5px;
+            font-weight: 900;
+            letter-spacing: -0.22px;
+            white-space: nowrap;
         }
 
         .itiraf-modal {
@@ -552,7 +612,7 @@
         .itiraf-modal-panel {
             position: absolute;
             left: 50%;
-            bottom: 76px;
+            bottom: 90px;
             width: calc(100% - 32px);
             max-width: 500px;
             max-height: calc(100vh - 96px);
@@ -999,7 +1059,7 @@
             position: fixed;
             left: 16px;
             right: 16px;
-            bottom: 76px;
+            bottom: 90px;
             max-width: 468px;
             margin: 0 auto;
             padding: 12px 16px;
@@ -1056,11 +1116,11 @@
             <p>Her gün saat 13:12'de (Türkiye saati) Kulis'te en çok net oy alan ilk 5 itiraf buraya tırmanır, geri kalan her şey sonsuza dek silinir!</p>
         </div>
 
-        <section class="podyum-sampiyonlar" id="podyumSampiyonlar" hidden aria-labelledby="podyumDonemBaslik">
+        <section class="podyum-sampiyonlar" id="podyumSampiyonlar" hidden aria-labelledby="podyumTopEtiket podyumDonemBaslik">
             <header class="podyum-sampiyonlar-banner">
                 <span class="podyum-sampiyonlar-trophy" aria-hidden="true">🏆</span>
                 <div class="podyum-sampiyonlar-metin">
-                    <p class="podyum-sampiyonlar-etiket">Günün şampiyonları</p>
+                    <p class="podyum-sampiyonlar-etiket" id="podyumTopEtiket">TOP 5</p>
                     <h2 class="podyum-sampiyonlar-baslik" id="podyumDonemBaslik"></h2>
                 </div>
             </header>
@@ -1069,15 +1129,21 @@
 
     </div>
 
-    <div class="bottom-nav">
-        <button type="button" class="nav-item nav-item--btn" id="navYazBtn" aria-haspopup="dialog">
-            <div class="icon">✍️</div><span>İtiraf Yaz</span>
+    <div class="bottom-nav" role="navigation" aria-label="Ana menü">
+        <a href="kulis.html" class="nav-item">
+            <div class="icon">🔥</div><span>Kulis</span>
+        </a>
+        <a href="hakkinda.html" class="nav-item">
+            <div class="icon">ℹ️</div><span>Hakkında</span>
+        </a>
+        <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn" aria-haspopup="dialog">
+            <div class="icon">✍️</div><span>Hikaye Yaz</span>
         </button>
         <a href="index.html" class="nav-item active">
             <div class="icon">🏆</div><span>Podyum</span>
         </a>
-        <a href="kulis.html" class="nav-item">
-            <div class="icon">🔥</div><span>Kulis</span>
+        <a href="profil.html" class="nav-item">
+            <div class="icon">👤</div><span>Profilim</span>
         </a>
     </div>
 
@@ -1129,7 +1195,7 @@
     <div class="itiraf-modal" id="itirafModal" role="dialog" aria-modal="true" aria-labelledby="itirafModalBaslik" aria-hidden="true">
         <div class="itiraf-modal-panel">
             <div class="itiraf-modal-ust">
-                <h2 class="itiraf-modal-baslik" id="itirafModalBaslik">İtiraf Yaz</h2>
+                <h2 class="itiraf-modal-baslik" id="itirafModalBaslik">Hikaye Yaz</h2>
                 <button type="button" class="itiraf-modal-kapat" id="itirafModalKapat" aria-label="Kapat">×</button>
             </div>
             <textarea class="itiraf-textarea" id="itirafTextarea" placeholder="Tüm hikayeni buraya yaz…" rows="10"></textarea>
@@ -1145,7 +1211,9 @@
     <script src="js/gunde5-profil.js"></script>
     <script src="js/gunde5-ui.js"></script>
     <script src="js/gunde5-db.js"></script>
+    <script src="js/gunde5-podyum-lazy.js"></script>
     <script src="js/gunde5-kart-cevap.js"></script>
+    <script src="js/gunde5-goruntulenme.js"></script>
     <script src="js/gunde5-paylas.js"></script>
     <script>
         function guncelleHeaderOturum() {

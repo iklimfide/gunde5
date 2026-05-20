@@ -91,6 +91,8 @@
             }
             if (KC && KC.baglaKart) {
                 KC.baglaKart(kart);
+            } else if (global.Gunde5Goruntulenme && global.Gunde5Goruntulenme.bagla) {
+                global.Gunde5Goruntulenme.bagla(kart);
             }
         }
         if (KC && KC.initSayfa && !KC.baglaKart) {

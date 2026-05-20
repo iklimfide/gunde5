@@ -240,6 +240,9 @@
 
     function baglaKart(card) {
         injectStyles();
+        if (global.Gunde5Goruntulenme && global.Gunde5Goruntulenme.bagla) {
+            global.Gunde5Goruntulenme.bagla(card);
+        }
         if (card._cevapBagli) return;
         card._cevapBagli = true;
         var cardId = card.getAttribute('data-id');

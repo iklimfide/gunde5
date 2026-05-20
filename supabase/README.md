@@ -22,20 +22,10 @@ Bunlardan biri:
 - `python dev-server.py` veya `start-dev.bat` (önerilen, port 8080)
 - `npm start` (`serve` + `serve.json`, port 8080)
 
-## Podyum seçimi (13:12 Türkiye saati)
+## Her gün 13:12 — Kulis → Podyum
 
-Şimdilik podyum itirafları `status = 'podyum'` ile listelenir. **Manuel top 5:** `podyum-2026-05-19.sql` (veya güncel tarihli dosya) dosyasını SQL Editor'da çalıştırın.
+1. `saat-1312-podyum.sql` — günlük geçiş (podyuma dokunmaz).
+2. `podyum-koruma.sql` — podyum silme/kulise indirmeyi DB’de engeller.
+3. Karışık günler: `podyum-donem-duzelt.sql` → siteyi yenile (üstte **20/05 ŞAMPİYONLARI**, altta **19/05 ŞAMPİYONLARI**).
 
-Günlük otomatik geçiş için ileride Supabase **cron + Edge Function** veya manuel SQL:
-
-```sql
--- Örnek: en yüksek net oy alan 5 kulis → podyum
-update public.itiraflar set status = 'kulis' where status = 'podyum';
-with top5 as (
-  select id from public.itiraflar
-  where status = 'kulis'
-  order by (up_votes - down_votes) desc, created_at desc
-  limit 5
-)
-update public.itiraflar set status = 'podyum' where id in (select id from top5);
-```
+**Podyum canlı sayılar:** bir kez `podyum-realtime.sql` (veya Dashboard → Replication).

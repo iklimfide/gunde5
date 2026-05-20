@@ -16,25 +16,25 @@ drop policy if exists site_ayar_select_all on public.site_ayar;
 create policy site_ayar_select_all on public.site_ayar
     for select using (true);
 
+-- Arayüz: üst satır TOP 5, alt satır dd/mm/yyyy şampiyonları (tarih bu metinden çıkarılır)
 insert into public.site_ayar (anahtar, deger)
 values ('podyum_baslik', '19/05/2026 Şampiyonları — Top 5')
 on conflict (anahtar) do update
     set deger = excluded.deger,
         updated_at = now();
 
--- Önceki podyum itiraflarını kulise indir
-update public.itiraflar
-set status = 'kulis',
-    podyum_sira = null,
-    podyum_donem = null
-where status = 'podyum';
+-- NOT: Eski podyum silinmez / kulise inmez. Sadece kulisten yeni top 5 eklenir.
 
--- Net oy (up - down) ile ilk 5 → podyum
+-- Algoritma puanı ile ilk 5 → podyum (P = up - down + yorum*5)
 with ranked as (
     select
         id,
         row_number() over (
-            order by (up_votes - down_votes) desc, created_at desc
+            order by (
+                (up_votes - down_votes) +
+                ((select count(*)::int from public.itiraf_cevaplar c where c.itiraf_id = public.itiraflar.id) * 5)
+            ) desc,
+            created_at desc
         ) as sira
     from public.itiraflar
     where status = 'kulis'
