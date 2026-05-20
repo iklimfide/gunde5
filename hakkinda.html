@@ -62,6 +62,7 @@
             font-size: 22px;
             margin: 10px 0 12px;
             letter-spacing: -0.02em;
+            text-align: center;
         }
         .card {
             background: var(--bg-card);
@@ -82,6 +83,82 @@
             font-weight: 600;
         }
         .card p:last-child { margin-bottom: 0; }
+        .intro {
+            margin: 0 0 16px;
+            color: var(--text-main);
+            line-height: 1.6;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .intro a {
+            color: inherit;
+            text-decoration: underline;
+            text-decoration-thickness: 1.5px;
+            text-underline-offset: 2px;
+        }
+        .accordion {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .accordion-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .accordion-item[open] {
+            border-color: rgba(37, 99, 235, 0.25);
+        }
+        body.dark-mode .accordion-item[open] {
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+        .accordion-item summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 14px 14px 14px 16px;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            user-select: none;
+        }
+        .accordion-item summary::-webkit-details-marker { display: none; }
+        .accordion-item summary::after {
+            content: '+';
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--text-muted);
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1;
+            transition: transform 0.2s ease;
+        }
+        body.dark-mode .accordion-item summary::after {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .accordion-item[open] summary::after {
+            content: '−';
+            transform: rotate(180deg);
+        }
+        .accordion-body {
+            padding: 0 16px 14px;
+            color: var(--text-muted);
+            line-height: 1.55;
+            font-size: 13.5px;
+            font-weight: 600;
+        }
+        .accordion-body p { margin: 0; }
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -196,19 +273,43 @@
     <div class="container">
         <h1 class="page-title">Hakkında</h1>
 
-        <div class="card">
-            <h2>gunde5 nedir?</h2>
-            <p>Kulis’te itiraflar akar, her gün 13:12 (Türkiye saati) en güçlü 5 hikaye Podyum’a çıkar. Kalanlar soft delete olur, sonra da 30 gün içinde temizlenir.</p>
-        </div>
+        <p class="intro">Gunde5.com Arif G. (<a href="mailto:arif@gunde5.com">arif@gunde5.com</a>) tarafından eğlence ve mizah amaçlı kurulmuştur. Herhangi bir ticari beklentisi yoktur.</p>
 
-        <div class="card">
-            <h2>Gizlilik</h2>
-            <p>İtiraflar herkese açıktır. Gizli Üye seçersen rumuzun “Gizli Üye” olarak görünür. Detaylar ve kurallar yakında bu sayfada genişletilecek.</p>
-        </div>
+        <div class="accordion">
+            <details class="accordion-item">
+                <summary>gunde5 nedir?</summary>
+                <div class="accordion-body">
+                    <p>Kulis’te kısa ve uzun itiraflar paylaşılır; beğeni, beğenmeme ve yorumlarla hikayeler puanlanır. Her gün en güçlü 5 hikaye Podyum’a çıkar. Site tamamen eğlence ve mizah odaklıdır — ciddiye almayın.</p>
+                </div>
+            </details>
 
-        <div class="card">
-            <h2>İletişim</h2>
-            <p>Şimdilik en hızlı yol: bir itiraf/yorum üzerinden geri bildirim bırakmak. (Resmî bir e-posta/kanal eklenince buraya konur.)</p>
+            <details class="accordion-item">
+                <summary>Podyum nasıl çalışır?</summary>
+                <div class="accordion-body">
+                    <p>Her gün saat 13:12’de (Türkiye saati) Kulis’teki en yüksek puanlı 5 hikaye otomatik olarak Podyum’a çıkar. Puan; beğeni, beğenmeme ve yorum sayısına göre hesaplanır. Podyum’a çıkan itiraflar kalıcıdır; silinmez ve Kulis’e geri dönmez.</p>
+                </div>
+            </details>
+
+            <details class="accordion-item">
+                <summary>Kulis’te kalan itiraflara ne olur?</summary>
+                <div class="accordion-body">
+                    <p>Podyum’a giremeyen itiraflar o gün soft delete olur ve Kulis’te görünmez. Yaklaşık 30 gün içinde sistemden tamamen temizlenir.</p>
+                </div>
+            </details>
+
+            <details class="accordion-item">
+                <summary>Gizlilik</summary>
+                <div class="accordion-body">
+                    <p>Tüm itiraflar herkese açıktır. Yazarken “Gizli Üye” seçeneğini işaretlersen rumuzun “Gizli Üye” olarak görünür; profil bilgilerin o itirafta paylaşılmaz. Yine de paylaştığınız içerikten siz sorumlusunuz.</p>
+                </div>
+            </details>
+
+            <details class="accordion-item">
+                <summary>İletişim</summary>
+                <div class="accordion-body">
+                    <p>Geri bildirim, öneri veya sorularınız için <a href="mailto:arif@gunde5.com" class="mini-link">arif@gunde5.com</a> adresine yazabilirsiniz.</p>
+                </div>
+            </details>
         </div>
     </div>
 

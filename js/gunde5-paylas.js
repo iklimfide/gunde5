@@ -96,7 +96,14 @@
 
         var kart = sayfa === 'podyum' ? UI.renderPodyumCard(row, 4) : UI.renderKulisCard(row);
         kart.classList.add('card--paylas-hedef');
-        if (liste.firstChild && liste.firstChild.classList && liste.firstChild.classList.contains('liste-bos')) {
+        if (sayfa === 'kulis') {
+            var giyotin = document.getElementById('kulisGiyotinBaraj');
+            if (giyotin) giyotin.remove();
+        } else if (
+            liste.firstChild &&
+            liste.firstChild.classList &&
+            liste.firstChild.classList.contains('liste-bos')
+        ) {
             liste.innerHTML = '';
         }
         var ilk = liste.firstChild;
@@ -109,6 +116,9 @@
             global.Gunde5KartCevap.baglaKart(kart);
         } else if (global.Gunde5KartCevap) {
             global.Gunde5KartCevap.initSayfa();
+        }
+        if (sayfa === 'kulis' && UI.kulisBarajGuncelle) {
+            UI.kulisBarajGuncelle(liste);
         }
         return kart;
     }

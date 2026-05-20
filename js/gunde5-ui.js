@@ -48,9 +48,94 @@
         return '<p class="liste-bos">' + htmlEsc(mesaj) + '</p>';
     }
 
+    var KULIS_BARAJ = 3;
+    var KULIS_GIYOTIN_ID = 'kulisGiyotinBaraj';
+
+    function kulisBosIcerikHtml() {
+        return (
+            '<h2 class="kulis-bos-baslik">Giyotin Görevini Yaptı, Kulis Temizlendi!</h2>' +
+            '<p class="kulis-bos-paragraf">Bugün saat 13:12 oldu ve giyotin acımasızca indi. Dünün tüm hesabı kesildi; barajı geçemeyen her şey sonsuza dek silindi!</p>' +
+            '<p class="kulis-bos-paragraf">20/05/2026 gününün o en fiyakalı, en çok konuşulan şampiyonları artık podyumda yerini aldı.</p>' +
+            '<p class="kulis-bos-paragraf kulis-bos-cta">' +
+            '👉 Günün şampiyonlarını görmek için hemen <a href="index.html" class="kulis-bos-link" data-kulis-podyum>Podyum\'a tıkla</a>!' +
+            '</p>' +
+            '<p class="kulis-bos-paragraf">"Yarın 13.12\'ye kadar olan büyük yarışta ben de olmalıyım diyorsan:</p>' +
+            '<p class="kulis-bos-paragraf kulis-bos-cta">' +
+            '✍️ <a href="#" class="kulis-bos-link" data-kulis-hikaye>Hikayeni yaz ve oylamaya sun!</a>' +
+            '</p>' +
+            '<p class="kulis-bos-paragraf kulis-bos-uyari">Unutma hikayen yarın ya şampiyon olur podyuma çıkar ya da sonsuza dek silinir. Giyotin yarın tam 13.12\'de yine inecek.</p>'
+        );
+    }
+
+    /** @param {'merkez'|'alta'} mod */
+    function kulisBosHtml(mod) {
+        var cls = 'kulis-bos-kutu liste-bos';
+        if (mod === 'merkez') cls += ' kulis-bos-kutu--merkez';
+        else if (mod === 'alta') cls += ' kulis-bos-kutu--alta';
+        return '<div id="' + KULIS_GIYOTIN_ID + '" class="' + cls + '">' + kulisBosIcerikHtml() + '</div>';
+    }
+
+    function kulisAktifKartSayisi(liste) {
+        if (!liste) return 0;
+        return liste.querySelectorAll('.card[data-status="kulis"]').length;
+    }
+
+    function kulisGiyotinKaldir() {
+        var g = document.getElementById(KULIS_GIYOTIN_ID);
+        if (g) g.remove();
+    }
+
+    /** 3 kart barajı: &lt;3 ise giyotin metni; ≥3 gizle. */
+    function kulisBarajGuncelle(liste) {
+        if (!liste) return;
+        var n = kulisAktifKartSayisi(liste);
+        if (n >= KULIS_BARAJ) {
+            kulisGiyotinKaldir();
+            liste.classList.remove('kulis-liste--giyotin-merkez');
+            return;
+        }
+        var mod = n === 0 ? 'merkez' : 'alta';
+        liste.classList.toggle('kulis-liste--giyotin-merkez', n === 0);
+        var sentinel = document.getElementById('kulisLazySentinel');
+        var mevcut = document.getElementById(KULIS_GIYOTIN_ID);
+        if (!mevcut) {
+            var tmp = document.createElement('div');
+            tmp.innerHTML = kulisBosHtml(mod);
+            mevcut = tmp.firstChild;
+            if (sentinel) {
+                liste.insertBefore(mevcut, sentinel);
+            } else {
+                liste.appendChild(mevcut);
+            }
+            baglaKulisBosListe(mevcut);
+        } else {
+            mevcut.className = 'kulis-bos-kutu liste-bos kulis-bos-kutu--' + mod;
+            if (sentinel) {
+                liste.insertBefore(mevcut, sentinel);
+            }
+        }
+    }
+
+    function baglaKulisBosListe(kok) {
+        if (!kok) return;
+        var hikaye = kok.querySelector('[data-kulis-hikaye]');
+        if (hikaye) {
+            hikaye.addEventListener('click', function (ev) {
+                ev.preventDefault();
+                if (typeof global.acItirafModal === 'function') {
+                    global.acItirafModal();
+                    return;
+                }
+                var yaz = document.getElementById('navYazBtn');
+                if (yaz) yaz.click();
+            });
+        }
+    }
+
     function kartDetayShell() {
         return (
             '<div class="kart-detay" data-kart-detay hidden>' +
+            '<p class="kart-cevap-sahip-not" data-kok-cevap-yasak hidden>Kendi hikayene doğrudan cevap yazılamaz. Başkalarının cevaplarına &quot;Yanıtla&quot; ile yazabilirsin.</p>' +
             '<div class="kart-cevap-form">' +
             '<textarea data-kok-metin rows="3" maxlength="2000" placeholder="Cevabını yaz…"></textarea>' +
             '<button type="button" class="kart-cevap-gonder" data-kok-gonder>Gönder</button>' +
@@ -73,12 +158,7 @@
 
     function devamBtnHtml(devam) {
         if (!devam) return '';
-        return (
-            '<button type="button" class="read-more read-more--ac" data-read-toggle>Devamını oku</button>' +
-            '<div class="kart-daralt-satir kart-daralt-satir--ust">' +
-            '<button type="button" class="kart-daralt" data-read-toggle>Daralt</button>' +
-            '</div>'
-        );
+        return '<button type="button" class="read-more read-more--ac" data-read-toggle>Devamını oku</button>';
     }
 
     var sikayetItirafId = null;
@@ -462,6 +542,7 @@
         kart.className = 'card ' + cins + (bol.devam ? ' uzun-metin' : '');
         kart.setAttribute('data-id', kartId);
         kart.setAttribute('data-status', 'kulis');
+        if (row.user_id) kart.setAttribute('data-itiraf-user-id', String(row.user_id));
         kart.innerHTML =
             '<div class="card-header">' +
                 '<div class="user-block">' +
@@ -534,6 +615,7 @@
         kart.className = 'card podyum-kart ' + cins + (bol.devam ? ' uzun-metin' : '');
         kart.setAttribute('data-id', kartId);
         kart.setAttribute('data-status', 'podyum');
+        if (row.user_id) kart.setAttribute('data-itiraf-user-id', String(row.user_id));
         kart.setAttribute('data-podyum-sira', String(siraIdx));
         if (row.podyum_donem) {
             kart.setAttribute('data-podyum-donem', String(row.podyum_donem));
@@ -752,6 +834,11 @@
         metinBol: metinBol,
         showToast: showToast,
         bosListe: bosListe,
+        kulisBosHtml: kulisBosHtml,
+        kulisBarajGuncelle: kulisBarajGuncelle,
+        kulisAktifKartSayisi: kulisAktifKartSayisi,
+        KULIS_BARAJ: KULIS_BARAJ,
+        baglaKulisBosListe: baglaKulisBosListe,
         renderKulisCard: renderKulisCard,
         renderPodyumCard: renderPodyumCard,
         podyumDonemTarihMs: podyumDonemTarihMs,

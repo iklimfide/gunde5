@@ -101,8 +101,11 @@
         body.dark-mode .info-banner h4 { color: #ff9800; }
         .countdown { font-size: 28px; font-weight: 800; color: #d97706; margin: 6px 0; letter-spacing: 1px; }
         body.dark-mode .countdown { color: #f4511e; }
-        .info-banner p { font-size: 12px; color: #78350f; font-weight: 500; line-height: 1.4; }
+        .info-banner p { font-size: 12px; color: #78350f; font-weight: 500; line-height: 1.4; margin: 0 0 8px; }
+        .info-banner p:last-child { margin-bottom: 0; }
+        .info-banner a { color: #b45309; font-weight: 700; text-decoration: underline; }
         body.dark-mode .info-banner p { color: #bd916a; }
+        body.dark-mode .info-banner a { color: #ff9800; }
 
         .page-title {
             font-size: 18px;
@@ -242,13 +245,7 @@
             font-weight: 500;
         }
         body.dark-mode .card-body { color: #e7e9ea; }
-        .short-text { display: inline; }
-        .full-text { display: none; }
-        .card.uzun-metin.acik .short-text { display: none; }
-        .card.uzun-metin:not(.acik) .full-text { display: none !important; }
-        .card.uzun-metin.acik .full-text { display: block; margin-top: 0; }
-        .card:not(.acik) .kart-daralt-satir--ust { display: none; }
-        .card.acik .read-more--ac { display: none; }
+        /* uzun-metin aç/kapa: js/gunde5-kart-cevap.js */
         .kart-daralt-satir { width: 100%; text-align: center; margin-top: 10px; }
         .kart-daralt-satir--alt { margin-top: 14px; padding-top: 4px; }
         button.read-more,
@@ -962,6 +959,63 @@
             color: var(--text-muted);
             line-height: 1.5;
         }
+        #kulisListe.kulis-liste--giyotin-merkez {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: min(72vh, 520px);
+        }
+        #kulisListe.kulis-liste--giyotin-merkez .lazy-sentinel {
+            display: none;
+        }
+        .kulis-bos-kutu {
+            text-align: left;
+            max-width: 100%;
+        }
+        .kulis-bos-kutu--merkez {
+            margin: auto 0;
+            padding: 32px 16px;
+        }
+        .kulis-bos-kutu--alta {
+            margin-top: 8px;
+            padding: 20px 16px 8px;
+            border-top: 1px solid var(--border-color);
+        }
+        .kulis-bos-baslik {
+            margin: 0 0 14px;
+            font-size: 17px;
+            font-weight: 900;
+            line-height: 1.25;
+            color: var(--text-main);
+            text-align: center;
+        }
+        .kulis-bos-paragraf {
+            margin: 0 0 12px;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.55;
+            color: var(--text-muted);
+        }
+        .kulis-bos-cta {
+            color: var(--text-main);
+        }
+        .kulis-bos-uyari {
+            margin-bottom: 0;
+            font-size: 13px;
+            font-style: italic;
+        }
+        .kulis-bos-link {
+            color: #d97706;
+            font-weight: 800;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        .kulis-bos-link:hover {
+            color: #b45309;
+        }
+        body.dark-mode .kulis-bos-link {
+            color: #fbbf24;
+        }
         .gunde5-toast {
             display: none;
             position: fixed;
@@ -1018,9 +1072,10 @@
     <div class="container">
 
         <div class="info-banner">
-            <h4>Giyotin Arenası</h4>
+            <h4>Yeni şampiyonların belirlenmesi için</h4>
             <div class="countdown" id="countdown">00:00:00</div>
-            <p>Oylama çubuklarını patlatan itiraflar Podyum'a tırmanır. Kalan her şey her gün saat 13:12'de (Türkiye saati) sonsuza dek silinir!</p>
+            <p>Yarın saat tam 13:12'de giyotin inecek ve yeni şampiyonlar <a href="index.html">Podyum</a>'a çıkacak.</p>
+            <p>Şampiyon 5 podyuma çıkar, geri kalanlar sonsuza dek silinir. Sen de hikayeni yaz, yarışa katıl, şampiyon olup podyuma çık.</p>
         </div>
 
         <div id="kulisListe"></div>
@@ -1298,10 +1353,9 @@
                 try {
                     var kart = Gunde5UI.renderKulisCard(row);
                     var liste = document.getElementById('kulisListe');
-                    if (liste && liste.firstChild && liste.firstChild.classList && liste.firstChild.classList.contains('liste-bos')) {
-                        liste.innerHTML = '';
-                    }
                     if (liste) {
+                        var giyotin = document.getElementById('kulisGiyotinBaraj');
+                        if (giyotin) giyotin.remove();
                         var ilk = liste.firstChild;
                         if (ilk && ilk.id === 'kulisLazySentinel') {
                             liste.insertBefore(kart, ilk);
@@ -1311,6 +1365,7 @@
                         if (Gunde5KartCevap && Gunde5KartCevap.baglaKart) {
                             Gunde5KartCevap.baglaKart(kart);
                         }
+                        if (Gunde5UI.kulisBarajGuncelle) Gunde5UI.kulisBarajGuncelle(liste);
                     }
                 } catch (kartErr) {
                     Gunde5UI.showToast('İtiraf gönderildi; listeyi yenile.', 'hata');
@@ -1368,18 +1423,18 @@
                     var kart = Gunde5UI.renderKulisCard(row);
                     var liste = document.getElementById('kulisListe');
                     if (liste) {
-                        if (liste.firstChild && liste.firstChild.classList && liste.firstChild.classList.contains('liste-bos')) {
-                            liste.innerHTML = '';
-                        }
-                        var ilk = liste.firstChild;
-                        if (ilk && ilk.id === 'kulisLazySentinel') {
-                            liste.insertBefore(kart, ilk);
+                        var giyotin2 = document.getElementById('kulisGiyotinBaraj');
+                        if (giyotin2) giyotin2.remove();
+                        var ilk2 = liste.firstChild;
+                        if (ilk2 && ilk2.id === 'kulisLazySentinel') {
+                            liste.insertBefore(kart, ilk2);
                         } else {
                             liste.insertBefore(kart, liste.firstChild);
                         }
                         if (Gunde5KartCevap && Gunde5KartCevap.baglaKart) {
                             Gunde5KartCevap.baglaKart(kart);
                         }
+                        if (Gunde5UI.kulisBarajGuncelle) Gunde5UI.kulisBarajGuncelle(liste);
                     }
                     Gunde5UI.showToast('İtiraf kulise düştü!');
                 });

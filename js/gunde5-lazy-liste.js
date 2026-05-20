@@ -12,6 +12,16 @@
         observer: null
     };
 
+    function listeEl() {
+        return document.getElementById(state.konteynerId);
+    }
+
+    function barajGuncelle() {
+        if (UI && UI.kulisBarajGuncelle) {
+            UI.kulisBarajGuncelle(listeEl());
+        }
+    }
+
     function injectStyles() {
         if (document.getElementById('gunde5-lazy-liste-styles')) return;
         var s = document.createElement('style');
@@ -40,6 +50,8 @@
     function sentinelOlustur() {
         var el = document.getElementById(SENTINEL_ID);
         if (el) return el;
+        var liste = listeEl();
+        if (!liste) return null;
         el = document.createElement('div');
         el.id = SENTINEL_ID;
         el.className = 'lazy-sentinel';
@@ -47,6 +59,7 @@
         var p = document.createElement('p');
         p.className = 'lazy-durum';
         el.appendChild(p);
+        liste.appendChild(el);
         return el;
     }
 
@@ -77,7 +90,7 @@
     }
 
     function kartlariEkle(rows) {
-        var el = document.getElementById(state.konteynerId);
+        var el = listeEl();
         if (!el || !rows || !rows.length) return;
         var sentinel = document.getElementById(SENTINEL_ID);
         var KC = global.Gunde5KartCevap;
@@ -98,6 +111,7 @@
         if (KC && KC.initSayfa && !KC.baglaKart) {
             KC.initSayfa();
         }
+        barajGuncelle();
     }
 
     async function sonrakiSayfa() {
@@ -112,20 +126,20 @@
             if (rows.length < boyut) {
                 state.bitti = true;
             }
-            if (ilkSayfa && !rows.length) {
-                var bosEl = document.getElementById(state.konteynerId);
-                if (bosEl) {
-                    bosEl.innerHTML = UI.bosListe('Kulis şu an boş. İlk itirafı sen yaz!');
-                }
-                observerDurdur();
-                return;
-            }
+
             if (ilkSayfa) {
-                var temiz = document.getElementById(state.konteynerId);
+                var temiz = listeEl();
                 if (temiz) temiz.innerHTML = '';
             }
-            kartlariEkle(rows);
+
+            if (rows.length) {
+                kartlariEkle(rows);
+            } else if (ilkSayfa) {
+                barajGuncelle();
+            }
+
             state.ilkSayfaYuklendi = true;
+
             if (state.bitti) {
                 sentinelGuncelle('');
                 observerDurdur();
@@ -134,7 +148,7 @@
             }
         } catch (err) {
             if (state.offset === 0) {
-                var hataEl = document.getElementById(state.konteynerId);
+                var hataEl = listeEl();
                 if (hataEl) {
                     hataEl.innerHTML = UI.bosListe(DB.hataMesaji ? DB.hataMesaji(err) : 'İtiraflar yüklenemedi.');
                 }
@@ -171,19 +185,20 @@
 
         await sonrakiSayfa();
 
-        var liste = document.getElementById(konteynerId);
+        var liste = listeEl();
         if (!liste || !state.ilkSayfaYuklendi) return;
 
-        var sentinel = sentinelOlustur();
-        if (!document.getElementById(SENTINEL_ID)) {
-            liste.appendChild(sentinel);
-        }
+        sentinelOlustur();
+        barajGuncelle();
         sentinelGuncelle(state.bitti ? '' : 'Aşağı kaydır, daha fazla itiraf yükle');
-        observerBaslat();
+        if (!state.bitti) {
+            observerBaslat();
+        }
     }
 
     global.Gunde5LazyListe = {
         initKulis: initKulis,
-        sonrakiSayfa: sonrakiSayfa
+        sonrakiSayfa: sonrakiSayfa,
+        barajGuncelle: barajGuncelle
     };
 })(window);

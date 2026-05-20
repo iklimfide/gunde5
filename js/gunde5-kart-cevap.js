@@ -20,16 +20,19 @@
             '.card-body > *{position:relative;z-index:1}' +
             '.kart-detay{margin-top:12px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.06)}' +
             'body.dark-mode .kart-detay{border-top-color:rgba(255,255,255,0.06)}' +
+            '.card.uzun-metin .short-text{display:inline;transition:opacity .2s ease-in-out}' +
             '.card.uzun-metin.acik .short-text{display:none}' +
-            '.card.uzun-metin:not(.acik) .full-text{display:none!important}' +
-            '.card.uzun-metin.acik .full-text{display:block;margin-top:0}' +
-            '.card:not(.acik) .kart-daralt-satir--ust{display:none}' +
-            '.card.acik .read-more--ac{display:none}' +
+            '.card.uzun-metin .full-text{display:block;max-height:0;overflow:hidden;opacity:0;margin-top:0;' +
+            'transition:max-height .3s ease-in-out,opacity .25s ease-in-out,margin .3s ease-in-out}' +
+            '.card.uzun-metin.acik .full-text{max-height:4000px;opacity:1}' +
+            '.card.uzun-metin.acik{transition:box-shadow .3s ease-in-out}' +
+            '.card.uzun-metin .read-more--ac{transition:color .2s ease}' +
             '.kart-daralt-satir{width:100%;text-align:center;margin-top:10px}' +
             '.kart-daralt-satir--alt{margin-top:14px;padding-top:4px}' +
             'button.kart-daralt{display:inline-block;border:none;background:none;font-size:13px;font-weight:700;cursor:pointer;padding:8px 16px;color:var(--text-muted)}' +
             '.female button.kart-daralt{color:var(--female-color)}' +
             '.male button.kart-daralt{color:var(--male-color)}' +
+            '.kart-cevap-sahip-not{margin:0 0 12px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;line-height:1.45;color:var(--text-muted);background:var(--bg-main);border:1px dashed var(--border-color)}' +
             '.kart-cevap-form{margin-bottom:12px}' +
             '.kart-cevap-form textarea{width:100%;min-height:72px;border:1.5px solid var(--border-color);border-radius:12px;padding:10px 12px;font-size:14px;background:var(--bg-main);color:var(--text-main);resize:vertical;margin-bottom:8px}' +
             '.kart-cevap-form textarea:focus{outline:none;border-color:#1d9bf0}' +
@@ -38,10 +41,14 @@
             '.kart-ic-cevap{background:var(--bg-main);border:1px solid var(--border-color);border-radius:12px;padding:10px 12px;margin-bottom:8px}' +
             '.kart-ic-cevap-ust{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}' +
             '.kart-ic-rumuz{font-size:12px;font-weight:800}' +
+            '.kart-ic-rumuz--female{color:var(--female-color)}' +
+            '.kart-ic-rumuz--male{color:var(--male-color)}' +
             '.kart-ic-zaman{font-size:11px;color:var(--text-muted)}' +
             '.kart-ic-metin{font-size:14px;line-height:1.45;white-space:pre-wrap;word-break:break-word}' +
             '.kart-ic-yorum{margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--bg-card);font-size:13px;line-height:1.4}' +
             '.kart-ic-yorum-rumuz{font-weight:800}' +
+            '.kart-ic-yorum-rumuz--female{color:var(--female-color)}' +
+            '.kart-ic-yorum-rumuz--male{color:var(--male-color)}' +
             '.kart-ic-alt{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}' +
             '.kart-ic-btn{border:none;background:none;color:#1d9bf0;font-size:12px;font-weight:800;cursor:pointer;padding:0}' +
             '.kart-ic-yorum-form{margin-top:8px}' +
@@ -62,6 +69,36 @@
 
     function getCard(cardId) {
         return document.querySelector('.card[data-id="' + cardId + '"]');
+    }
+
+    function guncelleReadBtn(card, acik) {
+        if (!card) return;
+        var btn = card.querySelector('.read-more--ac');
+        if (btn) btn.textContent = acik ? 'Daralt' : 'Devamını oku';
+    }
+
+    function daraltKart(cardId, optCard) {
+        var card = optCard || getCard(cardId);
+        if (!card) return;
+        var s = st(cardId);
+        s.acik = false;
+        card.classList.remove('acik');
+        var detay = card.querySelector('[data-kart-detay]');
+        if (detay) detay.hidden = true;
+        guncelleReadBtn(card, false);
+    }
+
+    /** Tekli odak: aynı anda yalnızca bir kart açık. */
+    function daraltDigerKartlari(haricCardId) {
+        var aciklar = document.querySelectorAll('.card.acik[data-id]');
+        var i;
+        for (i = 0; i < aciklar.length; i++) {
+            var c = aciklar[i];
+            var id = c.getAttribute('data-id');
+            if (id && id !== haricCardId) {
+                daraltKart(id, c);
+            }
+        }
     }
 
     function st(cardId) {
@@ -119,15 +156,26 @@
         btn.textContent = n === 1 ? '1 yorum' : n + ' yorum';
     }
 
+    function rumuzSinif(gender) {
+        return gender === 'male' ? 'kart-ic-rumuz--male' : 'kart-ic-rumuz--female';
+    }
+
+    function yorumRumuzSinif(gender) {
+        return gender === 'male' ? 'kart-ic-yorum-rumuz--male' : 'kart-ic-yorum-rumuz--female';
+    }
+
     function yorumHtml(y) {
-        return '<div class="kart-ic-yorum"><span class="kart-ic-yorum-rumuz">' + esc(y.username) + '</span> ' +
-            '<span>' + esc(y.content) + '</span></div>';
+        return (
+            '<div class="kart-ic-yorum"><span class="kart-ic-yorum-rumuz ' + yorumRumuzSinif(y.gender) + '">' +
+            esc(y.username) + '</span> <span>' + esc(y.content) + '</span></div>'
+        );
     }
 
     function cevapHtml(c) {
         return (
             '<article class="kart-ic-cevap" data-cevap-id="' + c.id + '">' +
-            '<div class="kart-ic-cevap-ust"><span class="kart-ic-rumuz">' + esc(c.username) + '</span>' +
+            '<div class="kart-ic-cevap-ust"><span class="kart-ic-rumuz ' + rumuzSinif(c.gender) + '">' +
+            esc(c.username) + '</span>' +
             '<time class="kart-ic-zaman">' + esc(zamanKisa(c.created_at)) + '</time></div>' +
             '<p class="kart-ic-metin">' + esc(c.content) + '</p>' +
             '<div class="kart-ic-yorumlar" data-yorum-liste="' + c.id + '"></div>' +
@@ -236,6 +284,22 @@
         await yenileYorumOzeti(cardId);
         guncelleDahaEskiBtn(dahaBtn, s.cevapToplam - s.cevapOffset);
         s.yuklendi = true;
+        uygulaKokCevapKurali(card);
+    }
+
+    function itirafSahibiMi(card) {
+        var itirafUid = card.getAttribute('data-itiraf-user-id');
+        var u = DB.getGunde5User();
+        return !!(itirafUid && u && u.id && itirafUid === u.id);
+    }
+
+    function uygulaKokCevapKurali(card) {
+        if (!card) return;
+        var sahip = itirafSahibiMi(card);
+        var form = card.querySelector('.kart-cevap-form');
+        var not = card.querySelector('[data-kok-cevap-yasak]');
+        if (form) form.hidden = sahip;
+        if (not) not.hidden = !sahip;
     }
 
     function baglaKart(card) {
@@ -243,6 +307,7 @@
         if (global.Gunde5Goruntulenme && global.Gunde5Goruntulenme.bagla) {
             global.Gunde5Goruntulenme.bagla(card);
         }
+        uygulaKokCevapKurali(card);
         if (card._cevapBagli) return;
         card._cevapBagli = true;
         var cardId = card.getAttribute('data-id');
@@ -309,25 +374,33 @@
         var detay = card.querySelector('[data-kart-detay]');
 
         if (s.acik) {
-            s.acik = false;
-            card.classList.remove('acik');
-            detay.hidden = true;
+            daraltKart(cardId, card);
             return;
         }
 
+        daraltDigerKartlari(cardId);
         s.acik = true;
         card.classList.add('acik');
+        guncelleReadBtn(card, true);
         detay.hidden = false;
+        uygulaKokCevapKurali(card);
         if (!s.yuklendi) {
             var dahaBtn = card.querySelector('[data-cevap-daha]');
             if (dahaBtn) guncelleDahaEskiBtn(dahaBtn, 0);
             await kokCevaplariYukle(cardId, false);
         }
         if (focusCevap) {
-            var ta = card.querySelector('[data-kok-metin]');
-            if (ta) {
-                ta.focus();
-                ta.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            if (itirafSahibiMi(card)) {
+                var yanitBtn = card.querySelector('[data-yorum-ac]');
+                if (yanitBtn) {
+                    yanitBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            } else {
+                var ta = card.querySelector('[data-kok-metin]');
+                if (ta && !ta.closest('[hidden]')) {
+                    ta.focus();
+                    ta.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
             }
         }
     }

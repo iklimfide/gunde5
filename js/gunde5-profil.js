@@ -118,12 +118,16 @@
     }
 
     function yasadigiYerSatirdan(row) {
-        if (!row || !row.yasadigi_yer) return '';
-        if (row.yasadigi_yer === 'yurtdisi') {
-            var sehir = row.yurtdisi_sehir ? String(row.yurtdisi_sehir).trim() : '';
-            return sehir ? 'Yurtdışı · ' + sehir : 'Yurtdışı';
+        if (!row) return '';
+        if (row.yasadigi_yer) {
+            if (row.yasadigi_yer === 'yurtdisi') {
+                var sehir = row.yurtdisi_sehir ? String(row.yurtdisi_sehir).trim() : '';
+                return sehir ? 'Yurtdışı · ' + sehir : 'Yurtdışı';
+            }
+            return yerEtiketi(row.yasadigi_yer);
         }
-        return yerEtiketi(row.yasadigi_yer);
+        if (row.city) return String(row.city).trim();
+        return '';
     }
 
     /** Kulis/Podyum kartı — güncel profil (uye) alanları; gizlide yalnızca yaş. */

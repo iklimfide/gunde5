@@ -600,6 +600,31 @@
         return rows;
     }
 
+    async function cevapSatirlariCinsZenginlestir(rows) {
+        if (!rows || !rows.length) return rows || [];
+        var ids = [];
+        var seen = {};
+        var i;
+        for (i = 0; i < rows.length; i++) {
+            var uid = rows[i].user_id;
+            if (uid && !seen[uid]) {
+                seen[uid] = true;
+                ids.push(uid);
+            }
+        }
+        if (!ids.length) return rows;
+        var profiller = await uyeKartProfilleriGetir(ids);
+        for (i = 0; i < rows.length; i++) {
+            var p = rows[i].user_id ? profiller[rows[i].user_id] : null;
+            if (p && p.gender) {
+                rows[i].gender = p.gender;
+            } else if (!rows[i].gender) {
+                rows[i].gender = 'female';
+            }
+        }
+        return rows;
+    }
+
     async function kokCevaplariListele(itirafId, offset, limit) {
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
@@ -614,7 +639,7 @@
             .order('created_at', { ascending: false })
             .range(off, off + lim - 1);
         if (res.error) throw res.error;
-        return res.data || [];
+        return cevapSatirlariCinsZenginlestir(res.data || []);
     }
 
     async function kokCevapToplam(itirafId) {
@@ -643,7 +668,7 @@
             .order('created_at', { ascending: true })
             .range(off, off + lim - 1);
         if (res.error) throw res.error;
-        return res.data || [];
+        return cevapSatirlariCinsZenginlestir(res.data || []);
     }
 
     async function yorumToplam(cevapId) {
@@ -669,7 +694,12 @@
         if (!icerik) throw new Error('Metin boş olamaz.');
         if (icerik.length > 2000) throw new Error('En fazla 2000 karakter yazabilirsin.');
 
-        var itirafRes = await sb.from('itiraflar').select('id').eq('id', nid).is('silindi_at', null).maybeSingle();
+        var itirafRes = await sb
+            .from('itiraflar')
+            .select('id, user_id')
+            .eq('id', nid)
+            .is('silindi_at', null)
+            .maybeSingle();
         if (itirafRes.error) throw itirafRes.error;
         if (!itirafRes.data) throw new Error('İtiraf bulunamadı veya süresi dolmuş.');
 
@@ -682,6 +712,12 @@
             if (parRes.data.parent_id) throw new Error('Yalnızca ana cevaplara yanıt yazılabilir.');
             if (parRes.data.itiraf_id !== nid) throw new Error('Geçersiz yanıt.');
             parentId = pid;
+        } else if (
+            u.id &&
+            itirafRes.data.user_id &&
+            u.id === itirafRes.data.user_id
+        ) {
+            throw new Error('Kendi hikayene doğrudan cevap yazamazsın. Başkalarının cevaplarına yanıt verebilirsin.');
         }
 
         var kayit = {
@@ -693,7 +729,11 @@
         };
         var res = await sb.from('itiraf_cevaplar').insert(kayit).select().single();
         if (res.error) throw res.error;
-        return res.data;
+        var satir = res.data;
+        if (satir) {
+            satir.gender = u.gender === 'male' ? 'male' : 'female';
+        }
+        return satir;
     }
 
     async function oyVer(itirafId, oy) {
@@ -779,14 +819,11 @@
         try {
             var rows = await kulisListele();
             el.innerHTML = '';
-            if (!rows.length) {
-                el.innerHTML = Gunde5UI.bosListe('Kulis şu an boş. İlk itirafı sen yaz!');
-                return;
-            }
             var i;
             for (i = 0; i < rows.length; i++) {
                 el.appendChild(Gunde5UI.renderKulisCard(rows[i]));
             }
+            if (Gunde5UI.kulisBarajGuncelle) Gunde5UI.kulisBarajGuncelle(el);
             if (global.Gunde5KartCevap) global.Gunde5KartCevap.initSayfa();
         } catch (err) {
             el.innerHTML = Gunde5UI.bosListe(hataMesaji(err));
