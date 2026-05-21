@@ -1,2 +1,1 @@
--- Bu dosya artık kullanılmıyor. Bunun yerine çalıştır:
---   supabase/saat-1312-podyum.sql
+-- Güncel kurulum: supabase/saat-1312-podyum.sql dosyasının tamamını çalıştırın.

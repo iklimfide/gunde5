@@ -24,8 +24,19 @@ Bunlardan biri:
 
 ## Her gün 13:12 — Kulis → Podyum
 
-1. `saat-1312-podyum.sql` — günlük geçiş (podyuma dokunmaz).
-2. `podyum-koruma.sql` — podyum silme/kulise indirmeyi DB’de engeller.
-3. Karışık günler: `podyum-donem-duzelt.sql` → siteyi yenile (üstte **20/05 ŞAMPİYONLARI**, altta **19/05 ŞAMPİYONLARI**).
+1. `itiraf-puan.sql` — `r` puan sütunu
+2. `saat-1312-podyum.sql` — cron: **r top 5** → podyum; kuliste kalanlar `silindi_at` (mevcut podyuma dokunmaz)
+3. `podyum-koruma.sql` — podyum silinmez / kulise inmez
+
+## Podyum (diğer)
+- `itiraf-istatistik-rpc.sql` — kart sayıları (yorum / oy senkronu).
+- Karışık gün etiketleri: `podyum-donem-duzelt.sql`.
 
 **Podyum canlı sayılar:** bir kez `podyum-realtime.sql` (veya Dashboard → Replication).
+
+## Kamikaze yönetim paneli (`/kamikaze`)
+
+1. SQL Editor → `kamikaze-admin.sql` çalıştırın (`site_ayar.kamikaze_token` oluşturur).
+2. `js/kamikaze-config.example.js` → `js/kamikaze-config.js` — kullanıcı adı, şifre ve **aynı** `KAMIKAZE_API_TOKEN`.
+3. Supabase URL/anon key: `gunde5-config.js` ile paylaşılabilir veya kamikaze-config içinde tanımlayın.
+4. Panel: `http://localhost:8080/kamikaze/` — `robots: noindex`; repoya `kamikaze-config.js` commit etmeyin.

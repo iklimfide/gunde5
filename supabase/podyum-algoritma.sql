@@ -1,4 +1,5 @@
--- Podyum algoritması (gizli): kulis → podyum top 5
+-- [Elle] Podyum atama — otomatik 13:12 geçişi kaldırıldı (supabase/saat-1312-podyum.sql)
+-- Podyum algoritması (gizli): kulis → podyum top 5 (manuel SQL)
 -- Puan: P = up_votes - down_votes + (yorum_sayisi * 5)
 -- Yorum sayısı: itiraf_cevaplar tablosunda itiraf_id eşleşen tüm satırlar (kök + yanıt) sayılır.
 --

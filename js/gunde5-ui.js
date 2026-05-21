@@ -234,6 +234,8 @@
         return '<span class="kart-aksiyon-emoji" aria-hidden="true">' + emoji + '</span>';
     }
     var IKON_GORUNTULENME = '<path d="M3 19V9h2v10H3zm4 0V5h2v14H7zm4 0v-7h2v7h-2zm4 0V3h2v16h-2zm4 0v-6h2v6h-2z"/>';
+    /** false: görüntülenme çubuğu yerinde kalır, görünmez; ileride true yap. */
+    var SAYFA_GORUNTULENME_GORUNUR = false;
     var IKON_KAYDET = '<path d="M6 4h12v16l-6-4-6 4V4z"/>';
     var IKON_PAYLAS = '<path d="M12 5v14"/><path d="M7 10l5-5 5 5"/><path d="M5 19v2h14v-2"/>';
 
@@ -344,6 +346,7 @@
             '.kart-aksiyon--kaydet.aktif svg{fill:currentColor;stroke:currentColor}' +
             '.kart-aksiyon--goruntulenme{cursor:default;pointer-events:none}' +
             '.kart-aksiyon--goruntulenme:hover{color:var(--text-muted);background:transparent}' +
+            (SAYFA_GORUNTULENME_GORUNUR ? '' : '.kart-aksiyon--goruntulenme{visibility:hidden}') +
             '.kart-aksiyon-sayi{font-variant-numeric:tabular-nums;min-width:1ch;font-size:16px;font-weight:400;color:var(--text-muted);transition:transform .2s ease,color .2s ease}' +
             '.kart-aksiyon-sayi.g5-stat-tick{transform:scale(1.1);color:var(--text-main)}' +
             '.kart-aksiyon-ikon{display:inline-flex;width:18px;height:18px;flex-shrink:0}' +
@@ -378,7 +381,9 @@
                     oyEmojiHtml('\uD83D\uDC4E') +
                     sayiSpan(downN, 'down-num', '') +
                 '</button>' +
-                '<span class="kart-aksiyon kart-aksiyon--goruntulenme" aria-label="Sayfa görüntülenmesi">' +
+                '<span class="kart-aksiyon kart-aksiyon--goruntulenme"' +
+                    (SAYFA_GORUNTULENME_GORUNUR ? ' aria-label="Sayfa görüntülenmesi"' : ' aria-hidden="true"') +
+                    '>' +
                     ikonSvg(IKON_GORUNTULENME, true) +
                     '<span class="kart-aksiyon-sayi v-num" data-sayfa-goruntulenme>' + formatSayac(gorN) + '</span>' +
                 '</span>' +
@@ -803,6 +808,7 @@
 
     function toggleHeaderMenu(ev) {
         if (ev) ev.stopPropagation();
+        closeProfilMenu();
         var panel = document.getElementById('headerMenuPanel');
         var btn = document.getElementById('headerMenuBtn');
         if (!panel) return;
@@ -838,8 +844,171 @@
 
     function headerMenuTemaClick() {
         closeHeaderMenu();
+        closeProfilMenu();
         if (typeof global.toggleTheme === 'function') global.toggleTheme();
     }
+
+    function injectHeaderProfilMenuStyles() {
+        if (document.getElementById('gunde5-header-profil-menu-styles')) return;
+        var s = document.createElement('style');
+        s.id = 'gunde5-header-profil-menu-styles';
+        s.textContent =
+            '.header-profil-wrap{position:relative;flex-shrink:0}' +
+            '.header-profil-wrap[hidden]{display:none!important}' +
+            'button.header-profil-link{border:none;padding:4px;font:inherit;cursor:pointer}' +
+            '.header-profil-panel{position:absolute;top:calc(100% + 8px);right:0;min-width:188px;background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:8px;z-index:220}' +
+            'body.dark-mode .header-profil-panel{background:var(--bg-card);border-color:var(--border-color)}' +
+            '.header-profil-menu-nav{display:flex;flex-direction:column;gap:2px}' +
+            '.header-profil-menu-link{display:block;width:100%;padding:10px 12px;border-radius:10px;color:#111827;text-decoration:none;font-size:13px;font-weight:700;text-align:left;border:none;background:transparent;cursor:pointer;font-family:inherit}' +
+            'body.dark-mode .header-profil-menu-link{color:var(--text-main)}' +
+            '.header-profil-menu-link:hover{background:#f3f4f6}' +
+            'body.dark-mode .header-profil-menu-link:hover{background:#2f3336}' +
+            '.header-profil-menu-link--cikis{color:#dc2626}' +
+            'body.dark-mode .header-profil-menu-link--cikis{color:#f87171}';
+        document.head.appendChild(s);
+    }
+
+    function profilMenuPanelHtml() {
+        return (
+            '<nav class="header-profil-menu-nav" aria-label="Hesap menüsü">' +
+            '<a href="profil.html" class="header-profil-menu-link">👤 Profilim</a>' +
+            '<a href="hakkinda.html" class="header-profil-menu-link">ℹ️ Hakkında</a>' +
+            '<a href="profil.html" class="header-profil-menu-link">⚙️ Ayarlar</a>' +
+            '<button type="button" class="header-profil-menu-link" id="headerProfilModBtn">🌓 Mod</button>' +
+            '<button type="button" class="header-profil-menu-link header-profil-menu-link--cikis" id="headerProfilCikisBtn">🚪 Çıkış yap</button>' +
+            '</nav>'
+        );
+    }
+
+    function mountHeaderProfilMenu() {
+        injectHeaderProfilMenuStyles();
+        var link = document.getElementById('headerProfilLink');
+        if (!link || link.getAttribute('data-profil-menu-ready') === '1') return;
+
+        var wrap = document.createElement('div');
+        wrap.className = 'header-profil-wrap';
+        wrap.id = 'headerProfilWrap';
+        wrap.hidden = true;
+        link.parentNode.insertBefore(wrap, link);
+        wrap.appendChild(link);
+
+        if (link.tagName === 'A') {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                toggleProfilMenu(e);
+            });
+        } else {
+            link.addEventListener('click', toggleProfilMenu);
+        }
+        link.setAttribute('role', 'button');
+        link.setAttribute('aria-label', 'Hesap menüsü');
+        link.setAttribute('aria-expanded', 'false');
+        link.setAttribute('aria-haspopup', 'true');
+        link.setAttribute('aria-controls', 'headerProfilPanel');
+
+        var panel = document.createElement('div');
+        panel.id = 'headerProfilPanel';
+        panel.className = 'header-profil-panel';
+        panel.hidden = true;
+        panel.innerHTML = profilMenuPanelHtml();
+        wrap.appendChild(panel);
+
+        var modBtn = document.getElementById('headerProfilModBtn');
+        if (modBtn) {
+            modBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                headerMenuTemaClick();
+            });
+        }
+
+        var cikisBtn = document.getElementById('headerProfilCikisBtn');
+        if (cikisBtn) {
+            cikisBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                headerProfilCikis();
+            });
+        }
+
+        link.setAttribute('data-profil-menu-ready', '1');
+    }
+
+    function toggleProfilMenu(ev) {
+        if (ev) ev.stopPropagation();
+        closeHeaderMenu();
+        var panel = document.getElementById('headerProfilPanel');
+        var btn = document.getElementById('headerProfilLink');
+        if (!panel) return;
+        var acik = panel.hidden;
+        panel.hidden = !acik;
+        if (btn) btn.setAttribute('aria-expanded', acik ? 'true' : 'false');
+    }
+
+    function closeProfilMenu() {
+        var panel = document.getElementById('headerProfilPanel');
+        var btn = document.getElementById('headerProfilLink');
+        if (!panel) return;
+        panel.hidden = true;
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+
+    async function headerProfilCikis() {
+        closeProfilMenu();
+        closeHeaderMenu();
+        var db = global.Gunde5DB;
+        if (!db || !db.cikisYap) return;
+        try {
+            await db.cikisYap();
+            guncelleHeaderOturum();
+            global.location.href = 'index.html';
+        } catch (err) {
+            showToast(db.hataMesaji ? db.hataMesaji(err) : String(err), 'hata');
+        }
+    }
+
+    function guncelleHeaderOturum() {
+        mountHeaderProfilMenu();
+        closeProfilMenu();
+        closeHeaderMenu();
+        var db = global.Gunde5DB;
+        var u = db && db.getGunde5User ? db.getGunde5User() : null;
+        var link = document.getElementById('headerProfilLink');
+        var authBtns = document.getElementById('headerAuthBtns');
+        var menuProfil = document.getElementById('headerMenuProfil');
+        var wrap = document.getElementById('headerProfilWrap');
+        if (!link) return;
+        if (u && u.username) {
+            if (authBtns) authBtns.hidden = true;
+            if (menuProfil) menuProfil.hidden = false;
+            if (wrap) wrap.hidden = false;
+            link.style.display = 'flex';
+            document.body.classList.add('oturum-acik');
+            var cins = u.gender === 'male' ? 'male' : 'female';
+            link.className = 'header-profil-link cins-' + cins;
+            uygulaAvatarElement(document.getElementById('headerProfilAvatar'), u);
+            if (u.gender) document.body.setAttribute('data-user-gender', cins);
+        } else {
+            if (authBtns) authBtns.hidden = false;
+            if (menuProfil) menuProfil.hidden = true;
+            if (wrap) wrap.hidden = true;
+            link.style.display = 'none';
+            document.body.classList.remove('oturum-acik');
+        }
+    }
+
+    function initHeaderProfilMenu() {
+        mountHeaderProfilMenu();
+        document.addEventListener('click', function (e) {
+            var panel = document.getElementById('headerProfilPanel');
+            if (!panel || panel.hidden) return;
+            var wrap = document.getElementById('headerProfilWrap');
+            if (wrap && !wrap.contains(e.target)) closeProfilMenu();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeProfilMenu();
+        });
+    }
+
+    global.guncelleHeaderOturum = guncelleHeaderOturum;
 
     function uygulaAvatarElement(el, u) {
         if (!el) return;
@@ -899,6 +1068,11 @@
         initHeaderMenu: initHeaderMenu,
         headerMenuAuthClick: headerMenuAuthClick,
         headerMenuTemaClick: headerMenuTemaClick,
+        toggleProfilMenu: toggleProfilMenu,
+        closeProfilMenu: closeProfilMenu,
+        headerProfilCikis: headerProfilCikis,
+        guncelleHeaderOturum: guncelleHeaderOturum,
+        initHeaderProfilMenu: initHeaderProfilMenu,
         formatSayac: formatSayac,
         kartOyArayuzunuGuncelle: kartOyArayuzunuGuncelle,
         kartPodyumIstatistikEnjekteEt: kartPodyumIstatistikEnjekteEt,
@@ -907,9 +1081,13 @@
     };
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initHeaderMenu);
+        document.addEventListener('DOMContentLoaded', function () {
+            initHeaderMenu();
+            initHeaderProfilMenu();
+        });
     } else {
         initHeaderMenu();
+        initHeaderProfilMenu();
     }
     injectSayfaLinkStyles();
 })(window);

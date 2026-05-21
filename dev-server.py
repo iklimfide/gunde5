@@ -66,6 +66,7 @@ def main() -> None:
         print("gunde5 dev sunucu: http://localhost:%s/" % port)
         print("  /itiraf      -> giyotin 404 veya yönlendirme")
         print("  /itiraf/123  -> itiraf sayfası")
+        print("  /kamikaze/   -> yönetim paneli")
         print("Durdurmak için Ctrl+C")
         try:
             httpd.serve_forever()

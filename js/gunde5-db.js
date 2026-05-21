@@ -566,16 +566,35 @@
         if (!itirafIds || !itirafIds.length) return map;
         var sb = getClient();
         if (!sb) return map;
-        var res = await sb
-            .from('itiraf_cevaplar')
-            .select('itiraf_id')
-            .in('itiraf_id', itirafIds);
-        if (res.error) throw res.error;
-        var rows = res.data || [];
-        for (i = 0; i < rows.length; i++) {
-            var iid = String(rows[i].itiraf_id);
-            map[iid] = (map[iid] || 0) + 1;
+        var ids = [];
+        for (i = 0; i < itirafIds.length; i++) {
+            var nid = parseInt(itirafIds[i], 10);
+            if (nid) ids.push(nid);
         }
+        if (!ids.length) return map;
+
+        try {
+            var rpc = await sb.rpc('itiraf_cevap_sayilari', { p_ids: ids });
+            if (!rpc.error && rpc.data && rpc.data.length) {
+                for (i = 0; i < rpc.data.length; i++) {
+                    var row = rpc.data[i];
+                    map[String(row.itiraf_id)] = row.adet != null ? row.adet : 0;
+                }
+                return map;
+            }
+        } catch (eRpc) { /* RPC yoksa sayım sorgusuna düş */ }
+
+        var tasks = ids.map(function (id) {
+            return sb
+                .from('itiraf_cevaplar')
+                .select('id', { count: 'exact', head: true })
+                .eq('itiraf_id', id)
+                .then(function (res) {
+                    if (res.error) throw res.error;
+                    map[String(id)] = res.count || 0;
+                });
+        });
+        await Promise.all(tasks);
         return map;
     }
 
@@ -989,10 +1008,12 @@
                         var UI = global.Gunde5UI;
                         var card = listeEl.querySelector('.card[data-id="' + String(yeni.id) + '"]');
                         if (!card || !UI || !UI.kartPodyumIstatistikEnjekteEt) return;
-                        UI.kartPodyumIstatistikEnjekteEt(card, {
-                            up_votes: yeni.up_votes,
-                            down_votes: yeni.down_votes
-                        });
+                        var stat = {};
+                        if (yeni.up_votes != null) stat.up_votes = yeni.up_votes;
+                        if (yeni.down_votes != null) stat.down_votes = yeni.down_votes;
+                        if (stat.up_votes !== undefined || stat.down_votes !== undefined) {
+                            UI.kartPodyumIstatistikEnjekteEt(card, stat);
+                        }
                     }
                 );
                 ch.on(
@@ -1069,7 +1090,7 @@
                 el.appendChild(Gunde5UI.renderPodyumCard(rows[i]));
             }
             if (global.Gunde5KartCevap) global.Gunde5KartCevap.initSayfa();
-            podyumHibritCanlandir(el, rows, false);
+            podyumHibritCanlandir(el, rows, true);
         } catch (err) {
             el.innerHTML = Gunde5UI.bosListe(hataMesaji(err));
             Gunde5UI.showToast(hataMesaji(err), 'hata');

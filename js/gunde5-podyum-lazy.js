@@ -19,9 +19,7 @@
         var s = document.createElement('style');
         s.id = 'gunde5-podyum-lazy-styles';
         s.textContent =
-            '.podyum-gun-aralik{margin-top:20px;padding-top:2px}' +
-            '.podyum-gun-aralik .podyum-sampiyonlar-etiket{margin:0 0 6px}' +
-            '.podyum-gun-aralik .podyum-sampiyonlar-baslik{margin:0 0 12px}' +
+            '.podyum-gun-aralik{margin-top:20px}' +
             '.podyum-lazy-sentinel{padding:16px 8px 24px;text-align:center;min-height:40px}' +
             '.podyum-lazy-durum{margin:0;font-size:16px;font-weight:600;color:#92400e}' +
             '.podyum-lazy-durum--hata{color:#dc2626}' +
@@ -109,15 +107,38 @@
         if (sampiyonlarEl) sampiyonlarEl.hidden = false;
     }
 
-    function eskiGunBaslikEkle(hedef, donem) {
+    /** Üst bölümle aynı altın bant (🏆 TOP 5 + dönem başlığı). */
+    function donemBannerHeaderOlustur(donem) {
+        var header = document.createElement('header');
+        header.className = 'podyum-sampiyonlar-banner';
+        var trophy = document.createElement('span');
+        trophy.className = 'podyum-sampiyonlar-trophy';
+        trophy.setAttribute('aria-hidden', 'true');
+        trophy.textContent = '🏆';
+        var metin = document.createElement('div');
+        metin.className = 'podyum-sampiyonlar-metin';
         var etiket = document.createElement('p');
         etiket.className = 'podyum-sampiyonlar-etiket';
         etiket.textContent = 'TOP 5';
         var baslik = document.createElement('h2');
         baslik.className = 'podyum-sampiyonlar-baslik';
         baslik.textContent = donemBannerBaslik(donem);
-        hedef.appendChild(etiket);
-        hedef.appendChild(baslik);
+        metin.appendChild(etiket);
+        metin.appendChild(baslik);
+        header.appendChild(trophy);
+        header.appendChild(metin);
+        return header;
+    }
+
+    function eskiGunKutuOlustur(donem) {
+        var kutu = document.createElement('section');
+        kutu.className = 'podyum-sampiyonlar';
+        kutu.setAttribute('aria-label', donemBannerBaslik(donem));
+        kutu.appendChild(donemBannerHeaderOlustur(donem));
+        var liste = document.createElement('div');
+        liste.className = 'podyum-sampiyonlar-liste';
+        kutu.appendChild(liste);
+        return { kutu: kutu, liste: liste };
     }
 
     function kartlariEkle(rows, donem, ilkGun) {
@@ -132,13 +153,14 @@
             var blok = document.createElement('div');
             blok.className = 'podyum-gun-aralik';
             blok.setAttribute('data-podyum-donem', donem);
-            eskiGunBaslikEkle(blok, donem);
+            var gunKutu = eskiGunKutuOlustur(donem);
+            blok.appendChild(gunKutu.kutu);
             if (sentinel) {
                 liste.insertBefore(blok, sentinel);
             } else {
                 liste.appendChild(blok);
             }
-            hedef = blok;
+            hedef = gunKutu.liste;
         }
 
         for (i = 0; i < rows.length; i++) {
@@ -160,7 +182,7 @@
     function realtimeYenile() {
         var liste = document.getElementById(state.konteynerId);
         if (!liste || !state.tumKartlar.length || !DB.podyumHibritCanlandir) return;
-        DB.podyumHibritCanlandir(liste, state.tumKartlar, false);
+        DB.podyumHibritCanlandir(liste, state.tumKartlar, true);
     }
 
     async function sonrakiGun() {

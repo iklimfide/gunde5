@@ -50,48 +50,6 @@ create table if not exists public.itiraflar (
 );
 
 -- Günlük 13:12 geçişi — güncel tanım: supabase/saat-1312-podyum.sql
-create or replace function public.podyum_gunluk_gecis()
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-    v_donem text;
-    v_baslik text;
-begin
-    v_donem := to_char(now() at time zone 'Europe/Istanbul', 'YYYY-MM-DD');
-    v_baslik := to_char(now() at time zone 'Europe/Istanbul', 'DD/MM/YYYY')
-        || ' Şampiyonları — Top 5';
-
-    with sirali as (
-        select i.id,
-            row_number() over (
-                order by
-                    (i.up_votes - i.down_votes)
-                    + coalesce((
-                        select count(*)::int from public.itiraf_cevaplar c where c.itiraf_id = i.id
-                    ), 0) * 5 desc,
-                    i.created_at asc
-            ) as sira
-        from public.itiraflar i
-        where i.status = 'kulis' and i.silindi_at is null
-    )
-    update public.itiraflar i
-    set status = 'podyum', podyum_sira = s.sira::smallint, podyum_donem = v_donem, silindi_at = null
-    from sirali s
-    where i.id = s.id and s.sira <= 5;
-
-    update public.itiraflar set silindi_at = now()
-    where status = 'kulis' and silindi_at is null;
-
-    insert into public.site_ayar (anahtar, deger) values ('podyum_baslik', v_baslik)
-    on conflict (anahtar) do update set deger = excluded.deger, updated_at = now();
-end;
-$$;
-
-revoke all on function public.podyum_gunluk_gecis() from public;
-revoke all on function public.podyum_gunluk_gecis() from anon, authenticated;
 
 create table if not exists public.site_ayar (
     anahtar text primary key,

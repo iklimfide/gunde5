@@ -642,7 +642,6 @@
                         <a href="kulis.html" class="header-menu-link">🔥 Kulis</a>
                         <a href="profil.html" class="header-menu-link" id="headerMenuProfil" hidden>👤 Profilim</a>
                         <a href="kvkk.html" class="header-menu-link">📋 KVKK</a>
-                        <button type="button" class="header-menu-link" onclick="Gunde5UI.headerMenuTemaClick()">🌓 Mod</button>
                     </nav>
                 </div>
             </div>
@@ -766,17 +765,11 @@
         <a href="kulis.html" class="nav-item">
             <div class="icon">🔥</div><span>Kulis</span>
         </a>
-        <a href="hakkinda.html" class="nav-item active">
-            <div class="icon">ℹ️</div><span>Hakkında</span>
-        </a>
         <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn" aria-haspopup="dialog">
             <div class="icon">✍️</div><span>Hikaye Yaz</span>
         </button>
         <a href="index.html" class="nav-item">
             <div class="icon">🏆</div><span>Podyum</span>
-        </a>
-        <a href="profil.html" class="nav-item">
-            <div class="icon">👤</div><span>Profilim</span>
         </a>
     </div>
 
@@ -784,27 +777,7 @@
 
     <script>
         function guncelleHeaderOturum() {
-            var u = Gunde5DB.getGunde5User();
-            var link = document.getElementById('headerProfilLink');
-            var authBtns = document.getElementById('headerAuthBtns');
-            var menuProfil = document.getElementById('headerMenuProfil');
-            if (!link) return;
-            Gunde5UI.closeHeaderMenu();
-            if (u && u.username) {
-                if (authBtns) authBtns.hidden = true;
-                if (menuProfil) menuProfil.hidden = false;
-                link.style.display = 'flex';
-                document.body.classList.add('oturum-acik');
-                var cins = u.gender === 'male' ? 'male' : 'female';
-                link.className = 'header-profil-link cins-' + cins;
-                Gunde5UI.uygulaAvatarElement(document.getElementById('headerProfilAvatar'), u);
-                if (u.gender) document.body.setAttribute('data-user-gender', cins);
-            } else {
-                if (authBtns) authBtns.hidden = false;
-                if (menuProfil) menuProfil.hidden = true;
-                link.style.display = 'none';
-                document.body.classList.remove('oturum-acik');
-            }
+            Gunde5UI.guncelleHeaderOturum();
         }
 
         function openAuthModal(mode) {

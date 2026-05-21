@@ -21,8 +21,8 @@ Kullanıcı bu tasarımı onayladı. **Başlık, layout, lazy-load akışı veya
 ## Veritabanı (değişmez iş kuralları)
 
 - **Podyumdan veri silinmez / kulise inmez** (`podyum-koruma.sql` trigger).
-- Günlük 13:12 (`podyum_gunluk_gecis`): sadece kulisten yeni top 5 eklenir; mevcut `status = 'podyum'` satırlarına dokunulmaz.
-- Gün etiketi: `podyum_donem` = `YYYY-MM-DD`.
+- Günlük 13:12 (`podyum_gunluk_gecis`): kulis’te **r en yüksek 5** → `status = 'podyum'`; kalan kulis soft-delete; mevcut podyuma dokunulmaz.
+- Gün etiketi: `podyum_donem` = `YYYY-MM-DD` (mevcut arşiv satırları).
 
 ## Dokunulurken dikkat (izin gerekir)
 
