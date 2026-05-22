@@ -139,23 +139,28 @@
         btn.classList.toggle('header-profil-menu-link--master', modAcik);
     }
 
-    function mountHeaderMenuIstatistik() {
+    function menuIstatistikKaldir() {
+        var link = document.getElementById('headerMenuIstatistik');
+        if (link && link.parentNode) link.parentNode.removeChild(link);
+    }
+
+    function menuIstatistikGuncelle() {
+        if (!masterMi) {
+            menuIstatistikKaldir();
+            return;
+        }
+        var link = document.getElementById('headerMenuIstatistik');
+        if (link) return;
         var nav = document.querySelector('.header-menu-nav');
-        if (!nav || document.getElementById('headerMenuIstatistik')) return;
-        var link = document.createElement('a');
+        if (!nav) return;
+        link = document.createElement('a');
         link.href = 'istatistikler.html';
         link.className = 'header-menu-link header-menu-link--master';
         link.id = 'headerMenuIstatistik';
         link.textContent = '📊 İstatistikler';
-        link.hidden = true;
         var kvkk = nav.querySelector('a[href="kvkk.html"]');
         if (kvkk) nav.insertBefore(link, kvkk);
         else nav.appendChild(link);
-    }
-
-    function menuIstatistikGuncelle() {
-        var link = document.getElementById('headerMenuIstatistik');
-        if (link) link.hidden = !masterMi;
     }
 
     function mountMenuItem() {
@@ -599,7 +604,7 @@
     function baslat() {
         injectStyles();
         mountMenuItem();
-        mountHeaderMenuIstatistik();
+        menuIstatistikKaldir();
         durumYenile();
         gozlemciBaslat();
     }
