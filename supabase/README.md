@@ -15,12 +15,30 @@
 
 ### Yerel sunucu (önemli)
 
-`python -m http.server 8080` **kullanmayın** — `/itiraf` ve özel `404.html` çalışmaz; Python’un ham “File not found” hatasını görürsünüz.
+Siteyi **dosyadan çift tıklayarak** (`file://`) açmayın — bildirim ve hikaye linkleri çalışmaz. Tarayıcıda mutlaka:
 
-Bunlardan biri:
+**http://localhost:8080/** (veya `index.html`)
 
-- `python dev-server.py` veya `start-dev.bat` (önerilen, port 8080)
-- `npm start` (`serve` + `serve.json`, port 8080)
+Bunlardan biri (proje kökünde):
+
+- `start-dev.bat` veya `start-dev.ps1` veya `npm run dev` (önerilen: `dev-server.py`, port **8080**)
+- `python dev-server.py`
+
+PowerShell’de `cd D:\gunde5 && npm run dev` çalışmazsa: `Set-Location D:\gunde5; npm run dev`
+
+Hikaye iç linki: `http://localhost:8080/index.html?itiraf=7` (podyum), `http://localhost:8080/kulis.html?itiraf=7` (kulis).
+
+## Ziyaret / trafik kaynağı
+
+1. `master-admin.sql` veya `security-advisor-definer-fix.sql` çalışmış olmalı (`master_email_eslesir`).
+2. SQL Editor → **`ziyaret-trafik.sql`** (tablo + `ziyaret_kaydet` + `master_ziyaret_istatistik`).
+3. Sayfalar `gunde5-ziyaret.js` ile referrer / UTM / yol kaydeder (anonim `oturum_key`; girişte `user_id` dolar).
+
+İleride istatistik menüsü: `Gunde5DB.masterZiyaretIstatistik(30)`.
+
+## Arama (kulis + podyum)
+
+SQL Editor → `itiraf-ara.sql` (rumuz, hikaye metni, cevap/yorum). Sayaç kutusunun altındaki arama kutusu yazdıkça sonuçları listeler.
 
 ## Her gün 13:12 — Kulis → Podyum
 
@@ -34,9 +52,24 @@ Bunlardan biri:
 
 **Podyum canlı sayılar:** bir kez `podyum-realtime.sql` (veya Dashboard → Replication).
 
-## Kamikaze yönetim paneli (`/kamikaze`)
+## Master yönetici
 
-1. SQL Editor → `kamikaze-admin.sql` çalıştırın (`site_ayar.kamikaze_token` oluşturur).
-2. `js/kamikaze-config.example.js` → `js/kamikaze-config.js` — kullanıcı adı, şifre ve **aynı** `KAMIKAZE_API_TOKEN`.
-3. Supabase URL/anon key: `gunde5-config.js` ile paylaşılabilir veya kamikaze-config içinde tanımlayın.
-4. Panel: `http://localhost:8080/kamikaze/` — `robots: noindex`; repoya `kamikaze-config.js` commit etmeyin.
+1. SQL Editor → `master-admin.sql` (e-posta `site_ayar.master_email` = `arifguvenc@gmail.com`).
+2. Bu hesapla giriş yap → profil menüsü → **Moderasyon: Açık**.
+3. Açıkken: rumuz altında **Gizli üye yap / Askıya al / Banla**; hikaye altında **Değiştir / Gizle / Sil**.
+4. Mevcut DB için ek: `master-uye-gizli-patch.sql` (gizli üye + güncel RPC).
+
+## Bildirimler
+
+1. `bildirimler.sql` — beğeni (👍) ve yorum bildirimi; dislike bildirimi yok. Bildirime tıklanınca ilgili hikayeye gider.
+2. İsteğe bağlı canlı badge: `bildirim-realtime.sql`.
+3. Eski kurulum: `bildirimler-status-patch.sql` + `bildirimler.sql` içindeki `bildirim_olustur` güncellemesi.
+
+## Güvenlik (Security Advisor)
+
+Canlı Supabase’de sırayla:
+
+1. **`security-advisor-fix.sql`** (search_path, görüntülenme, trigger revoke)
+2. **`security-advisor-definer-fix.sql`** — DEFINER + EXECUTE uyarıları (arama INVOKER, master INVOKER+RLS, trigger/kamikaze revoke)
+
+Dashboard → Security Advisor → **Rerun**. Kamikaze paneli kullanılmıyorsa **`kamikaze-drop.sql`** (RPC temizliği; aksi halde kamikaze yalnızca `service_role` ile çalışır).

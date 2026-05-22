@@ -62,12 +62,21 @@ def main() -> None:
     if len(sys.argv) > 1:
         port = int(sys.argv[1])
     os.chdir(ROOT)
-    with ThreadingHTTPServer(("", port), Gunde5Handler) as httpd:
+    try:
+        httpd = ThreadingHTTPServer(("", port), Gunde5Handler)
+    except OSError as err:
+        sys.stderr.write(
+            "Port %s kullanılamıyor (%s).\n"
+            "Baska port: python dev-server.py 8081\n"
+            % (port, err)
+        )
+        sys.exit(1)
+    with httpd:
         print("gunde5 dev sunucu: http://localhost:%s/" % port)
-        print("  /itiraf      -> giyotin 404 veya yönlendirme")
-        print("  /itiraf/123  -> itiraf sayfası")
-        print("  /kamikaze/   -> yönetim paneli")
-        print("Durdurmak için Ctrl+C")
+        print("  / ve /index.html?itiraf=ID  -> anasayfa")
+        print("  /kulis.html?itiraf=ID       -> kulis")
+        print("  /itiraf/123                 -> yönlendirme (eski link)")
+        print("Durdurmak: Ctrl+C  |  Baslat: start-dev.bat veya npm run dev")
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:

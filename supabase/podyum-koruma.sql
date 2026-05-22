@@ -4,6 +4,7 @@
 create or replace function public.itiraflar_podyum_koruma()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
     if tg_op = 'UPDATE' and old.status = 'podyum' then

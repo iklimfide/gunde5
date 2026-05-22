@@ -1,3 +1,6 @@
+-- Eski dosya — güncel düzeltmeler: security-advisor-fix.sql (bir kez çalıştırın)
+-- Aşağıdaki trigger revoke satırları security-advisor-fix.sql içinde de var.
+
 -- Supabase linter — güvenlik düzeltmeleri (bir kez çalıştırın)
 
 -- 1) Rumuz→e-posta RPC kaldır (giriş artık e-posta + şifre)

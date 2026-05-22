@@ -34,11 +34,32 @@
             yasadigiYer: row.yasadigi_yer || null,
             yurtdisiSehir: row.yurtdisi_sehir || null,
             meslek: row.meslek || null,
-            medeniDurum: row.medeni_durum || null
+            medeniDurum: row.medeni_durum || null,
+            durum: row.durum || 'aktif',
+            durumNotu: row.durum_notu || null,
+            zorunluGizli: !!row.zorunlu_gizli
         };
     }
 
-    var PROFIL_SELECT = 'id, username, email, gender, dogum_yili, avatar_url, yasadigi_yer, yurtdisi_sehir, meslek, medeni_durum';
+    function uyeDurumMesaji(durum) {
+        if (durum === 'ban') return 'Hesabın kapatıldı. Destek için iletişime geç.';
+        if (durum === 'askida') return 'Hesabın askıya alındı. Şu an hikaye yazamazsın.';
+        return null;
+    }
+
+    async function uyeDurumKontrol(sb, row) {
+        if (!row) return null;
+        var durum = row.durum || 'aktif';
+        var mesaj = uyeDurumMesaji(durum);
+        if (durum === 'ban') {
+            await sb.auth.signOut();
+            cacheUser(null);
+            throw new Error(mesaj);
+        }
+        return durum;
+    }
+
+    var PROFIL_SELECT = 'id, username, email, gender, dogum_yili, avatar_url, yasadigi_yer, yurtdisi_sehir, meslek, medeni_durum, durum, durum_notu, zorunlu_gizli';
     var UYE_KART_SELECT = 'id, username, gender, dogum_yili, avatar_url, yasadigi_yer, yurtdisi_sehir, meslek, medeni_durum';
 
     function cacheUser(u) {
@@ -54,6 +75,11 @@
         if (!sb) return null;
         var res = await sb.from('uye').select(PROFIL_SELECT).eq('id', userId).maybeSingle();
         if (res.error) throw res.error;
+        if (!res.data) {
+            cacheUser(null);
+            return null;
+        }
+        await uyeDurumKontrol(sb, res.data);
         var u = profileToUser(res.data);
         cacheUser(u);
         return u;
@@ -76,6 +102,15 @@
         var msg = err.message || '';
         if (msg.indexOf('avatar_url') >= 0 && (msg.indexOf('column') >= 0 || err.code === 'PGRST204')) {
             return 'Veritabanında avatar_url sütunu yok. Supabase SQL Editor\'da supabase/itiraf-avatar.sql dosyasını çalıştırın.';
+        }
+        if (msg.indexOf('bildirimler') >= 0 && (msg.indexOf('relation') >= 0 || err.code === 'PGRST205')) {
+            return 'Bildirim tablosu yok. Supabase SQL Editor\'da supabase/bildirimler.sql dosyasını çalıştırın.';
+        }
+        if (msg.indexOf('master_') >= 0 && (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
+            return 'Master yönetim yok. Supabase SQL Editor\'da supabase/master-admin.sql dosyasını çalıştırın.';
+        }
+        if (msg.indexOf('itiraf_ara') >= 0 && (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
+            return 'Arama henüz kurulmadı. Supabase SQL Editor\'da supabase/itiraf-ara.sql dosyasını çalıştırın.';
         }
         if (msg) return msg;
         return String(err);
@@ -297,6 +332,72 @@
         return kulisListeleSayfa(0, 80);
     }
 
+    function itirafAraSonucParse(sonuc) {
+        if (!sonuc) return [];
+        if (Array.isArray(sonuc)) return sonuc;
+        if (typeof sonuc === 'string') {
+            try {
+                var parsed = JSON.parse(sonuc);
+                return Array.isArray(parsed) ? parsed : (parsed ? [parsed] : []);
+            } catch (e) {
+                return [];
+            }
+        }
+        if (typeof sonuc === 'object') return [sonuc];
+        return [];
+    }
+
+    async function itirafAra(q, status, limit) {
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var metin = String(q || '').trim();
+        var st = status === 'podyum' ? 'podyum' : 'kulis';
+        var lim = limit || 50;
+
+        var res = await sb.rpc('itiraf_ara', {
+            p_q: metin,
+            p_status: st,
+            p_limit: lim
+        });
+        if (res.error) throw res.error;
+
+        var data = res.data;
+        if (typeof data === 'string') {
+            try {
+                data = JSON.parse(data);
+            } catch (e) {
+                throw new Error('Arama yanıtı okunamadı');
+            }
+        }
+        if (!data || !data.ok) {
+            throw new Error((data && data.hata) || 'Arama başarısız');
+        }
+
+        var rows = itirafAraSonucParse(data.sonuc);
+        var i;
+        for (i = 0; i < rows.length; i++) {
+            if (rows[i].cevap_sayisi == null) rows[i].cevap_sayisi = 0;
+        }
+
+        try {
+            rows = await itirafSatirlariProfilZenginlestir(rows);
+        } catch (eProfil) { /* kartlar yine de listelenir */ }
+
+        if (rows.length) {
+            try {
+                var ids = rows.map(function (r) { return r.id; });
+                var sayilar = await kokCevapSayilari(ids);
+                rows = satirlaraCevapSayisiEkle(rows, sayilar);
+            } catch (eSay) { /* yorum sayısı 0 kalır */ }
+        }
+
+        return {
+            adet: data.adet != null ? data.adet : rows.length,
+            gosterilen: data.gosterilen != null ? data.gosterilen : rows.length,
+            rows: rows
+        };
+    }
+
     async function podyumBaslikGetir() {
         var sb = getClient();
         if (!sb) return null;
@@ -444,6 +545,38 @@
         return profilGuncelle({ avatarUrl: null });
     }
 
+    async function masterRpc(fn, body) {
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var res = await sb.rpc(fn, { p_body: body || {} });
+        if (res.error) throw res.error;
+        return res.data;
+    }
+
+    async function masterDurum() {
+        var sb = getClient();
+        if (!sb) return { master: false };
+        var res = await sb.rpc('master_durum');
+        if (res.error) return { master: false };
+        return res.data || { master: false };
+    }
+
+    async function masterHikayeIslem(body) {
+        return masterRpc('master_hikaye_islem', body);
+    }
+
+    async function masterUyeIslem(body) {
+        return masterRpc('master_uye_islem', body);
+    }
+
+    async function masterUyeAra(q, limit) {
+        return masterRpc('master_uye_ara', { q: q, limit: limit || 30 });
+    }
+
+    async function masterUyeBul(username) {
+        return masterRpc('master_uye_bul', { username: username });
+    }
+
     async function itirafGuncelle(itirafId, metin) {
         var u = getGunde5User();
         if (!u || !u.id) throw new Error('Hikaye düzenlemek için giriş yapmalısın.');
@@ -461,10 +594,7 @@
         if (!mevcut.data) throw new Error('Bu hikayeyi düzenleyemezsin.');
 
         var kisa = tam.length <= 140 ? tam : tam.slice(0, 137) + '...';
-        var payload = {
-            content_short: kisa,
-            content_full: tam
-        };
+        var payload = { content_full: tam, content_short: kisa };
 
         var res = await sb.from('itiraflar').update(payload).eq('id', id).eq('user_id', u.id).is('silindi_at', null).select().single();
         if (res.error) throw res.error;
@@ -497,22 +627,26 @@
         }
         var u = await loadProfile(sessionRes.data.session.user.id);
         if (!u || !u.id) throw new Error('Hikaye yazmak için giriş yapmalısın.');
+        if (u.durum === 'askida') {
+            throw new Error(uyeDurumMesaji('askida'));
+        }
 
         var tam = String(metin).replace(/^\s+|\s+$/g, '');
         if (!tam) throw new Error('Metin boş olamaz.');
-        var username = gizli ? 'Gizli Üye' : u.username;
+        var zorunluGizli = !!u.zorunluGizli;
+        var gizliMi = zorunluGizli || !!gizli;
+        var username = gizliMi ? 'Gizli Üye' : u.username;
         var kisa = tam.length <= 140 ? tam : tam.slice(0, 137) + '...';
-
         var kayit = {
             user_id: u.id,
             username: username,
             age: u.age,
             gender: u.gender,
             city: null,
-            content_short: kisa,
             content_full: tam,
+            content_short: kisa,
             status: 'kulis',
-            is_gizli: !!gizli
+            is_gizli: gizliMi
         };
 
         var res = await sb.from('itiraflar').insert(kayit).select().single();
@@ -807,6 +941,26 @@
         }
     }
 
+    async function ziyaretKaydet(body) {
+        var sb = getClient();
+        if (!sb) return null;
+        try {
+            var res = await sb.rpc('ziyaret_kaydet', { p_body: body || {} });
+            if (res.error) return null;
+            return res.data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function masterZiyaretIstatistik(gun) {
+        var sb = getClient();
+        if (!sb) return { ok: false };
+        var res = await sb.rpc('master_ziyaret_istatistik', { p_gun: gun || 30 });
+        if (res.error) throw res.error;
+        return res.data || { ok: false };
+    }
+
     async function goruntulenmeKaydet(itirafId) {
         var sb = getClient();
         if (!sb) return null;
@@ -822,6 +976,93 @@
         } catch (e) {
             return null;
         }
+    }
+
+    var bildirimRtKanal = null;
+
+    async function bildirimleriListele(limit) {
+        var sb = getClient();
+        var u = getGunde5User();
+        if (!sb || !u || !u.id) return [];
+        var lim = Math.max(1, Math.min(parseInt(limit, 10) || 30, 80));
+        var res = await sb
+            .from('bildirimler')
+            .select('id, tip, itiraf_id, itiraf_status, yapan_id, yapan_username, cevap_id, okundu, created_at')
+            .eq('alici_id', u.id)
+            .order('created_at', { ascending: false })
+            .limit(lim);
+        if (res.error) throw res.error;
+        return res.data || [];
+    }
+
+    async function bildirimOkunmamisSayisi() {
+        var sb = getClient();
+        var u = getGunde5User();
+        if (!sb || !u || !u.id) return 0;
+        var res = await sb
+            .from('bildirimler')
+            .select('id', { count: 'exact', head: true })
+            .eq('alici_id', u.id)
+            .eq('okundu', false);
+        if (res.error) throw res.error;
+        return res.count != null ? res.count : 0;
+    }
+
+    async function bildirimOkunduIsaretle(bildirimId) {
+        var sb = getClient();
+        var u = getGunde5User();
+        if (!sb || !u || !u.id) return;
+        var id = parseInt(bildirimId, 10);
+        if (!id) return;
+        var res = await sb
+            .from('bildirimler')
+            .update({ okundu: true })
+            .eq('id', id)
+            .eq('alici_id', u.id);
+        if (res.error) throw res.error;
+    }
+
+    async function bildirimTumunuOkundu() {
+        var sb = getClient();
+        var u = getGunde5User();
+        if (!sb || !u || !u.id) return;
+        var res = await sb
+            .from('bildirimler')
+            .update({ okundu: true })
+            .eq('alici_id', u.id)
+            .eq('okundu', false);
+        if (res.error) throw res.error;
+    }
+
+    function bildirimAboneligiBaslat(userId, onYeni) {
+        var sb = getClient();
+        if (!sb || !userId) return null;
+        bildirimAboneligiKapat();
+        var ch = sb.channel('g5_bildirim_' + String(userId).slice(0, 8) + '_' + Date.now());
+        ch.on(
+            'postgres_changes',
+            {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'bildirimler',
+                filter: 'alici_id=eq.' + userId
+            },
+            function () {
+                if (typeof onYeni === 'function') onYeni();
+            }
+        );
+        ch.subscribe();
+        bildirimRtKanal = ch;
+        return ch;
+    }
+
+    function bildirimAboneligiKapat() {
+        if (!bildirimRtKanal) return;
+        try {
+            var sb = getClient();
+            if (sb) sb.removeChannel(bildirimRtKanal);
+        } catch (e) { /* sessiz */ }
+        bildirimRtKanal = null;
     }
 
     async function yukleKulisListe(konteynerId) {
@@ -1101,13 +1342,22 @@
         init: init,
         isConfigured: isConfigured,
         isReady: function () { return ready; },
+        getSupabaseClient: getClient,
         getGunde5User: getGunde5User,
+        bildirimleriListele: bildirimleriListele,
+        bildirimOkunmamisSayisi: bildirimOkunmamisSayisi,
+        bildirimOkunduIsaretle: bildirimOkunduIsaretle,
+        bildirimTumunuOkundu: bildirimTumunuOkundu,
+        bildirimAboneligiBaslat: bildirimAboneligiBaslat,
+        bildirimAboneligiKapat: bildirimAboneligiKapat,
         kayitOl: kayitOl,
         girisYap: girisYap,
         cikisYap: cikisYap,
         itirafGonder: itirafGonder,
         oyVer: oyVer,
         goruntulenmeKaydet: goruntulenmeKaydet,
+        ziyaretKaydet: ziyaretKaydet,
+        masterZiyaretIstatistik: masterZiyaretIstatistik,
         getViewerKey: getViewerKey,
         sikayetGonder: sikayetGonder,
         itirafGetir: itirafGetir,
@@ -1122,6 +1372,7 @@
         YORUM_SAYFA: YORUM_SAYFA,
         KULIS_SAYFA_BOYUT: KULIS_SAYFA_BOYUT,
         kulisListele: kulisListele,
+        itirafAra: itirafAra,
         kulisListeleSayfa: kulisListeleSayfa,
         kulisSayfaHazirla: kulisSayfaHazirla,
         podyumBaslikGetir: podyumBaslikGetir,
@@ -1133,6 +1384,11 @@
         avatarYukle: avatarYukle,
         avatarKaldir: avatarKaldir,
         itirafGuncelle: itirafGuncelle,
+        masterDurum: masterDurum,
+        masterHikayeIslem: masterHikayeIslem,
+        masterUyeIslem: masterUyeIslem,
+        masterUyeAra: masterUyeAra,
+        masterUyeBul: masterUyeBul,
         profilItiraflarim: profilItiraflarim,
         yukleKulisListe: yukleKulisListe,
         yuklePodyumListe: yuklePodyumListe,

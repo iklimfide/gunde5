@@ -3,11 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>gunde5.com - Günün En İyi 5 Hikayesi</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WL5L866SD6"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-WL5L866SD6');
+    </script>
+    <title>gunde5.com — Günün En İyi 5 Hikayesi | Podyum</title>
     <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="description" content="Gunde5.com Podyum: Her gün saat 13:12’de Kulis’in en çok oy alan 5 hikayesi şampiyon olur. Hikâye yaz, oyla, arşive gir.">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="https://gunde5.com/">
+    <link rel="alternate" hreflang="tr" href="https://gunde5.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="gunde5.com">
+    <meta property="og:locale" content="tr_TR">
+    <meta property="og:title" content="gunde5.com — Günün En İyi 5 Hikayesi | Podyum">
+    <meta property="og:description" content="Kulis’te yarışan hikayelerden her gün TOP 5 Podyum’a çıkar. Eğlence ve mizah odaklı topluluk platformu.">
+    <meta property="og:url" content="https://gunde5.com/">
+    <meta property="og:image" content="https://gunde5.com/apple-touch-icon.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="gunde5.com — Günün En İyi 5 Hikayesi">
+    <meta name="twitter:description" content="Her gün 13:12’de TOP 5 Podyum. Hikâyeni yaz, oyla, şampiyon ol.">
+    <meta name="twitter:image" content="https://gunde5.com/apple-touch-icon.png">
+    <meta name="theme-color" content="#1d9bf0">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://gunde5.com/#website",
+          "url": "https://gunde5.com/",
+          "name": "gunde5.com",
+          "description": "Kulis’te hikayeni yaz, oyla; her gün 13:12’de en iyi 5 hikaye Podyum’a çıkar.",
+          "inLanguage": "tr-TR",
+          "publisher": { "@id": "https://gunde5.com/#organization" }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://gunde5.com/#organization",
+          "name": "gunde5.com",
+          "url": "https://gunde5.com/",
+          "email": "arif@gunde5.com"
+        }
+      ]
+    }
+    </script>
     <style>
         :root {
             --bg-main: #ffffff;
@@ -32,6 +80,17 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        .seo-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
         body {
             background-color: var(--bg-main);
             color: var(--text-main);
@@ -627,14 +686,29 @@
             display: block;
             position: relative;
             margin-bottom: 14px;
-            padding-right: 36px;
+            padding: 0 36px 0 0;
+            text-align: center;
+        }
+        .itiraf-modal-baslik-wrap {
+            text-align: center;
         }
         .itiraf-modal-baslik {
             font-size: 17px;
             font-weight: 800;
             color: var(--text-main);
             letter-spacing: -0.3px;
+            text-align: center;
         }
+        .itiraf-modal-ipucu {
+            margin: 10px 0 0;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.45;
+            color: #b45309;
+            text-align: center;
+        }
+        body.dark-mode .itiraf-modal-ipucu { color: #fbbf24; }
+        .itiraf-modal-ipucu .saat-vurgu { color: inherit; font-weight: 800; }
         .itiraf-modal-kapat {
             position: absolute;
             top: -4px;
@@ -1094,6 +1168,7 @@
                         <a href="index.html" class="header-menu-link">🏆 Podyum</a>
                         <a href="kulis.html" class="header-menu-link">🔥 Kulis</a>
                         <a href="profil.html" class="header-menu-link" id="headerMenuProfil" hidden>👤 Profilim</a>
+                        <a href="istatistikler.html" class="header-menu-link" id="headerMenuIstatistik" hidden>📊 İstatistikler</a>
                         <a href="kvkk.html" class="header-menu-link">📋 KVKK</a>
                     </nav>
                 </div>
@@ -1112,12 +1187,13 @@
     </header>
 
     <div class="container">
+        <h1 class="seo-sr-only">gunde5.com — Günün en iyi 5 hikayesi podyumu</h1>
 
         <div class="info-banner">
             <h4>Yeni şampiyonların belirlenmesi için</h4>
             <div class="countdown" id="timer">00:00:00</div>
-            <p>Yarın saat tam <strong class="saat-vurgu">13:12</strong>'de giyotin inecek ve yeni şampiyonlar <a href="index.html">Podyum</a>'a çıkacak.</p>
-            <p>Şampiyon 5 <a href="index.html">Podyum</a>a çıkar, geri kalanlar sonsuza dek silinir. Sen de hikayeni yaz, yarışa katıl, şampiyon olup <a href="index.html">Podyum</a>a çık.</p>
+            <p>Yarın saat tam <strong class="saat-vurgu">13:12</strong>'de giyotin inecek ve yeni şampiyonlar Podyum'a çıkacak.</p>
+            <p>Şampiyon 5 Podyum'a çıkar, geri kalanlar sonsuza dek silinir. Sen de hikayeni yaz, yarışa katıl, şampiyon olup Podyum'a çık.</p>
         </div>
 
         <section class="podyum-sampiyonlar" id="podyumSampiyonlar" hidden aria-labelledby="podyumTopEtiket podyumDonemBaslik">
@@ -1193,8 +1269,11 @@
     <div class="itiraf-modal" id="itirafModal" role="dialog" aria-modal="true" aria-labelledby="itirafModalBaslik" aria-hidden="true">
         <div class="itiraf-modal-panel">
             <div class="itiraf-modal-ust">
-                <h2 class="itiraf-modal-baslik" id="itirafModalBaslik">Hikaye Yaz</h2>
                 <button type="button" class="itiraf-modal-kapat" id="itirafModalKapat" aria-label="Kapat">×</button>
+                <div class="itiraf-modal-baslik-wrap">
+                    <h2 class="itiraf-modal-baslik" id="itirafModalBaslik">Hikayeni Yaz</h2>
+                    <p class="itiraf-modal-ipucu">Unutma hikayesini güzel yazan yarın saat <strong class="saat-vurgu">13:12</strong>'de giyotine kurban gitmez ve podyuma çıkar.</p>
+                </div>
             </div>
             <textarea class="itiraf-textarea" id="itirafTextarea" placeholder="Tüm hikayeni buraya yaz…" rows="10"></textarea>
             <div class="itiraf-modal-alt">
@@ -1209,10 +1288,15 @@
     <script src="js/gunde5-profil.js"></script>
     <script src="js/gunde5-ui.js"></script>
     <script src="js/gunde5-db.js"></script>
+    <script src="js/gunde5-ziyaret.js"></script>
+    <script src="js/gunde5-seo.js"></script>
+    <script src="js/gunde5-paylas.js"></script>
+    <script src="js/gunde5-bildirim.js"></script>
+    <script src="js/gunde5-master.js"></script>
+    <script src="js/gunde5-ara.js"></script>
     <script src="js/gunde5-podyum-lazy.js"></script>
     <script src="js/gunde5-kart-cevap.js"></script>
     <script src="js/gunde5-goruntulenme.js"></script>
-    <script src="js/gunde5-paylas.js"></script>
     <script>
         function guncelleHeaderOturum() {
             Gunde5UI.guncelleHeaderOturum();

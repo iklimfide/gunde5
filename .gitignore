@@ -3,4 +3,3 @@ node_modules/
 *.log
 .DS_Store
 js/gunde5-config.js
-js/kamikaze-config.js

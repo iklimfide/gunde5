@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /profil.html
+Disallow: /profil
+Disallow: /istatistikler.html
+
+Sitemap: https://gunde5.com/sitemap.xml

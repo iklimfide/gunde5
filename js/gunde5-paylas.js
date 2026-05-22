@@ -1,7 +1,10 @@
-/* gunde5 — itiraf paylaş linki + ?itiraf= derin bağlantı */
+/* gunde5 — hikaye iç linki: /index.html?itiraf=id (podyum) veya /kulis.html?itiraf=id (kulis) */
 (function (global) {
+    'use strict';
+
     var UI = global.Gunde5UI;
     var DB = global.Gunde5DB;
+    var HEDEF_ITIRAF_ANAHTAR = 'gunde5_hedef_itiraf';
 
     function injectPaylasStyles() {
         if (document.getElementById('gunde5-paylas-styles')) return;
@@ -13,25 +16,68 @@
         document.head.appendChild(s);
     }
 
-    function sayfaDosyasi(status) {
-        return status === 'podyum' ? 'index.html' : 'kulis.html';
-    }
-
     function kokUrl(path) {
+        if (/^https?:\/\//i.test(path)) return path;
+        if (global.location.protocol === 'file:') {
+            var base = global.location.href.split('?')[0].split('#')[0];
+            base = base.slice(0, base.lastIndexOf('/') + 1);
+            return new URL(path, base).href;
+        }
         return new URL(path, global.location.origin).href;
     }
 
-    function itirafPaylasUrl(id, status) {
-        var sid = encodeURIComponent(String(id));
-        if (status === 'podyum' || status === 'kulis') {
-            return kokUrl('/' + sayfaDosyasi(status)) + '?itiraf=' + sid;
+    function itirafHedefIdKaydet(id) {
+        try {
+            global.sessionStorage.setItem(HEDEF_ITIRAF_ANAHTAR, String(id));
+        } catch (e) { /* sessiz */ }
+    }
+
+    /** URL ?itiraf= veya bildirimden sessionStorage */
+    function itirafHedefIdOku() {
+        var p = new URLSearchParams(global.location.search);
+        var q = p.get('itiraf');
+        if (q && /^\d+$/.test(q)) {
+            return q;
         }
-        return kokUrl('/itiraf/' + sid);
+        try {
+            var s = global.sessionStorage.getItem(HEDEF_ITIRAF_ANAHTAR);
+            if (s && /^\d+$/.test(s)) {
+                global.sessionStorage.removeItem(HEDEF_ITIRAF_ANAHTAR);
+                return s;
+            }
+        } catch (e) { /* sessiz */ }
+        return null;
+    }
+
+    /** Site içi yol — http(s): kökten; file://: göreli (Live Server / dosyadan açılış) */
+    function itirafIcLink(id, status) {
+        var sid = encodeURIComponent(String(id));
+        var dosya = global.location.protocol === 'file:';
+        if (status === 'podyum') {
+            return (dosya ? '' : '/') + 'index.html?itiraf=' + sid;
+        }
+        return (dosya ? '' : '/') + 'kulis.html?itiraf=' + sid;
+    }
+
+    function itirafIcLinkTam(id, status) {
+        return kokUrl(itirafIcLink(id, status));
+    }
+
+    function itirafPaylasUrl(id, status) {
+        return itirafIcLinkTam(id, status || 'kulis');
+    }
+
+    function itirafSayfayaGit(id, status) {
+        var st = status === 'podyum' ? 'podyum' : 'kulis';
+        itirafHedefIdKaydet(id);
+        global.location.href = itirafIcLinkTam(id, st);
     }
 
     function yonlendirItiraf404(itirafId) {
         var hedef = kokUrl('/404.html');
-        if (itirafId) hedef += '?itiraf=' + encodeURIComponent(itirafId);
+        if (itirafId) {
+            hedef += '?itiraf=' + encodeURIComponent(itirafId);
+        }
         global.location.replace(hedef);
     }
 
@@ -46,19 +92,7 @@
 
     async function paylasItiraf(id, status) {
         injectPaylasStyles();
-        var url;
-        if (status === 'podyum' || status === 'kulis') {
-            url = itirafPaylasUrl(id, status);
-        } else if (DB && DB.itirafGetir) {
-            try {
-                var row = await DB.itirafGetir(id);
-                url = itirafPaylasUrl(id, row ? row.status : null);
-            } catch (e) {
-                url = itirafPaylasUrl(id, null);
-            }
-        } else {
-            url = itirafPaylasUrl(id, null);
-        }
+        var url = itirafPaylasUrl(id, status);
         try {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(url);
@@ -124,8 +158,7 @@
     }
 
     async function paylasLinkiKontrolEt(sayfa) {
-        var params = new URLSearchParams(global.location.search);
-        var id = params.get('itiraf');
+        var id = itirafHedefIdOku();
         if (!id || !DB) return true;
 
         var row;
@@ -142,7 +175,7 @@
 
         var hedefSayfa = row.status === 'podyum' ? 'podyum' : 'kulis';
         if (hedefSayfa !== sayfa) {
-            global.location.replace(itirafPaylasUrl(id, row.status));
+            global.location.replace(itirafIcLinkTam(id, row.status));
             return false;
         }
         return true;
@@ -152,8 +185,7 @@
         if (!DB || !UI) return;
         injectPaylasStyles();
 
-        var params = new URLSearchParams(global.location.search);
-        var id = params.get('itiraf');
+        var id = itirafHedefIdOku();
         if (!id) return;
 
         var row;
@@ -170,12 +202,16 @@
 
         var hedefSayfa = row.status === 'podyum' ? 'podyum' : 'kulis';
         if (hedefSayfa !== sayfa) {
-            global.location.replace(itirafPaylasUrl(id, row.status));
+            global.location.replace(itirafIcLinkTam(id, row.status));
             return;
         }
 
         var listeId = sayfa === 'podyum' ? 'podyumListe' : 'kulisListe';
         await kartEkleVeyaBul(row, sayfa, listeId);
+        if (global.Gunde5SEO && Gunde5SEO.itirafUygula) {
+            Gunde5SEO.itirafUygula(row, sayfa);
+        }
+
         setTimeout(function () {
             kartAcVeKaydir(id, false);
         }, 80);
@@ -184,7 +220,11 @@
     global.paylasItiraf = paylasItiraf;
     global.paylasItirafFromCard = paylasItirafFromCard;
     global.Gunde5Paylas = {
+        itirafIcLink: itirafIcLink,
+        itirafIcLinkTam: itirafIcLinkTam,
         itirafPaylasUrl: itirafPaylasUrl,
+        itirafSayfayaGit: itirafSayfayaGit,
+        itirafHedefIdOku: itirafHedefIdOku,
         paylasItiraf: paylasItiraf,
         isleDerinBaglanti: isleDerinBaglanti,
         paylasLinkiKontrolEt: paylasLinkiKontrolEt,

@@ -583,6 +583,7 @@
         kart.setAttribute('data-id', kartId);
         kart.setAttribute('data-status', 'kulis');
         if (row.user_id) kart.setAttribute('data-itiraf-user-id', String(row.user_id));
+        if (rumuz && rumuz !== 'Gizli Üye') kart.setAttribute('data-itiraf-username', rumuz);
         kart.innerHTML =
             '<div class="card-header">' +
                 '<div class="user-block">' +
@@ -656,6 +657,7 @@
         kart.setAttribute('data-id', kartId);
         kart.setAttribute('data-status', 'podyum');
         if (row.user_id) kart.setAttribute('data-itiraf-user-id', String(row.user_id));
+        if (rumuz && rumuz !== 'Gizli Üye') kart.setAttribute('data-itiraf-username', rumuz);
         kart.setAttribute('data-podyum-sira', String(siraIdx));
         if (row.podyum_donem) {
             kart.setAttribute('data-podyum-donem', String(row.podyum_donem));
@@ -986,12 +988,16 @@
             link.className = 'header-profil-link cins-' + cins;
             uygulaAvatarElement(document.getElementById('headerProfilAvatar'), u);
             if (u.gender) document.body.setAttribute('data-user-gender', cins);
+            if (global.Gunde5Bildirim && global.Gunde5Bildirim.baslat) global.Gunde5Bildirim.baslat();
+            if (global.Gunde5Master && global.Gunde5Master.durumYenile) global.Gunde5Master.durumYenile();
         } else {
             if (authBtns) authBtns.hidden = false;
             if (menuProfil) menuProfil.hidden = true;
             if (wrap) wrap.hidden = true;
             link.style.display = 'none';
             document.body.classList.remove('oturum-acik');
+            if (global.Gunde5Bildirim && global.Gunde5Bildirim.durdur) global.Gunde5Bildirim.durdur();
+            if (global.Gunde5Master && global.Gunde5Master.durumYenile) global.Gunde5Master.durumYenile();
         }
     }
 

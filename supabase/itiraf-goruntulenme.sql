@@ -19,10 +19,31 @@ alter table public.itiraf_goruntulenmeler enable row level security;
 -- Yalnızca RPC (security definer) yazar; istemci doğrudan erişemez
 revoke all on public.itiraf_goruntulenmeler from public, anon, authenticated;
 
+drop policy if exists itiraf_goruntulenme_sayac on public.itiraflar;
+create policy itiraf_goruntulenme_sayac on public.itiraflar
+    for update to anon, authenticated
+    using (
+        silindi_at is null
+        and coalesce(current_setting('app.goruntulenme', true), '') = '1'
+    )
+    with check (coalesce(current_setting('app.goruntulenme', true), '') = '1');
+
+drop policy if exists itiraf_goruntulenmeler_insert_anon on public.itiraf_goruntulenmeler;
+create policy itiraf_goruntulenmeler_insert_anon on public.itiraf_goruntulenmeler
+    for insert to anon, authenticated
+    with check (
+        exists (
+            select 1 from public.itiraflar i
+            where i.id = itiraf_id and i.silindi_at is null
+        )
+    );
+
+grant insert on public.itiraf_goruntulenmeler to anon, authenticated;
+
 create or replace function public.itiraf_goruntulenme_kaydet(p_itiraf_id bigint, p_viewer_key text)
 returns json
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare
@@ -36,9 +57,11 @@ begin
     if length(v_key) < 8 then
         return null;
     end if;
-    if not exists (select 1 from public.itiraflar i where i.id = p_itiraf_id) then
+    if not exists (select 1 from public.itiraflar i where i.id = p_itiraf_id and i.silindi_at is null) then
         return null;
     end if;
+
+    perform set_config('app.goruntulenme', '1', true);
 
     update public.itiraflar
     set sayfa_goruntulenme = sayfa_goruntulenme + 1

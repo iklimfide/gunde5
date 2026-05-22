@@ -23,9 +23,10 @@ on conflict (id) do update set
     file_size_limit = excluded.file_size_limit,
     allowed_mime_types = excluded.allowed_mime_types;
 
+-- Geniş SELECT politikası yok (Security Advisor 0025 — bucket listeleme).
+-- public bucket: doğrudan object URL ile okuma devam eder.
+
 drop policy if exists avatars_public_read on storage.objects;
-create policy avatars_public_read on storage.objects
-    for select using (bucket_id = 'avatars');
 
 drop policy if exists avatars_insert_own on storage.objects;
 create policy avatars_insert_own on storage.objects

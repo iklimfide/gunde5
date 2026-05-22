@@ -3,11 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WL5L866SD6"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-WL5L866SD6');
+    </script>
     <title>gunde5.com - Profilim</title>
     <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="description" content="Gunde5.com üye profili (özel sayfa).">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="bingbot" content="noindex, nofollow">
+    <meta name="theme-color" content="#1d9bf0">
     <style>
         :root {
             --bg-main: #ffffff;
@@ -862,6 +876,7 @@
                         <a href="index.html" class="header-menu-link">🏆 Podyum</a>
                         <a href="kulis.html" class="header-menu-link">🔥 Kulis</a>
                         <a href="profil.html" class="header-menu-link" id="headerMenuProfil" hidden>👤 Profilim</a>
+                        <a href="istatistikler.html" class="header-menu-link" id="headerMenuIstatistik" hidden>📊 İstatistikler</a>
                         <a href="kvkk.html" class="header-menu-link">📋 KVKK</a>
                     </nav>
                 </div>
@@ -881,6 +896,7 @@
 
     <div class="container">
         <h1 class="page-title">Profilim</h1>
+        <div id="profilMasterWrap"></div>
         <div id="profilIcerik"></div>
     </div>
 
@@ -946,6 +962,10 @@
     <script src="js/gunde5-ui.js"></script>
     <script src="js/gunde5-profil.js"></script>
     <script src="js/gunde5-db.js"></script>
+    <script src="js/gunde5-ziyaret.js"></script>
+    <script src="js/gunde5-paylas.js"></script>
+    <script src="js/gunde5-bildirim.js"></script>
+    <script src="js/gunde5-master.js"></script>
     <script>
         function htmlEsc(s) {
             return Gunde5UI.htmlEsc(s);
@@ -1016,7 +1036,9 @@
                     var metin = it.content_full || it.content_short || '';
                     var ozet = metin.length > 120 ? metin.slice(0, 120) + '…' : metin;
                     var durumSinif = it.status === 'podyum' ? 'durum-podyum' : 'durum-kulis';
-                    var durumHref = it.status === 'podyum' ? 'index.html' : 'kulis.html';
+                    var durumHref = (window.Gunde5Paylas && Gunde5Paylas.itirafIcLink)
+                        ? Gunde5Paylas.itirafIcLink(it.id, it.status)
+                        : (it.status === 'podyum' ? '/index.html?itiraf=' : '/kulis.html?itiraf=') + encodeURIComponent(String(it.id));
                     var durumMetin = it.status === 'podyum' ? 'Podyum' : 'Kulis';
                     var tarih = '';
                     if (it.created_at) {
@@ -1093,6 +1115,7 @@
 
             profilFormuBagla(u);
             profilItiraflariBagla();
+            if (window.Gunde5Master && Gunde5Master.durumYenile) Gunde5Master.durumYenile();
         }
 
         function profilYerSecenekleriDoldur(selectEl, secili) {

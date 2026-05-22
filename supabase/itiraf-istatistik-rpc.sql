@@ -34,14 +34,14 @@ begin
 end;
 $$;
 
-revoke all on function public.itiraf_oy_sayaclarini_yenile(bigint[]) from public;
-grant execute on function public.itiraf_oy_sayaclarini_yenile(bigint[]) to anon, authenticated;
+revoke all on function public.itiraf_oy_sayaclarini_yenile(bigint[]) from public, anon, authenticated;
+grant execute on function public.itiraf_oy_sayaclarini_yenile(bigint[]) to service_role;
 
 create or replace function public.itiraf_cevap_sayilari(p_ids bigint[])
 returns table (itiraf_id bigint, adet int)
 language sql
-security definer
 stable
+security invoker
 set search_path = public
 as $$
     select
