@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İstatistikler — gunde5.com</title>
+    <title>Üyeler — gunde5.com</title>
     <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <meta name="description" content="Gunde5 site istatistikleri (yönetici).">
+    <meta name="description" content="Gunde5 üye yönetimi (yönetici).">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#1d9bf0">
     <style>
@@ -765,6 +765,302 @@
         }
         .istat-hata { color: #b91c1c; }
         body.dark-mode .istat-hata { color: #f87171; }
+        .uyeler-filtre {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin: 0 0 12px;
+        }
+        .uyeler-ara {
+            display: flex;
+            gap: 8px;
+            flex: 1 1 200px;
+            min-width: 200px;
+        }
+        .uyeler-ara input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            background: var(--bg-card);
+            color: var(--text-main);
+        }
+        .uyeler-ara-btn, .uyeler-filtre-btn, .uyeler-sayfa-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .uyeler-filtre-btn--aktif {
+            background: #f59e0b;
+            border-color: #f59e0b;
+            color: #111;
+        }
+        .uyeler-ozet {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin: 0 0 8px;
+        }
+        .uyeler-sayfalama {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        .uyeler-sayfa-btn:disabled { opacity: 0.4; cursor: default; }
+        .uyeler-tablo-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-card);
+        }
+        .uyeler-tablo { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .uyeler-tablo th, .uyeler-tablo td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+        .uyeler-tablo th {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            background: rgba(0,0,0,0.03);
+        }
+        body.dark-mode .uyeler-tablo th { background: rgba(255,255,255,0.04); }
+        .uyeler-satir { cursor: pointer; }
+        .uyeler-satir:hover { background: rgba(29,155,240,0.06); }
+        .uyeler-durum { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; }
+        .uyeler-durum--aktif { background: #dcfce7; color: #166534; }
+        .uyeler-durum--askida { background: #fef3c7; color: #92400e; }
+        .uyeler-durum--ban { background: #fee2e2; color: #991b1b; }
+        body.dark-mode .uyeler-durum--aktif { background: #14532d; color: #86efac; }
+        body.dark-mode .uyeler-durum--askida { background: #78350f; color: #fcd34d; }
+        body.dark-mode .uyeler-durum--ban { background: #7f1d1d; color: #fca5a5; }
+        .uyeler-gizli { font-size: 10px; color: var(--text-muted); font-weight: 700; }
+        .uyeler-bos, .uyeler-hata {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding: 16px 0;
+        }
+        .uyeler-hata { color: #b91c1c; }
+        body.dark-mode .uyeler-hata { color: #f87171; }
+        .uyeler-yetkisiz {
+            text-align: center;
+            padding: 32px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+        .uyeler-yetkisiz-metin { font-size: 14px; font-weight: 700; color: var(--text-muted); margin-bottom: 16px; }
+        .uyeler-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            background: rgba(17,24,39,0.45);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 12px;
+        }
+        .uyeler-modal[hidden] { display: none !important; }
+        .uyeler-modal-panel {
+            width: 100%;
+            max-width: 640px;
+            max-height: 92vh;
+            overflow-y: auto;
+            background: var(--bg-card);
+            border-radius: 16px 16px 0 0;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+        }
+        @media (min-width: 640px) {
+            .uyeler-modal { align-items: center; }
+            .uyeler-modal-panel { border-radius: 16px; }
+        }
+        .uyeler-modal-baslik {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .uyeler-modal-baslik h2 { font-size: 18px; font-weight: 900; }
+        .uyeler-modal-kapat {
+            border: none;
+            background: transparent;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-muted);
+            line-height: 1;
+        }
+        .uyeler-detay-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .uyeler-alan { display: flex; flex-direction: column; gap: 4px; }
+        .uyeler-alan--tam { grid-column: 1 / -1; }
+        .uyeler-alan--gizli { display: none !important; }
+        .uyeler-alan span { font-size: 11px; font-weight: 800; color: var(--text-muted); }
+        .uyeler-alan input, .uyeler-alan select, .uyeler-alan textarea {
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-family: inherit;
+        }
+        .uyeler-detay-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 12px 0;
+            line-height: 1.45;
+        }
+        .uyeler-detay-aksiyonlar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .uyeler-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-main);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .uyeler-btn--kaydet { background: #1d9bf0; border-color: #1d9bf0; color: #fff; }
+        .uyeler-btn--tehlike { color: #dc2626; border-color: #fecaca; }
+        body.dark-mode .uyeler-btn--tehlike { color: #f87171; border-color: #7f1d1d; }
+        .uyeler-btn--kucuk { padding: 6px 10px; font-size: 11px; }
+        .uyeler-avatar-blok { margin-bottom: 4px; }
+        .uyeler-avatar-satir {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .uyeler-avatar-onizleme {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0;
+            overflow: hidden;
+            background: var(--male-color, #2563eb);
+        }
+        .uyeler-avatar-onizleme.has-foto { background: var(--border-color); }
+        .uyeler-avatar-onizleme img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .uyeler-avatar-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .uyeler-aktivite {
+            background: rgba(29, 155, 240, 0.06);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .uyeler-aktivite p { margin: 0 0 4px; }
+        .uyeler-aktivite p:last-child { margin-bottom: 0; }
+        .uyeler-aktivite-etiket { font-weight: 800; color: var(--text-muted); }
+        .uyeler-aktivite-yol { color: var(--text-muted); font-size: 11px; }
+        .uyeler-sekme-nav {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .uyeler-sekme-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-main);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .uyeler-sekme-btn--aktif {
+            background: #1d9bf0;
+            border-color: #1d9bf0;
+            color: #fff;
+        }
+        .uyeler-icerik-kart {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: var(--bg-main);
+        }
+        .uyeler-icerik-ust {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .uyeler-icerik-rozet { font-size: 10px; }
+        .uyeler-icerik-rozet--silindi { color: #b91c1c; }
+        .uyeler-icerik-ta {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.45;
+            resize: vertical;
+            font-family: inherit;
+            background: var(--bg-card);
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+        .uyeler-icerik-aksiyon {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .uyeler-icerik-link {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1d9bf0;
+            text-decoration: none;
+            margin-left: auto;
+        }
+        .uyeler-icerik-link:hover { text-decoration: underline; }
+        .uyeler-ip { font-size: 11px; font-variant-numeric: tabular-nums; }
     </style>
     <script src="js/gunde5-shell.js"></script>
     <script defer src="js/gunde5-perf.js"></script>
@@ -775,7 +1071,7 @@
     <script src="js/gunde5-db.js"></script>
     <script src="js/gunde5-paylas.js"></script>
     <script src="js/gunde5-bildirim.js"></script>
-    <script src="js/gunde5-istatistik.js"></script>
+    <script src="js/gunde5-master-uyeler.js"></script>
 </head>
 <body>
     <header>
@@ -810,24 +1106,44 @@
     </header>
 
     <div class="container">
-        <h1 class="page-title">📊 İstatistikler</h1>
-        <p class="intro">Site trafiği ve özet sayılar — yalnızca yönetici hesabı.</p>
+        <h1 class="page-title">👥 Üyeler</h1>
+        <p class="intro">Tüm üye bilgileri, düzenleme ve hesap işlemleri — yalnızca site yöneticisi.</p>
 
-        <div id="istatistikYetkisiz" class="istat-yetkisiz" hidden>
-            <p class="istat-yetkisiz-metin"></p>
-            <button type="button" class="istat-giris-btn" id="istatistikGirisBtn" hidden>Giriş yap</button>
+        <div id="uyelerYetkisiz" class="uyeler-yetkisiz" hidden>
+            <p class="uyeler-yetkisiz-metin"></p>
+            <button type="button" class="istat-giris-btn" id="uyelerGirisBtn" hidden>Giriş yap</button>
         </div>
 
-        <div id="istatistikFiltre" class="istat-filtre" hidden>
-            <button type="button" class="istat-gun-btn" data-istat-gun="7" aria-pressed="false">7 gün</button>
-            <button type="button" class="istat-gun-btn istat-gun-btn--aktif" data-istat-gun="30" aria-pressed="true">30 gün</button>
-            <button type="button" class="istat-gun-btn" data-istat-gun="90" aria-pressed="false">90 gün</button>
-            <button type="button" class="istat-gun-btn" data-istat-gun="365" aria-pressed="false">365 gün</button>
-            <button type="button" class="istat-yenile-btn" id="istatistikYenile">Yenile</button>
+        <div id="uyelerFiltre" class="uyeler-filtre" hidden>
+            <div class="uyeler-ara">
+                <input type="search" id="uyelerAra" placeholder="Rumuz veya e-posta ara…" autocomplete="off">
+                <button type="button" class="uyeler-ara-btn" id="uyelerAraBtn">Ara</button>
+            </div>
+            <button type="button" class="uyeler-filtre-btn uyeler-filtre-btn--aktif" data-uyeler-durum="" aria-pressed="true">Tümü</button>
+            <button type="button" class="uyeler-filtre-btn" data-uyeler-durum="aktif" aria-pressed="false">Aktif</button>
+            <button type="button" class="uyeler-filtre-btn" data-uyeler-durum="askida" aria-pressed="false">Askıda</button>
+            <button type="button" class="uyeler-filtre-btn" data-uyeler-durum="ban" aria-pressed="false">Banlı</button>
         </div>
 
-        <p id="istatistikYukleniyor" class="istat-yukleniyor" hidden>Yükleniyor…</p>
-        <div id="istatistikIcerik" hidden></div>
+        <div id="uyelerApp" hidden>
+            <p id="uyelerOzet" class="uyeler-ozet"></p>
+            <p id="uyelerYukleniyor" class="istat-yukleniyor" hidden>Yükleniyor…</p>
+            <div id="uyelerListe"></div>
+            <div class="uyeler-sayfalama">
+                <button type="button" class="uyeler-sayfa-btn" id="uyelerOnceki">← Önceki</button>
+                <button type="button" class="uyeler-sayfa-btn" id="uyelerSonraki">Sonraki →</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="uyelerDetayModal" class="uyeler-modal" hidden role="dialog" aria-modal="true" aria-labelledby="uyelerDetayBaslik">
+        <div class="uyeler-modal-panel">
+            <div class="uyeler-modal-baslik">
+                <h2 id="uyelerDetayBaslik">Üye</h2>
+                <button type="button" class="uyeler-modal-kapat" id="uyelerDetayKapat" aria-label="Kapat">×</button>
+            </div>
+            <div id="uyelerDetayGovde"></div>
+        </div>
     </div>
 
     <div id="authOverlay" class="auth-overlay" aria-hidden="true">
@@ -958,7 +1274,7 @@
                 Gunde5UI.oturumModallariKapat();
                 guncelleHeaderOturum();
                 Gunde5UI.showToast('Hoş geldin, ' + (u && u.username ? u.username : '') + '!');
-                if (window.Gunde5Istatistik && Gunde5Istatistik.init) Gunde5Istatistik.init(true);
+                if (window.Gunde5MasterUyeler && Gunde5MasterUyeler.init) Gunde5MasterUyeler.init(true);
             } catch (err) {
                 Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
             }
@@ -974,7 +1290,7 @@
                 Gunde5UI.oturumModallariKapat();
                 guncelleHeaderOturum();
                 Gunde5UI.showToast('Tekrar hoş geldin!');
-                if (window.Gunde5Istatistik && Gunde5Istatistik.init) Gunde5Istatistik.init(true);
+                if (window.Gunde5MasterUyeler && Gunde5MasterUyeler.init) Gunde5MasterUyeler.init(true);
             } catch (err) {
                 Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
             }

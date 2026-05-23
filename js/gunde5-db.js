@@ -114,6 +114,16 @@
         if (msg.indexOf('bildirimler') >= 0 && (msg.indexOf('relation') >= 0 || err.code === 'PGRST205')) {
             return 'Bildirim tablosu yok. Supabase SQL Editor\'da supabase/bildirimler.sql dosyasını çalıştırın.';
         }
+        if ((msg.indexOf('master_uye_listele') >= 0 || msg.indexOf('master_uye_guncelle') >= 0 ||
+                msg.indexOf('master_uye_detay') >= 0 || msg.indexOf('master_uye_icerik') >= 0 ||
+                msg.indexOf('master_cevap_islem') >= 0) &&
+            (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
+            return 'Üye yönetimi henüz kurulmadı. Supabase SQL Editor\'da supabase/master-uyeler-yonetim.sql ve master-uye-aktivite-icerik.sql dosyalarını çalıştırın.';
+        }
+        if (msg.indexOf('master_hikaye_islem') >= 0 && msg.indexOf('meta') >= 0 &&
+            (msg.indexOf('bilinmeyen') >= 0 || msg.indexOf('gecersiz') >= 0)) {
+            return 'Kart meta düzenleme için supabase/master-hikaye-kart-meta.sql dosyasını çalıştırın.';
+        }
         if (msg.indexOf('master_') >= 0 && (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
             return 'Master yönetim yok. Supabase SQL Editor\'da supabase/master-admin.sql dosyasını çalıştırın.';
         }
@@ -570,7 +580,28 @@
     }
 
     async function masterHikayeIslem(body) {
-        return masterRpc('master_hikaye_islem', body);
+        var b = Object.assign({}, body || {});
+        if (b.content_full != null) {
+            b.content_full = metinPerdele(String(b.content_full).replace(/^\s+|\s+$/g, ''));
+        }
+        return masterRpc('master_hikaye_islem', b);
+    }
+
+    async function masterUyeIcerik(uyeId, opts) {
+        var o = opts || {};
+        return masterRpc('master_uye_icerik', {
+            uye_id: uyeId,
+            hikaye_limit: o.hikayeLimit || 80,
+            yorum_limit: o.yorumLimit || 120
+        });
+    }
+
+    async function masterCevapIslem(body) {
+        var b = Object.assign({}, body || {});
+        if (b.content != null) {
+            b.content = metinPerdele(String(b.content).replace(/^\s+|\s+$/g, ''));
+        }
+        return masterRpc('master_cevap_islem', b);
     }
 
     async function masterUyeIslem(body) {
@@ -583,6 +614,83 @@
 
     async function masterUyeBul(username) {
         return masterRpc('master_uye_bul', { username: username });
+    }
+
+    async function masterUyeListele(opts) {
+        var o = opts || {};
+        return masterRpc('master_uye_listele', {
+            q: o.q != null ? o.q : '',
+            limit: o.limit || 40,
+            offset: o.offset || 0,
+            durum: o.durum || ''
+        });
+    }
+
+    async function masterUyeDetay(uyeId) {
+        return masterRpc('master_uye_detay', { uye_id: uyeId });
+    }
+
+    async function masterUyeGuncelle(body) {
+        return masterRpc('master_uye_guncelle', body);
+    }
+
+    function avatarDosyaDogrula(file) {
+        if (!file || !file.type || file.type.indexOf('image/') !== 0) {
+            throw new Error('JPEG, PNG veya WebP bir görsel seç.');
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            throw new Error('Görsel en fazla 2 MB olabilir.');
+        }
+        var ext = 'jpg';
+        if (file.type === 'image/png') ext = 'png';
+        else if (file.type === 'image/webp') ext = 'webp';
+        else if (file.type === 'image/gif') ext = 'gif';
+        return ext;
+    }
+
+    async function masterUyeAvatarYukle(uyeId, file) {
+        if (!uyeId) throw new Error('Üye seçilmedi.');
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+
+        var ext = avatarDosyaDogrula(file);
+        var path = uyeId + '/avatar.' + ext;
+        var up = await sb.storage.from('avatars').upload(path, file, {
+            upsert: true,
+            contentType: file.type,
+            cacheControl: '3600'
+        });
+        if (up.error) throw up.error;
+
+        var pub = sb.storage.from('avatars').getPublicUrl(path);
+        var url = pub.data.publicUrl + '?t=' + Date.now();
+        var sonuc = await masterUyeGuncelle({ uye_id: uyeId, avatar_url: url });
+        if (!sonuc || !sonuc.ok) {
+            throw new Error((sonuc && sonuc.hata) || 'Profil fotoğrafı kaydedilemedi.');
+        }
+        return sonuc;
+    }
+
+    async function masterUyeAvatarKaldir(uyeId) {
+        if (!uyeId) throw new Error('Üye seçilmedi.');
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+
+        try {
+            var liste = await sb.storage.from('avatars').list(uyeId, { limit: 20 });
+            if (!liste.error && liste.data && liste.data.length) {
+                var yollar = liste.data.map(function (o) {
+                    return uyeId + '/' + o.name;
+                });
+                await sb.storage.from('avatars').remove(yollar);
+            }
+        } catch (e) { /* depolama temizliği isteğe bağlı */ }
+
+        var sonuc = await masterUyeGuncelle({ uye_id: uyeId, avatar_url: null });
+        if (!sonuc || !sonuc.ok) {
+            throw new Error((sonuc && sonuc.hata) || 'Fotoğraf kaldırılamadı.');
+        }
+        return sonuc;
     }
 
     async function itirafGuncelle(itirafId, metin) {
@@ -1497,6 +1605,13 @@
         masterUyeIslem: masterUyeIslem,
         masterUyeAra: masterUyeAra,
         masterUyeBul: masterUyeBul,
+        masterUyeListele: masterUyeListele,
+        masterUyeDetay: masterUyeDetay,
+        masterUyeGuncelle: masterUyeGuncelle,
+        masterUyeAvatarYukle: masterUyeAvatarYukle,
+        masterUyeAvatarKaldir: masterUyeAvatarKaldir,
+        masterUyeIcerik: masterUyeIcerik,
+        masterCevapIslem: masterCevapIslem,
         profilItiraflarim: profilItiraflarim,
         yukleKulisListe: yukleKulisListe,
         yuklePodyumListe: yuklePodyumListe,

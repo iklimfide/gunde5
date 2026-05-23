@@ -98,6 +98,34 @@
         return ref.slice(0, 500);
     }
 
+    function ipAdresiAl(cb) {
+        try {
+            var cached = global.sessionStorage.getItem('gunde5_ip');
+            if (cached) {
+                cb(cached);
+                return;
+            }
+        } catch (e) { /* */ }
+        if (!global.fetch) {
+            cb('');
+            return;
+        }
+        global.fetch('https://api.ipify.org?format=json', { cache: 'no-store' })
+            .then(function (r) {
+                return r.json();
+            })
+            .then(function (d) {
+                var ip = d && d.ip ? String(d.ip).slice(0, 45) : '';
+                try {
+                    if (ip) global.sessionStorage.setItem('gunde5_ip', ip);
+                } catch (e2) { /* */ }
+                cb(ip);
+            })
+            .catch(function () {
+                cb('');
+            });
+    }
+
     function kayitGonder() {
         var D = db();
         if (!D || !D.ziyaretKaydet || !D.isConfigured || !D.isConfigured()) return;
@@ -118,7 +146,10 @@
             if (utm[k]) body[k] = utm[k];
         });
 
-        D.ziyaretKaydet(body);
+        ipAdresiAl(function (ip) {
+            if (ip) body.ip_adresi = ip;
+            D.ziyaretKaydet(body);
+        });
     }
 
     function baslat() {

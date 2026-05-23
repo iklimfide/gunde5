@@ -36,6 +36,19 @@ Hikaye iç linki: `http://localhost:8080/index.html?itiraf=7` (podyum), `http://
 
 İleride istatistik menüsü: `Gunde5DB.masterZiyaretIstatistik(30)`.
 
+## Hikaye toplu ekleme (3 bot hikaye)
+
+**SQL Editor (önerilen):** `supabase/seed-hikayeler-txt-3.sql` → Run (çift eklemez).
+
+**Service role ile:** Dashboard → API → `service_role` anahtarı →
+
+```powershell
+$env:SUPABASE_SERVICE_ROLE_KEY = "eyJ..."
+node scripts/hikaye-ekle.mjs
+```
+
+Yeni txt dosyaları için: `python scripts/hikaye-txt-to-sql.py dosya.txt -o supabase/seed-yeni.sql`
+
 ## Arama (kulis + podyum)
 
 SQL Editor → `itiraf-ara.sql` (rumuz, hikaye metni, cevap/yorum). Sayaç kutusunun altındaki arama kutusu yazdıkça sonuçları listeler.
@@ -56,8 +69,10 @@ SQL Editor → `itiraf-ara.sql` (rumuz, hikaye metni, cevap/yorum). Sayaç kutus
 
 1. SQL Editor → `master-admin.sql` (e-posta `site_ayar.master_email` = `arifguvenc@gmail.com`).
 2. Bu hesapla giriş yap → profil menüsü → **Moderasyon: Açık**.
-3. Açıkken: rumuz altında **Gizli üye yap / Askıya al / Banla**; hikaye altında **Değiştir / Gizle / Sil**.
+3. Açıkken: rumuz altında **Gizli üye yap / Askıya al / Banla**; hikaye altında **Değiştir / Gizle / Sil**. Bot/seed kartlarda (üye hesabı yok) **Kart** satırından yaş, cinsiyet, il düzenlenir → `master-hikaye-kart-meta.sql`.
 4. Mevcut DB için ek: `master-uye-gizli-patch.sql` (gizli üye + güncel RPC).
+5. Üye listesi / profil düzenleme / fotoğraf yükleme / hesap silme: `master-uyeler-yonetim.sql` → hamburger **👥 Üyeler** → `uyeler.html` (avatar depolama için master storage politikası da bu dosyada).
+6. Son aktif / IP / hikaye-yorum düzenleme: `master-uye-aktivite-icerik.sql` (`ziyaret_kaydet` güncellenir; IP proxy başlığı veya istemci ipify yedek).
 
 ## Bildirimler
 
@@ -71,5 +86,6 @@ Canlı Supabase’de sırayla:
 
 1. **`security-advisor-fix.sql`** (search_path, görüntülenme, trigger revoke)
 2. **`security-advisor-definer-fix.sql`** — DEFINER + EXECUTE uyarıları (arama INVOKER, master INVOKER+RLS, trigger/kamikaze revoke)
+3. **`security-advisor-definer-fix-2.sql`** — `ziyaret_kaydet`, `master_uye_guncelle`, `master_uye_islem` → INVOKER; `auth.users` / dedup → `private` şema (PostgREST dışı). **`master-uyeler-yonetim.sql` öncesi veya sonrası** bir kez çalıştırın.
 
 Dashboard → Security Advisor → **Rerun**. Kamikaze paneli kullanılmıyorsa **`kamikaze-drop.sql`** (RPC temizliği; aksi halde kamikaze yalnızca `service_role` ile çalışır).

@@ -73,7 +73,11 @@
             '.profil-mod-uye-bilgi{font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text-main,#111)}' +
             'body.dark-mode .profil-mod-uye-bilgi{color:var(--text-main)}' +
             '.profil-mod-uye-bilgi span{color:var(--text-muted);font-weight:500}' +
-            '.master-uye-bot-notu{font-size:11px;color:var(--text-muted);font-weight:600;line-height:1.4;margin:0;flex:1 1 100%}';
+            '.master-bot-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;width:100%}' +
+            '.master-bot-meta label{font-size:11px;font-weight:700;color:var(--text-muted);display:flex;align-items:center;gap:4px}' +
+            '.master-bot-meta input,.master-bot-meta select{padding:4px 8px;border:1px solid var(--border-color,rgba(0,0,0,.12));border-radius:8px;font-size:12px;font-family:inherit;background:var(--bg-card,#fff);color:var(--text-main,#111)}' +
+            '.master-bot-meta .master-bot-yurtdisi{flex:1 1 100%}' +
+            '.master-bot-meta .master-bot-yurtdisi.master-bot-yurtdisi--gizli{display:none}';
         document.head.appendChild(s);
     }
 
@@ -87,6 +91,7 @@
             profilModTemizle();
             menuGuncelle();
             menuIstatistikGuncelle();
+            menuUyelerGuncelle();
             return;
         }
         try {
@@ -99,6 +104,7 @@
         document.body.classList.toggle('master-mod-aktif', modAcik);
         menuGuncelle();
         menuIstatistikGuncelle();
+        menuUyelerGuncelle();
         if (modAcik) {
             kartlariBagla();
             profilModMount();
@@ -161,6 +167,34 @@
         var kvkk = nav.querySelector('a[href="kvkk.html"]');
         if (kvkk) nav.insertBefore(link, kvkk);
         else nav.appendChild(link);
+    }
+
+    function menuUyelerKaldir() {
+        var link = document.getElementById('headerMenuUyeler');
+        if (link && link.parentNode) link.parentNode.removeChild(link);
+    }
+
+    function menuUyelerGuncelle() {
+        if (!masterMi) {
+            menuUyelerKaldir();
+            return;
+        }
+        var link = document.getElementById('headerMenuUyeler');
+        if (link) return;
+        var nav = document.querySelector('.header-menu-nav');
+        if (!nav) return;
+        link = document.createElement('a');
+        link.href = 'uyeler.html';
+        link.className = 'header-menu-link header-menu-link--master';
+        link.id = 'headerMenuUyeler';
+        link.textContent = '👥 Üyeler';
+        var istat = document.getElementById('headerMenuIstatistik');
+        if (istat) nav.insertBefore(link, istat);
+        else {
+            var kvkk = nav.querySelector('a[href="kvkk.html"]');
+            if (kvkk) nav.insertBefore(link, kvkk);
+            else nav.appendChild(link);
+        }
     }
 
     function mountMenuItem() {
@@ -342,12 +376,23 @@
                 if (ui() && ui().showToast) ui().showToast('Hikaye silindi');
                 return;
             }
-            duzenleKapat(card);
-            kartMetinGuncelle(card, it.content_full);
-            oySayilariGuncelle(card, it.up_votes, it.down_votes);
+            if (islem !== 'meta') {
+                duzenleKapat(card);
+            }
+            if (it.content_full != null) {
+                kartMetinGuncelle(card, it.content_full);
+            }
+            if (it.up_votes != null) {
+                oySayilariGuncelle(card, it.up_votes, it.down_votes);
+            }
+            if (islem === 'meta') {
+                kartMetaGuncelleUi(card, it);
+            }
             if (ui() && ui().showToast) {
                 if (islem === 'oylar') {
                     ui().showToast('Oylar kaydedildi: 👍 ' + it.up_votes + ' · 👎 ' + it.down_votes);
+                } else if (islem === 'meta') {
+                    ui().showToast('Kart profili güncellendi');
                 } else {
                     ui().showToast('Kaydedildi');
                 }
@@ -413,6 +458,126 @@
             }
         }
         return null;
+    }
+
+    function profil() {
+        return global.Gunde5Profil;
+    }
+
+    function kartMetaOku(card) {
+        var age = parseInt(card.getAttribute('data-itiraf-age'), 10);
+        if (isNaN(age)) {
+            var metaEl = card.querySelector('.user-meta');
+            if (metaEl) {
+                var m = metaEl.textContent.match(/(\d+)\s*Yaş/);
+                if (m) age = parseInt(m[1], 10);
+            }
+        }
+        var gender = card.getAttribute('data-itiraf-gender');
+        if (!gender) {
+            gender = card.classList.contains('male') ? 'male' : 'female';
+        }
+        return {
+            age: isNaN(age) ? 25 : age,
+            gender: gender === 'male' ? 'male' : 'female',
+            yasadigi_yer: card.getAttribute('data-itiraf-yer') || '',
+            yurtdisi_sehir: card.getAttribute('data-itiraf-yurtdisi') || ''
+        };
+    }
+
+    function kartMetaGuncelleUi(card, it) {
+        if (!card || !it) return;
+        var cins = it.gender === 'male' ? 'male' : 'female';
+        card.classList.remove('male', 'female');
+        card.classList.add(cins);
+        if (it.age != null) card.setAttribute('data-itiraf-age', String(it.age));
+        if (it.gender) card.setAttribute('data-itiraf-gender', it.gender);
+        if (it.yasadigi_yer) {
+            card.setAttribute('data-itiraf-yer', it.yasadigi_yer);
+        } else {
+            card.removeAttribute('data-itiraf-yer');
+        }
+        if (it.yurtdisi_sehir) {
+            card.setAttribute('data-itiraf-yurtdisi', it.yurtdisi_sehir);
+        } else {
+            card.removeAttribute('data-itiraf-yurtdisi');
+        }
+        var det = card.querySelector('.user-details');
+        if (det && ui() && ui().kullaniciMetaHtml) {
+            var metaHtml = ui().kullaniciMetaHtml({
+                age: it.age,
+                gender: it.gender,
+                yasadigi_yer: it.yasadigi_yer,
+                yurtdisi_sehir: it.yurtdisi_sehir,
+                meslek: it.meslek,
+                medeni_durum: it.medeni_durum,
+                is_gizli: false
+            });
+            var old = det.querySelector('.user-meta');
+            if (old) {
+                old.outerHTML = metaHtml;
+            } else if (metaHtml) {
+                det.insertAdjacentHTML('beforeend', metaHtml);
+            }
+        }
+    }
+
+    function botMetaBar(card) {
+        var bar = document.createElement('div');
+        bar.className = 'master-uye-aksiyon master-bot-meta-wrap';
+        var meta = kartMetaOku(card);
+        var P = profil();
+        var yerHtml = '<option value="">—</option>';
+        if (P && P.YER_SECENEKLERI) {
+            P.YER_SECENEKLERI.forEach(function (s) {
+                yerHtml +=
+                    '<option value="' + esc(s.value) + '"' +
+                    (meta.yasadigi_yer === s.value ? ' selected' : '') +
+                    '>' + esc(s.label) + '</option>';
+            });
+        }
+        var yurtdisiGizli = meta.yasadigi_yer !== 'yurtdisi';
+        bar.innerHTML =
+            '<span class="master-uye-aksiyon-etiket">Kart</span>' +
+            '<div class="master-bot-meta">' +
+            '<label>Yaş <input type="number" data-m-meta-age min="18" max="120" value="' +
+            esc(meta.age) + '"></label>' +
+            '<label>Cinsiyet <select data-m-meta-gender>' +
+            '<option value="female"' + (meta.gender === 'female' ? ' selected' : '') + '>Kadın</option>' +
+            '<option value="male"' + (meta.gender === 'male' ? ' selected' : '') + '>Erkek</option>' +
+            '</select></label>' +
+            '<label>İl <select data-m-meta-yer>' + yerHtml + '</select></label>' +
+            '<label class="master-bot-yurtdisi' + (yurtdisiGizli ? ' master-bot-yurtdisi--gizli' : '') +
+            '">Yurtdışı şehir <input type="text" data-m-meta-yurtdisi maxlength="80" value="' +
+            esc(meta.yurtdisi_sehir) + '"></label>' +
+            '<button type="button" class="master-aksiyon-btn" data-m-meta-kaydet>Profili kaydet</button>' +
+            '</div>';
+
+        var yerSel = bar.querySelector('[data-m-meta-yer]');
+        var yurtdisiWrap = bar.querySelector('.master-bot-yurtdisi');
+        if (yerSel && yurtdisiWrap) {
+            yerSel.addEventListener('change', function () {
+                yurtdisiWrap.classList.toggle('master-bot-yurtdisi--gizli', yerSel.value !== 'yurtdisi');
+            });
+        }
+        bar.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-m-meta-kaydet]');
+            if (!btn) return;
+            e.stopPropagation();
+            var ageInp = bar.querySelector('[data-m-meta-age]');
+            var cinsSel = bar.querySelector('[data-m-meta-gender]');
+            var yurtdisiInp = bar.querySelector('[data-m-meta-yurtdisi]');
+            var yerVal = yerSel ? yerSel.value : '';
+            hikayeIslem(card, 'meta', {
+                age: parseInt(ageInp && ageInp.value, 10),
+                gender: cinsSel ? cinsSel.value : 'female',
+                yasadigi_yer: yerVal || null,
+                yurtdisi_sehir: yerVal === 'yurtdisi' && yurtdisiInp
+                    ? yurtdisiInp.value.trim() || null
+                    : null
+            });
+        });
+        return bar;
     }
 
     function uyeAksiyonBar(uyeId, kartBaglam) {
@@ -519,17 +684,11 @@
             var uid = await uyeIdCoz(card);
             if (uid) {
                 header.insertAdjacentElement('afterend', uyeAksiyonBar(uid, true));
-            } else {
+            } else if (!card.querySelector('.master-bot-meta-wrap')) {
                 var rumuz = card.getAttribute('data-itiraf-username') ||
                     (card.querySelector('.username') && card.querySelector('.username').textContent.trim());
                 if (rumuz && rumuz !== 'Gizli Üye' && rumuz !== 'Müdavim') {
-                    var uyari = document.createElement('div');
-                    uyari.className = 'master-uye-aksiyon';
-                    uyari.innerHTML =
-                        '<span class="master-uye-aksiyon-etiket">Üye</span>' +
-                        '<p class="master-uye-bot-notu"><strong>' + esc(rumuz) +
-                        '</strong> — kayıtlı üye hesabı yok (bot/seed). Ban ve askıya yalnızca gerçek üyelerde; bu kart için alttaki <strong>Hikaye</strong> satırını kullan (Gizle, Sil…).</p>';
-                    header.insertAdjacentElement('afterend', uyari);
+                    header.insertAdjacentElement('afterend', botMetaBar(card));
                 }
             }
         }

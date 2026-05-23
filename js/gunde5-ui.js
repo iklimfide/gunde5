@@ -35,6 +35,26 @@
         return '<span class="user-meta">' + htmlEsc(meta) + '</span>';
     }
 
+    function kartMetaDataAttr(kart, row) {
+        if (!kart || !row) return;
+        if (row.age != null && row.age !== '') {
+            kart.setAttribute('data-itiraf-age', String(row.age));
+        }
+        if (row.gender) {
+            kart.setAttribute('data-itiraf-gender', row.gender === 'male' ? 'male' : 'female');
+        }
+        if (row.yasadigi_yer) {
+            kart.setAttribute('data-itiraf-yer', String(row.yasadigi_yer));
+        } else {
+            kart.removeAttribute('data-itiraf-yer');
+        }
+        if (row.yurtdisi_sehir) {
+            kart.setAttribute('data-itiraf-yurtdisi', String(row.yurtdisi_sehir));
+        } else {
+            kart.removeAttribute('data-itiraf-yurtdisi');
+        }
+    }
+
     var TOAST_UYE_MS = 9000;
 
     function injectToastStyles() {
@@ -682,6 +702,7 @@
                 kartAksiyonBarHtml(kartId, up, down, row.cevap_sayisi, goruntulenme) +
             '</div>' +
             kartDetayShell();
+        kartMetaDataAttr(kart, row);
         avatarKartUygula(kart.querySelector('.avatar'), row);
         return kart;
     }
@@ -761,6 +782,7 @@
                 kartAksiyonBarHtml(kartId, up, down, row.cevap_sayisi, goruntulenme) +
             '</div>' +
             kartDetayShell();
+        kartMetaDataAttr(kart, row);
         avatarKartUygula(kart.querySelector('.avatar'), row);
         if (siraIdx === 0) {
             var lcpImg = kart.querySelector('.avatar img');
@@ -1159,6 +1181,7 @@
         podyumDonemleriKronolojikSirala: podyumDonemleriKronolojikSirala,
         kullaniciMetaSatir: kullaniciMetaSatir,
         kullaniciMetaHtml: kullaniciMetaHtml,
+        kartMetaDataAttr: kartMetaDataAttr,
         uyeMi: uyeMi,
         gitProfilSayfasi: gitProfilSayfasi,
         itirafUyeGerekli: itirafUyeGerekli,
