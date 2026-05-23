@@ -2,16 +2,9 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WL5L866SD6"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-WL5L866SD6');
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="js/gunde5-shell.js"></script>
+    <script defer src="js/gunde5-perf.js"></script>
     <title>gunde5.com - Profilim</title>
     <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -960,16 +953,15 @@
         </div>
     </div>
 
-    <script src="js/gunde5-shell.js"></script>
     <script src="js/gunde5-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+    <script src="js/gunde5-perde.js"></script>
     <script src="js/gunde5-ui.js"></script>
     <script src="js/gunde5-profil.js"></script>
     <script src="js/gunde5-db.js"></script>
-    <script src="js/gunde5-ziyaret.js"></script>
-    <script src="js/gunde5-paylas.js"></script>
-    <script src="js/gunde5-bildirim.js"></script>
-    <script src="js/gunde5-master.js"></script>
+    <script defer src="js/gunde5-paylas.js"></script>
+    <script defer src="js/gunde5-bildirim.js"></script>
+    <script defer src="js/gunde5-perf.js"></script>
     <script>
         function htmlEsc(s) {
             return Gunde5UI.htmlEsc(s);
@@ -1058,7 +1050,7 @@
                         '<div class="profil-itiraf" data-itiraf-id="' + it.id + '" data-itiraf-metin="' + encodeURIComponent(metin) + '">' +
                         '<div class="profil-itiraf-gorunum">' +
                         '<div class="profil-itiraf-ust">' +
-                        '<p class="profil-itiraf-metin">' + htmlEsc(ozet) + '</p>' +
+                        '<p class="profil-itiraf-metin">' + (Gunde5UI.metinGoster ? Gunde5UI.metinGoster(ozet) : htmlEsc(ozet)) + '</p>' +
                         '<button type="button" class="profil-itiraf-duzenle-btn">Düzenle</button>' +
                         '</div>' +
                         '<div class="profil-itiraf-alt">' +

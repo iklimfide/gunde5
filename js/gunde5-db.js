@@ -96,6 +96,13 @@
         }
     }
 
+    function metinPerdele(m) {
+        if (global.Gunde5Perde && global.Gunde5Perde.metinPerdele) {
+            return global.Gunde5Perde.metinPerdele(m);
+        }
+        return m;
+    }
+
     function hataMesaji(err) {
         if (!err) return 'Bir hata oluştu.';
         if (err.code === '42501') return 'Profil kaydı için oturum gerekli. Sayfayı yenileyip tekrar dene.';
@@ -165,7 +172,7 @@
         sb.auth.onAuthStateChange(async function (event, session) {
             if (session && session.user) {
                 await loadProfile(session.user.id);
-            } else {
+            } else if (event === 'SIGNED_OUT') {
                 cacheUser(null);
             }
             if (typeof global.guncelleHeaderOturum === 'function') {
@@ -587,7 +594,7 @@
         var id = parseInt(itirafId, 10);
         if (!id) throw new Error('Geçersiz hikaye.');
 
-        var tam = String(metin || '').replace(/^\s+|\s+$/g, '');
+        var tam = metinPerdele(String(metin || '').replace(/^\s+|\s+$/g, ''));
         if (!tam) throw new Error('Metin boş olamaz.');
 
         var mevcut = await sb.from('itiraflar').select('id, is_gizli').eq('id', id).eq('user_id', u.id).is('silindi_at', null).maybeSingle();
@@ -632,7 +639,7 @@
             throw new Error(uyeDurumMesaji('askida'));
         }
 
-        var tam = String(metin).replace(/^\s+|\s+$/g, '');
+        var tam = metinPerdele(String(metin).replace(/^\s+|\s+$/g, ''));
         if (!tam) throw new Error('Metin boş olamaz.');
         var zorunluGizli = !!u.zorunluGizli;
         var gizliMi = zorunluGizli || !!gizli;
@@ -844,7 +851,7 @@
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
 
         var nid = parseInt(itirafId, 10);
-        var icerik = String(metin || '').replace(/^\s+|\s+$/g, '');
+        var icerik = metinPerdele(String(metin || '').replace(/^\s+|\s+$/g, ''));
         if (!icerik) throw new Error('Metin boş olamaz.');
         if (icerik.length > 2000) throw new Error('En fazla 2000 karakter yazabilirsin.');
 

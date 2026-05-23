@@ -6,7 +6,9 @@
     var kartState = {};
 
     function esc(s) {
-        return UI ? UI.htmlEsc(s) : String(s);
+        if (UI && UI.metinGoster) return UI.metinGoster(s);
+        if (UI) return UI.htmlEsc(s);
+        return String(s);
     }
 
     function injectStyles() {

@@ -3,15 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WL5L866SD6"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-WL5L866SD6');
-    </script>
     <title>Hakkında — gunde5.com</title>
     <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -477,17 +468,35 @@
             gap: 8px;
         }
         .accordion-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            --acc: #2563eb;
+            --acc-soft: #eff6ff;
+            --acc-border: #bfdbfe;
+            background: var(--acc-soft);
+            border: 1px solid var(--acc-border);
             border-radius: 14px;
             overflow: hidden;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .accordion-item[open] {
-            border-color: rgba(37, 99, 235, 0.25);
+            border-color: var(--acc);
+            box-shadow: 0 4px 14px color-mix(in srgb, var(--acc) 18%, transparent);
         }
-        body.dark-mode .accordion-item[open] {
-            border-color: rgba(96, 165, 250, 0.3);
-        }
+        .accordion-item--site { --acc: #2563eb; --acc-soft: #eff6ff; --acc-border: #bfdbfe; }
+        .accordion-item--podyum { --acc: #d97706; --acc-soft: #fffbeb; --acc-border: #fcd34d; }
+        .accordion-item--giyotin { --acc: #dc2626; --acc-soft: #fef2f2; --acc-border: #fca5a5; }
+        .accordion-item--saat { --acc: #78350f; --acc-soft: #fef9c3; --acc-border: #ca8a04; }
+        .accordion-item--kulis { --acc: #e11d48; --acc-soft: #fff1f2; --acc-border: #fb7185; }
+        .accordion-item--reklam { --acc: #059669; --acc-soft: #ecfdf5; --acc-border: #6ee7b7; }
+        .accordion-item--gizlilik { --acc: #7c3aed; --acc-soft: #f5f3ff; --acc-border: #c4b5fd; }
+        .accordion-item--iletisim { --acc: #0891b2; --acc-soft: #ecfeff; --acc-border: #67e8f9; }
+        body.dark-mode .accordion-item--site { --acc: #60a5fa; --acc-soft: rgba(29, 155, 240, 0.14); --acc-border: rgba(96, 165, 250, 0.35); }
+        body.dark-mode .accordion-item--podyum { --acc: #fbbf24; --acc-soft: rgba(217, 119, 6, 0.16); --acc-border: rgba(251, 191, 36, 0.35); }
+        body.dark-mode .accordion-item--giyotin { --acc: #f87171; --acc-soft: rgba(220, 38, 38, 0.14); --acc-border: rgba(248, 113, 113, 0.35); }
+        body.dark-mode .accordion-item--saat { --acc: #facc15; --acc-soft: rgba(120, 53, 15, 0.22); --acc-border: rgba(234, 179, 8, 0.45); }
+        body.dark-mode .accordion-item--kulis { --acc: #fb7185; --acc-soft: rgba(225, 29, 72, 0.16); --acc-border: rgba(251, 113, 133, 0.4); }
+        body.dark-mode .accordion-item--reklam { --acc: #34d399; --acc-soft: rgba(5, 150, 105, 0.14); --acc-border: rgba(52, 211, 153, 0.35); }
+        body.dark-mode .accordion-item--gizlilik { --acc: #a78bfa; --acc-soft: rgba(124, 58, 237, 0.14); --acc-border: rgba(167, 139, 250, 0.35); }
+        body.dark-mode .accordion-item--iletisim { --acc: #22d3ee; --acc-soft: rgba(8, 145, 178, 0.14); --acc-border: rgba(34, 211, 238, 0.35); }
         .accordion-item summary {
             list-style: none;
             cursor: pointer;
@@ -495,6 +504,7 @@
             font-size: 14px;
             font-weight: 800;
             letter-spacing: -0.01em;
+            color: var(--acc);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -511,19 +521,20 @@
             align-items: center;
             justify-content: center;
             border-radius: 8px;
-            background: rgba(0, 0, 0, 0.04);
-            color: var(--text-muted);
+            background: color-mix(in srgb, var(--acc) 14%, transparent);
+            color: var(--acc);
             font-size: 16px;
             font-weight: 700;
             line-height: 1;
-            transition: transform 0.2s ease;
-        }
-        body.dark-mode .accordion-item summary::after {
-            background: rgba(255, 255, 255, 0.06);
+            transition: transform 0.2s ease, background 0.2s ease;
         }
         .accordion-item[open] summary::after {
             content: '−';
             transform: rotate(180deg);
+            background: color-mix(in srgb, var(--acc) 22%, transparent);
+        }
+        .accordion-body .saat-vurgu {
+            color: var(--acc);
         }
         .accordion-body {
             padding: 0 16px 14px;
@@ -647,6 +658,7 @@
         body.dark-mode .saat-vurgu { color: #fbbf24; }
     </style>
     <script src="js/gunde5-shell.js"></script>
+    <script defer src="js/gunde5-perf.js"></script>
     <script src="js/gunde5-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
     <script src="js/gunde5-profil.js"></script>
@@ -695,42 +707,49 @@
         <p class="intro">Gunde5.com Arif G. (<a href="mailto:arif@gunde5.com">arif@gunde5.com</a>) tarafından eğlence ve mizah amaçlı kurulmuştur. Herhangi bir ticari beklentisi yoktur.</p>
 
         <div class="accordion">
-            <details class="accordion-item">
+            <details class="accordion-item accordion-item--site">
                 <summary>gunde5.com nedir?</summary>
                 <div class="accordion-body">
                     <p>gunde5.com <a href="kulis.html">Kulis</a> sayfasında kısa ve uzun perde arkası insan hikayeleri paylaşılır; beğeni, beğenmeme ve yorumlarla hikayeler puanlanır. Her gün en güçlü 5 hikaye <a href="index.html">Podyum</a>’a çıkar. İlk 5’e giremeyen hikayeler de sonsuza kadar silinir. Site tamamen eğlence ve mizah odaklıdır.</p>
                 </div>
             </details>
 
-            <details class="accordion-item">
+            <details class="accordion-item accordion-item--podyum">
                 <summary>Podyum nasıl çalışır?</summary>
                 <div class="accordion-body">
                     <p>Her gün saat <strong class="saat-vurgu">13:12</strong>’de Giyotin iner ve <a href="kulis.html">Kulis</a>’te giyotinin seçtiği 5 hikaye otomatik olarak <a href="index.html">Podyum</a>’a çıkar ve gunde5.com arşivine girerek silinmez, kalıcı olur.</p>
                 </div>
             </details>
 
-            <details class="accordion-item">
+            <details class="accordion-item accordion-item--giyotin">
                 <summary>Giyotin nedir?</summary>
                 <div class="accordion-body">
                     <p>İlk 5'e girenlerin kralı, giremeyenlerin celladıdır.</p>
                 </div>
             </details>
 
-            <details class="accordion-item">
+            <details class="accordion-item accordion-item--saat">
                 <summary>Neden 13.12?</summary>
                 <div class="accordion-body">
                     <p>Giyotinin canı öyle istemiş.</p>
                 </div>
             </details>
 
-            <details class="accordion-item">
+            <details class="accordion-item accordion-item--kulis">
                 <summary>Kulis’te kalan hikayelere ne olur?</summary>
                 <div class="accordion-body">
                     <p>Giyotin her gün saat <strong class="saat-vurgu">13.12</strong>'de ilk 5 hikaye günün şampiyonları olarak <a href="index.html">Podyum</a>a çıkarır. Geri kalanları tarihin çöplüğüne gönderir ve <a href="kulis.html">Kulis</a> her gün saat <strong class="saat-vurgu">13.12</strong>'de sıfırlanır.</p>
                 </div>
             </details>
 
-            <details class="accordion-item">
+            <details class="accordion-item accordion-item--reklam">
+                <summary>İlerde reklam olacak mı?</summary>
+                <div class="accordion-body">
+                    <p>Para miktarının ikna gücüne bağlı. Sonuçta kayınpederin 50.000 Dolarlık teklifine kim hayır diyebilir ki? 😂😂😂</p>
+                </div>
+            </details>
+
+            <details class="accordion-item accordion-item--gizlilik">
                 <summary>Gizlilik</summary>
                 <div class="accordion-body">
                     <p>Tüm hikayeler herkese açıktır. Herkes okuyabilir. Oy vermek ya da cevap yazmak için üyelik gerekir. Yazarken “Gizli Üye” seçeneğini işaretlersen rumuzun “Gizli Üye” olarak görünür; profil bilgilerin o hikayede paylaşılmaz. Paylaşılan içerikten yazarı sorumludur.</p>
@@ -738,7 +757,7 @@
                 </div>
             </details>
 
-            <details class="accordion-item">
+            <details class="accordion-item accordion-item--iletisim">
                 <summary>İletişim</summary>
                 <div class="accordion-body">
                     <p>Geri bildirim, öneri veya sorularınız için <a href="iletisim.html" class="mini-link">İletişim</a> sayfasına bakabilir veya <a href="mailto:arif@gunde5.com" class="mini-link">arif@gunde5.com</a> adresine yazabilirsiniz.</p>

@@ -250,11 +250,32 @@
         }
     }
 
+    function kartOySayisiOku(card) {
+        var upEl = card.querySelector('.up-num');
+        var downEl = card.querySelector('.down-num');
+        return {
+            up: upEl ? parseInt(upEl.textContent, 10) || 0 : 0,
+            down: downEl ? parseInt(downEl.textContent, 10) || 0 : 0
+        };
+    }
+
     function oySayilariGuncelle(card, up, down) {
-        var upEl = card.querySelector('.like-count');
-        var downEl = card.querySelector('.dislike-count');
-        if (upEl) upEl.textContent = String(up);
-        if (downEl) downEl.textContent = String(down);
+        var U = ui();
+        var upN = parseInt(up, 10) || 0;
+        var downN = parseInt(down, 10) || 0;
+        var upStr = U && U.formatSayac ? U.formatSayac(upN) : String(upN);
+        var downStr = U && U.formatSayac ? U.formatSayac(downN) : String(downN);
+        var upEl = card.querySelector('.up-num');
+        var downEl = card.querySelector('.down-num');
+        if (upEl) upEl.textContent = upStr;
+        if (downEl) downEl.textContent = downStr;
+        var bar = card.querySelector('.master-hikaye-aksiyon');
+        if (bar) {
+            var uIn = bar.querySelector('[data-m-up]');
+            var dIn = bar.querySelector('[data-m-down]');
+            if (uIn) uIn.value = String(upN);
+            if (dIn) dIn.value = String(downN);
+        }
     }
 
     function duzenleKapat(card) {
@@ -298,7 +319,10 @@
 
     async function hikayeIslem(card, islem, ek) {
         var D = db();
-        if (!D || !D.masterHikayeIslem) return;
+        if (!D || !D.masterHikayeIslem) {
+            if (ui() && ui().showToast) ui().showToast('Master API yüklenemedi', 'hata');
+            return;
+        }
         var id = card.getAttribute('data-id');
         var body = { itiraf_id: parseInt(id, 10), islem: islem };
         if (ek) {
@@ -321,7 +345,13 @@
             duzenleKapat(card);
             kartMetinGuncelle(card, it.content_full);
             oySayilariGuncelle(card, it.up_votes, it.down_votes);
-            if (ui() && ui().showToast) ui().showToast('Kaydedildi');
+            if (ui() && ui().showToast) {
+                if (islem === 'oylar') {
+                    ui().showToast('Oylar kaydedildi: 👍 ' + it.up_votes + ' · 👎 ' + it.down_votes);
+                } else {
+                    ui().showToast('Kaydedildi');
+                }
+            }
         } catch (err) {
             if (ui() && ui().showToast) ui().showToast(D.hataMesaji ? D.hataMesaji(err) : String(err), 'hata');
         }
@@ -411,10 +441,9 @@
         bar.className = 'master-hikaye-aksiyon';
 
         var status = card.getAttribute('data-status') || 'kulis';
-        var up = card.querySelector('.like-count');
-        var down = card.querySelector('.dislike-count');
-        var upVal = up ? up.textContent : '0';
-        var downVal = down ? down.textContent : '0';
+        var oySay = kartOySayisiOku(card);
+        var upVal = String(oySay.up);
+        var downVal = String(oySay.down);
 
         bar.innerHTML =
             '<span class="master-uye-aksiyon-etiket">Hikaye</span>' +

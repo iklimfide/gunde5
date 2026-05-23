@@ -2,17 +2,19 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WL5L866SD6"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-WL5L866SD6');
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>gunde5.com — Günün En İyi 5 Hikayesi | Podyum</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <script src="js/gunde5-shell.js"></script>
+    <script defer src="js/gunde5-config.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+    <script defer src="js/gunde5-profil.js"></script>
+    <script defer src="js/gunde5-perde.js"></script>
+    <script defer src="js/gunde5-ui.js"></script>
+    <script defer src="js/gunde5-db.js"></script>
+    <script defer src="js/gunde5-podyum-lazy.js"></script>
+    <script defer src="js/gunde5-kart-cevap.js"></script>
     <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -178,13 +180,10 @@
                 0 0 0 1px rgba(255, 255, 255, 0.45) inset;
         }
         .podyum-sampiyonlar-banner {
-            display: flex;
-            align-items: center;
-            gap: 14px;
+            position: relative;
             padding: 18px 16px 16px;
             background: linear-gradient(145deg, #fffbeb 0%, #fde68a 38%, #f5c842 72%, #e8b923 100%);
             border-bottom: 1px solid rgba(180, 120, 0, 0.28);
-            position: relative;
         }
         .podyum-sampiyonlar-banner::after {
             content: '';
@@ -194,7 +193,10 @@
             pointer-events: none;
         }
         .podyum-sampiyonlar-trophy {
-            flex-shrink: 0;
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
             width: 52px;
             height: 52px;
             display: flex;
@@ -206,14 +208,14 @@
             border: 2px solid rgba(217, 119, 6, 0.35);
             border-radius: 50%;
             box-shadow: 0 3px 10px rgba(146, 90, 0, 0.22);
-            position: relative;
             z-index: 1;
+            pointer-events: none;
         }
         .podyum-sampiyonlar-metin {
-            flex: 1;
-            min-width: 0;
             position: relative;
             z-index: 1;
+            width: 100%;
+            text-align: center;
         }
         .podyum-sampiyonlar-etiket {
             margin: 0 0 6px;
@@ -223,6 +225,7 @@
             text-transform: uppercase;
             color: #78350f;
             line-height: 1.1;
+            text-align: center;
         }
         .podyum-sampiyonlar-baslik {
             margin: 0;
@@ -232,6 +235,7 @@
             letter-spacing: 0.06em;
             text-transform: uppercase;
             color: #78350f;
+            text-align: center;
         }
         .podyum-sampiyonlar-liste {
             padding: 14px 12px 6px;
@@ -674,15 +678,20 @@
             max-width: 500px;
             max-height: calc(100vh - 96px);
             padding: 18px;
-            background: #ffffff;
-            border: 1px solid #f3f4f6;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
             border-radius: 20px;
-            box-shadow: 0 10px 36px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 10px 36px rgba(0, 0, 0, 0.12);
             transform: translateX(-50%) translateY(14px);
             transition: transform 0.22s ease;
         }
         .itiraf-modal.acik .itiraf-modal-panel {
             transform: translateX(-50%) translateY(0);
+        }
+        body.dark-mode .itiraf-modal-panel {
+            background: #1c2128;
+            border-color: #2f3336;
+            box-shadow: 0 10px 36px rgba(0, 0, 0, 0.45);
         }
         .itiraf-modal-ust {
             display: block;
@@ -718,7 +727,7 @@
             width: 32px;
             height: 32px;
             padding: 0;
-            border: 1px solid #f3f4f6;
+            border: 1px solid #e5e7eb;
             border-radius: 50%;
             background: #ffffff;
             color: #6b7280;
@@ -726,15 +735,22 @@
             line-height: 1;
             font-weight: 400;
             cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         .itiraf-modal-kapat:active { transform: scale(0.94); }
+        body.dark-mode .itiraf-modal-kapat {
+            background: #0f1419;
+            border-color: #2f3336;
+            color: var(--text-muted);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        }
         .itiraf-textarea {
             display: block;
             width: 100%;
             min-height: 220px;
             max-height: calc(100vh - 220px);
             padding: 14px 16px;
-            border: 1px solid #f3f4f6;
+            border: 1px solid #e5e7eb;
             border-radius: 14px;
             background: #ffffff;
             color: #111827;
@@ -743,10 +759,21 @@
             font-weight: 500;
             resize: vertical;
             outline: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
         }
         .itiraf-textarea:focus {
-            border-color: #e5e7eb;
-            box-shadow: 0 0 0 3px rgba(243, 244, 246, 0.9);
+            border-color: #1d9bf0;
+            box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.22);
+        }
+        body.dark-mode .itiraf-textarea {
+            background: #0f1419;
+            color: var(--text-main);
+            border-color: #2f3336;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+        }
+        body.dark-mode .itiraf-textarea:focus {
+            border-color: #1d9bf0;
+            box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.28);
         }
         .itiraf-textarea::placeholder { color: #9ca3af; }
         .itiraf-modal-alt {
@@ -761,35 +788,64 @@
             margin-right: auto;
             display: inline-flex;
             align-items: center;
-            padding: 9px 14px;
-            border: 1px solid #f3f4f6;
-            border-radius: 20px;
+            padding: 10px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
             background: #ffffff;
             font-size: 12px;
-            font-weight: 700;
-            color: #6b7280;
+            font-weight: 800;
+            color: #374151;
             cursor: pointer;
-            transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
         }
         .gizli-uye-sec.aktif {
-            border-color: #ddd6fe;
+            border-color: #8b5cf6;
             background: #faf5ff;
             color: #6d28d9;
-            box-shadow: 0 0 0 3px rgba(237, 233, 254, 0.7);
+            box-shadow: 0 2px 12px rgba(109, 40, 217, 0.22), 0 0 0 3px rgba(139, 92, 246, 0.2);
         }
         .gizli-uye-sec:active { transform: scale(0.97); }
-        .itiraf-gonder-btn {
-            padding: 10px 22px;
-            border: 1px solid #f3f4f6;
-            border-radius: 20px;
-            background: #ffffff;
-            font-size: 13px;
-            font-weight: 800;
-            color: #111827;
-            cursor: pointer;
-            transition: border-color 0.15s ease, transform 0.1s ease;
+        body.dark-mode .gizli-uye-sec {
+            background: #0f1419;
+            border-color: #3f4448;
+            color: #e7e9ea;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
         }
-        .itiraf-gonder-btn:active { transform: scale(0.97); }
+        body.dark-mode .gizli-uye-sec.aktif {
+            border-color: #8b5cf6;
+            background: #1e1033;
+            color: #c4b5fd;
+            box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3), 0 0 0 3px rgba(139, 92, 246, 0.18);
+        }
+        .itiraf-gonder-btn {
+            padding: 11px 26px;
+            border: none;
+            border-radius: 999px;
+            background: #1d9bf0;
+            font-size: 14px;
+            font-weight: 800;
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 3px 14px rgba(29, 155, 240, 0.4);
+            transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+        }
+        .itiraf-gonder-btn:active {
+            transform: scale(0.97);
+            background: #1a8cd8;
+        }
+        .itiraf-gonder-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+        body.dark-mode .itiraf-gonder-btn {
+            background: #1d9bf0;
+            color: #ffffff;
+            box-shadow: 0 3px 16px rgba(29, 155, 240, 0.45);
+        }
+        body.dark-mode .itiraf-gonder-btn:active {
+            background: #1a8cd8;
+        }
 
         .header-sol {
             position: absolute;
@@ -1277,7 +1333,7 @@
                 <button type="button" class="itiraf-modal-kapat" id="itirafModalKapat" aria-label="Kapat">×</button>
                 <div class="itiraf-modal-baslik-wrap">
                     <h2 class="itiraf-modal-baslik" id="itirafModalBaslik">Hikayeni Yaz</h2>
-                    <p class="itiraf-modal-ipucu">Unutma hikayesini güzel yazan yarın saat <strong class="saat-vurgu">13:12</strong>'de giyotine kurban gitmez ve podyuma çıkar.</p>
+                    <p class="itiraf-modal-ipucu">Unutma, Sadece en güzel 5 hikaye <strong class="saat-vurgu">13.12</strong>'de giyotine kurban gitmez,<br>EFSANE olur, podyuma çıkar.</p>
                 </div>
             </div>
             <textarea class="itiraf-textarea" id="itirafTextarea" placeholder="Tüm hikayeni buraya yaz…" rows="10"></textarea>
@@ -1288,21 +1344,11 @@
         </div>
     </div>
 
-    <script src="js/gunde5-shell.js"></script>
-    <script src="js/gunde5-config.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
-    <script src="js/gunde5-profil.js"></script>
-    <script src="js/gunde5-ui.js"></script>
-    <script src="js/gunde5-db.js"></script>
-    <script src="js/gunde5-ziyaret.js"></script>
-    <script src="js/gunde5-seo.js"></script>
-    <script src="js/gunde5-paylas.js"></script>
-    <script src="js/gunde5-bildirim.js"></script>
-    <script src="js/gunde5-master.js"></script>
-    <script src="js/gunde5-ara.js"></script>
-    <script src="js/gunde5-podyum-lazy.js"></script>
-    <script src="js/gunde5-kart-cevap.js"></script>
-    <script src="js/gunde5-goruntulenme.js"></script>
+    <script defer src="js/gunde5-paylas.js"></script>
+    <script defer src="js/gunde5-bildirim.js"></script>
+    <script defer src="js/gunde5-ara.js"></script>
+    <script defer src="js/gunde5-goruntulenme.js"></script>
+    <script defer src="js/gunde5-perf.js"></script>
     <script>
         function guncelleHeaderOturum() {
             Gunde5UI.guncelleHeaderOturum();
@@ -1418,14 +1464,31 @@
             }, 220);
         }
 
-        document.getElementById('navYazBtn').addEventListener('click', acItirafModal);
-        document.getElementById('itirafModalKapat').addEventListener('click', Gunde5UI.kapatItirafModal);
-        document.getElementById('gizliUyeSec').addEventListener('click', function () {
-            var btn = this;
-            btn.classList.toggle('aktif');
-            btn.setAttribute('aria-pressed', btn.classList.contains('aktif') ? 'true' : 'false');
-        });
-        document.getElementById('itirafGonderBtn').addEventListener('click', gonderItiraf);
+        function sayfaEtkinlikleriBagla() {
+            if (window.__g5PodyumEtkinlik) return;
+            window.__g5PodyumEtkinlik = true;
+            var navYaz = document.getElementById('navYazBtn');
+            var modalKapat = document.getElementById('itirafModalKapat');
+            var gizliSec = document.getElementById('gizliUyeSec');
+            var gonderBtn = document.getElementById('itirafGonderBtn');
+            if (navYaz) navYaz.addEventListener('click', acItirafModal);
+            if (modalKapat) {
+                modalKapat.addEventListener('click', function () {
+                    if (Gunde5UI && Gunde5UI.kapatItirafModal) Gunde5UI.kapatItirafModal();
+                });
+            }
+            if (gizliSec) {
+                gizliSec.addEventListener('click', function () {
+                    var btn = this;
+                    btn.classList.toggle('aktif');
+                    btn.setAttribute('aria-pressed', btn.classList.contains('aktif') ? 'true' : 'false');
+                });
+            }
+            if (gonderBtn) gonderBtn.addEventListener('click', gonderItiraf);
+        }
+
+        window.acItirafModal = acItirafModal;
+        window.gonderItiraf = gonderItiraf;
 
         function kullaniciCinsiyeti() {
             var c = document.body.getAttribute('data-user-gender');
@@ -1476,26 +1539,30 @@
             }
         }
 
-        Gunde5UI.baslatGeriSayim('timer');
-
-        var podyumHazir = (Gunde5PodyumLazy && Gunde5PodyumLazy.init)
-            ? Gunde5PodyumLazy.init('podyumListe')
-            : Gunde5DB.yuklePodyumListe('podyumListe');
-
-        Gunde5DB.init().then(function () {
-            guncelleHeaderOturum();
-            return podyumHazir;
-        }).then(function () {
-            if (!Gunde5Paylas) return;
-            return Gunde5Paylas.paylasLinkiKontrolEt('podyum').then(function (devam) {
-                if (devam === false) return;
-                return Gunde5Paylas.isleDerinBaglanti('podyum');
+        function baslatPodyumSayfa() {
+            if (!window.Gunde5UI || !window.Gunde5DB) return;
+            sayfaEtkinlikleriBagla();
+            Gunde5UI.baslatGeriSayim('timer');
+            var podyumHazir = (Gunde5PodyumLazy && Gunde5PodyumLazy.init)
+                ? Gunde5PodyumLazy.init('podyumListe')
+                : Gunde5DB.yuklePodyumListe('podyumListe');
+            Gunde5DB.init().then(function () {
+                guncelleHeaderOturum();
+                return podyumHazir;
+            }).then(function () {
+                if (!Gunde5Paylas) return;
+                return Gunde5Paylas.paylasLinkiKontrolEt('podyum').then(function (devam) {
+                    if (devam === false) return;
+                    return Gunde5Paylas.isleDerinBaglanti('podyum');
+                });
+            }).catch(function (err) {
+                var el = document.getElementById('podyumListe');
+                if (el) el.innerHTML = Gunde5UI.bosListe(Gunde5DB.hataMesaji(err));
+                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
             });
-        }).catch(function (err) {
-            var el = document.getElementById('podyumListe');
-            if (el) el.innerHTML = Gunde5UI.bosListe(Gunde5DB.hataMesaji(err));
-            Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', baslatPodyumSayfa);
     </script>
 </body>
 </html>

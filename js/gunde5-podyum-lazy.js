@@ -330,7 +330,20 @@
         }
     }
 
+    var initPromise = null;
+
+    function sayfaPodyumMu() {
+        var p = (global.location.pathname || '').toLowerCase();
+        return p.indexOf('index') >= 0 || p === '/' || p.endsWith('/');
+    }
+
     async function init(konteynerId) {
+        if (initPromise) return initPromise;
+        initPromise = initCalistir(konteynerId);
+        return initPromise;
+    }
+
+    async function initCalistir(konteynerId) {
         injectStyles();
         if (!DB || !DB.isConfigured || !DB.isConfigured()) {
             var el0 = document.getElementById(konteynerId);
@@ -407,7 +420,20 @@
         }
     }
 
+    function otomatikBaslat() {
+        if (!sayfaPodyumMu() || initPromise) return;
+        var el = document.getElementById('podyumListe');
+        if (!el) return;
+        init('podyumListe');
+    }
+
     global.Gunde5PodyumLazy = {
         init: init
     };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', otomatikBaslat);
+    } else {
+        otomatikBaslat();
+    }
 })(window);

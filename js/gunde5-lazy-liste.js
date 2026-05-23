@@ -201,4 +201,34 @@
         sonrakiSayfa: sonrakiSayfa,
         barajGuncelle: barajGuncelle
     };
+
+    function kulisSayfaBoot() {
+        var path = (global.location.pathname || '').toLowerCase();
+        if (path.indexOf('kulis') < 0) return;
+        if (!document.getElementById('kulisListe')) return;
+        if (global.__g5KulisBoot) return;
+        if (typeof global.baslatKulisSayfa === 'function') {
+            global.baslatKulisSayfa();
+            return;
+        }
+        global.__g5KulisBoot = true;
+        if (!DB || !DB.init) return;
+        DB.init().then(function () {
+            if (typeof global.guncelleHeaderOturum === 'function') {
+                global.guncelleHeaderOturum();
+            }
+            return initKulis('kulisListe');
+        }).catch(function (err) {
+            var el = document.getElementById('kulisListe');
+            if (el && UI && UI.bosListe) {
+                el.innerHTML = UI.bosListe(DB.hataMesaji ? DB.hataMesaji(err) : String(err));
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', kulisSayfaBoot);
+    } else {
+        kulisSayfaBoot();
+    }
 })(window);

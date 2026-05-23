@@ -6,6 +6,14 @@
         return d.innerHTML;
     }
 
+    function metinGoster(s) {
+        var t = s == null ? '' : String(s);
+        if (global.Gunde5Perde && global.Gunde5Perde.metinPerdele) {
+            t = global.Gunde5Perde.metinPerdele(t);
+        }
+        return htmlEsc(t);
+    }
+
     function metinBol(metin) {
         var m = String(metin || '');
         if (m.length <= 140) {
@@ -147,12 +155,18 @@
     var KULIS_BARAJ = 3;
     var KULIS_GIYOTIN_ID = 'kulisGiyotinBaraj';
 
+    function kulisSonPodyumTarihEtiketi() {
+        var p = trZamanParcalari(new Date(sonPodyumTrAniUtc()));
+        return padSayi(p.day) + '/' + padSayi(p.month) + '/' + p.year;
+    }
+
     function kulisBosIcerikHtml() {
         injectSayfaLinkStyles();
+        var podyumGun = kulisSonPodyumTarihEtiketi();
         return (
             '<h2 class="kulis-bos-baslik">Giyotin Görevini Yaptı, ' + LINK_KULIS + ' Temizlendi!</h2>' +
             '<p class="kulis-bos-paragraf">Bugün saat ' + SAAT_1312 + ' oldu ve giyotin acımasızca indi. Dünün tüm hesabı kesildi; barajı geçemeyen her şey sonsuza dek silindi!</p>' +
-            '<p class="kulis-bos-paragraf">20/05/2026 gününün o en fiyakalı, en çok konuşulan şampiyonları artık ' + LINK_PODYUM + 'da yerini aldı.</p>' +
+            '<p class="kulis-bos-paragraf">' + htmlEsc(podyumGun) + ' gününün o en fiyakalı, en çok konuşulan şampiyonları artık ' + LINK_PODYUM + 'da yerini aldı.</p>' +
             '<p class="kulis-bos-paragraf kulis-bos-cta">' +
             '👉 Günün şampiyonlarını görmek için hemen <a href="index.html" class="kulis-bos-link sayfa-link" data-kulis-podyum>Podyum\'a tıkla</a>!' +
             '</p>' +
@@ -634,7 +648,7 @@
         var kartId = String(row.id);
         var devamHtml = devamBtnHtml(bol.devam);
         var fullHtml = bol.devam
-            ? '<span class="full-text">' + htmlEsc(row.content_full || '') + '</span>'
+            ? '<span class="full-text">' + metinGoster(row.content_full || '') + '</span>'
             : '';
         var up = row.up_votes != null ? row.up_votes : 0;
         var down = row.down_votes != null ? row.down_votes : 0;
@@ -660,7 +674,7 @@
                 '</div>' +
             '</div>' +
             '<div class="card-body">' +
-                '<span class="short-text">' + htmlEsc(bol.kisa) + '</span>' +
+                '<span class="short-text">' + metinGoster(bol.kisa) + '</span>' +
                 fullHtml +
                 devamHtml +
             '</div>' +
@@ -712,7 +726,7 @@
         var down = row.down_votes != null ? row.down_votes : 0;
         var devamHtml = devamBtnHtml(bol.devam);
         var fullHtml = bol.devam
-            ? '<span class="full-text">' + htmlEsc(row.content_full || '') + '</span>'
+            ? '<span class="full-text">' + metinGoster(row.content_full || '') + '</span>'
             : '';
         var kart = document.createElement('div');
         kart.className = 'card podyum-kart ' + cins + (bol.devam ? ' uzun-metin' : '');
@@ -739,7 +753,7 @@
                 '</div>' +
             '</div>' +
             '<div class="card-body">' +
-                '<span class="short-text">' + htmlEsc(bol.kisa) + '</span>' +
+                '<span class="short-text">' + metinGoster(bol.kisa) + '</span>' +
                 fullHtml +
                 devamHtml +
             '</div>' +
@@ -748,6 +762,10 @@
             '</div>' +
             kartDetayShell();
         avatarKartUygula(kart.querySelector('.avatar'), row);
+        if (siraIdx === 0) {
+            var lcpImg = kart.querySelector('.avatar img');
+            if (lcpImg) lcpImg.fetchPriority = 'high';
+        }
         return kart;
     }
 
@@ -1034,23 +1052,16 @@
     }
 
     function applyHeaderFromCache() {
+        if (global.Gunde5Shell && global.Gunde5Shell.applyHeaderFromCache) {
+            global.Gunde5Shell.applyHeaderFromCache();
+        }
         if (!document.documentElement.classList.contains('g5-oturum')) return;
         mountHeaderProfilMenu();
         var u = global.Gunde5Shell && global.Gunde5Shell.readUser
             ? global.Gunde5Shell.readUser()
             : (global.Gunde5DB && global.Gunde5DB.getGunde5User ? global.Gunde5DB.getGunde5User() : null);
         if (!u || !u.username) return;
-        var authBtns = document.getElementById('headerAuthBtns');
-        var link = document.getElementById('headerProfilLink');
-        var wrap = document.getElementById('headerProfilWrap');
-        if (authBtns) authBtns.hidden = true;
-        if (wrap) wrap.hidden = false;
-        if (link) {
-            link.style.display = 'flex';
-            var cins = u.gender === 'male' ? 'male' : 'female';
-            link.className = 'header-profil-link cins-' + cins;
-            uygulaAvatarElement(document.getElementById('headerProfilAvatar'), u);
-        }
+        uygulaAvatarElement(document.getElementById('headerProfilAvatar'), u);
         document.body.classList.add('oturum-acik');
         if (u.gender) document.body.setAttribute('data-user-gender', u.gender === 'male' ? 'male' : 'female');
     }
@@ -1108,16 +1119,17 @@
         var cins = u && u.gender === 'male' ? 'male' : 'female';
         var img = el.querySelector('img');
         if (u && u.avatarUrl) {
+            var headerAv = el.id === 'headerProfilAvatar';
             if (!img) {
                 el.textContent = '';
                 img = document.createElement('img');
                 img.alt = '';
-                img.loading = 'lazy';
-                img.decoding = 'async';
                 el.appendChild(img);
             }
-            img.loading = 'lazy';
-            img.src = u.avatarUrl;
+            img.loading = headerAv ? 'eager' : 'lazy';
+            img.decoding = 'async';
+            if (headerAv) img.fetchPriority = 'high';
+            if (img.getAttribute('src') !== u.avatarUrl) img.setAttribute('src', u.avatarUrl);
             el.classList.add('has-foto');
             return;
         }
@@ -1128,6 +1140,7 @@
 
     global.Gunde5UI = {
         htmlEsc: htmlEsc,
+        metinGoster: metinGoster,
         metinBol: metinBol,
         showToast: showToast,
         showToastUyeGerekli: showToastUyeGerekli,
