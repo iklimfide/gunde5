@@ -68,6 +68,7 @@
             if (u) localStorage.setItem('gunde5_user', JSON.stringify(u));
             else localStorage.removeItem('gunde5_user');
         } catch (e) { /* sessiz */ }
+        if (global.Gunde5Shell && global.Gunde5Shell.applyShell) global.Gunde5Shell.applyShell();
     }
 
     async function loadProfile(userId) {
@@ -1091,50 +1092,143 @@
         }
     }
 
-    function podyumDonemAltSatir(kaynak) {
+    var PODYUM_BANNER_UST_ETIKET = 'EFSANELER';
+
+    function podyumDonemTarihSatir(kaynak) {
         var s = String(kaynak || '').trim();
-        var m = s.match(/(\d{2}\/\d{2}\/\d{4})/);
+        var iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (iso) {
+            return parseInt(iso[3], 10) + '/' + parseInt(iso[2], 10) + '/' + iso[1];
+        }
+        var m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
         if (m) {
-            return (m[1] + ' şampiyonları').toLocaleUpperCase('tr-TR');
+            return parseInt(m[1], 10) + '/' + parseInt(m[2], 10) + '/' + m[3];
         }
-        if (s) {
-            return s.toLocaleUpperCase('tr-TR');
+        if (s && !/şampiyon/i.test(s)) {
+            return s;
         }
-        return '19/05/2026 ŞAMPİYONLARI';
+        return '22/5/2026';
     }
 
-    /** Podyum listesi: son 13:12 TR'ye kadar çerez; tarayıcı ~4KB sınırı aşılırsa yazılmaz. */
+    function podyumDonemAltSatir(kaynak) {
+        return podyumDonemTarihSatir(kaynak);
+    }
+
+    /** Podyum: gün başına bir kez yenilenir — son 13:12 TR dönemine kadar önbellek. */
     var PODYUM_CACHE_COOKIE = 'g5_podyum_v1';
-    /** encodeURIComponent sonrası ~4KB çerez tavanına pay bırakır. */
+    var PODYUM_CACHE_LS = 'g5_podyum_ls_v1';
     var PODYUM_COOKIE_MAX_ENC = 3800;
 
-    function podyumCacheOku(donemUtc) {
+    function podyumCacheSatirPaketle(r) {
+        return {
+            id: r.id,
+            u: r.user_id,
+            g: r.gender,
+            n: r.username,
+            i: r.is_gizli ? 1 : 0,
+            cf: r.content_full || null,
+            cs: r.content_short || null,
+            up: r.up_votes != null ? r.up_votes : 0,
+            dn: r.down_votes != null ? r.down_votes : 0,
+            c: r.cevap_sayisi != null ? r.cevap_sayisi : 0,
+            v: r.sayfa_goruntulenme != null ? r.sayfa_goruntulenme : 0,
+            ps: r.podyum_sira,
+            pd: r.podyum_donem,
+            av: r.avatar_url || null,
+            yz: r.yasadigi_yer || null,
+            ys: r.yurtdisi_sehir || null,
+            m: r.meslek || null,
+            md: r.medeni_durum || null,
+            dy: r.dogum_yili || null
+        };
+    }
+
+    function podyumCacheSatirAc(p) {
+        if (!p) return null;
+        if (p.content_full != null || (p.content_short != null && p.id != null && p.gender != null)) {
+            return p;
+        }
+        return {
+            id: p.id,
+            user_id: p.u,
+            gender: p.g,
+            username: p.n,
+            is_gizli: !!p.i,
+            content_full: p.cf,
+            content_short: p.cs,
+            up_votes: p.up,
+            down_votes: p.dn,
+            cevap_sayisi: p.c,
+            sayfa_goruntulenme: p.v,
+            podyum_sira: p.ps,
+            podyum_donem: p.pd,
+            avatar_url: p.av,
+            yasadigi_yer: p.yz,
+            yurtdisi_sehir: p.ys,
+            meslek: p.m,
+            medeni_durum: p.md,
+            dogum_yili: p.dy
+        };
+    }
+
+    function podyumCacheSatirlariAc(liste) {
+        var out = [];
+        var i;
+        for (i = 0; i < (liste || []).length; i++) {
+            var row = podyumCacheSatirAc(liste[i]);
+            if (row) out.push(row);
+        }
+        return out;
+    }
+
+    function podyumCacheHamOku() {
+        try {
+            var ls = global.localStorage.getItem(PODYUM_CACHE_LS);
+            if (ls) return JSON.parse(ls);
+        } catch (e) { /* sessiz */ }
         try {
             var parcalar = document.cookie.split(';');
             var i;
-            var parca;
             var pref = PODYUM_CACHE_COOKIE + '=';
             for (i = 0; i < parcalar.length; i++) {
-                parca = parcalar[i].replace(/^\s+/, '');
+                var parca = parcalar[i].replace(/^\s+/, '');
                 if (parca.indexOf(pref) === 0) {
-                    var ham = decodeURIComponent(parca.slice(pref.length));
-                    var o = JSON.parse(ham);
-                    if (o && o.d === donemUtc && Array.isArray(o.r)) {
-                        return { baslik: o.b || '', rows: o.r };
-                    }
-                    return null;
+                    return JSON.parse(decodeURIComponent(parca.slice(pref.length)));
                 }
+            }
+        } catch (e2) { /* sessiz */ }
+        return null;
+    }
+
+    function podyumCacheOku(donemUtc) {
+        try {
+            var o = podyumCacheHamOku();
+            if (o && o.d === donemUtc && Array.isArray(o.r) && o.r.length) {
+                return {
+                    donem: o.pd || (o.r[0] && (o.r[0].pd || o.r[0].podyum_donem)) || '',
+                    baslik: o.b || '',
+                    rows: podyumCacheSatirlariAc(o.r)
+                };
             }
         } catch (e) { /* sessiz */ }
         return null;
     }
 
-    function podyumCacheYaz(donemUtc, baslik, rows) {
+    function podyumCacheYaz(donemUtc, donem, baslik, rows) {
         var UI = global.Gunde5UI;
-        if (!UI || !UI.hedefSaatTr || donemUtc == null) return;
+        if (!UI || !UI.hedefSaatTr || donemUtc == null || !rows || !rows.length) return;
+        var paketli = [];
+        var i;
+        for (i = 0; i < rows.length; i++) {
+            paketli.push(podyumCacheSatirPaketle(rows[i]));
+        }
+        var o = { d: donemUtc, pd: donem || '', b: baslik || '', r: paketli };
+        var json = JSON.stringify(o);
         try {
-            var paket = JSON.stringify({ d: donemUtc, b: baslik || '', r: rows || [] });
-            var kodlu = encodeURIComponent(paket);
+            global.localStorage.setItem(PODYUM_CACHE_LS, json);
+        } catch (eLs) { /* sessiz */ }
+        try {
+            var kodlu = encodeURIComponent(json);
             if (kodlu.length > PODYUM_COOKIE_MAX_ENC) return;
             var maxAge = Math.floor((UI.hedefSaatTr().getTime() - Date.now()) / 1000);
             if (maxAge < 120) maxAge = 120;
@@ -1147,7 +1241,12 @@
                 maxAge +
                 '; SameSite=Lax' +
                 guvenli;
-        } catch (e) { /* sessiz */ }
+        } catch (eCk) { /* sessiz */ }
+    }
+
+    function podyumCacheDonemUtc() {
+        var UI = global.Gunde5UI;
+        return UI && UI.sonPodyumTrAniUtc ? UI.sonPodyumTrAniUtc() : null;
     }
 
     var podyumRtKanal = null;
@@ -1313,7 +1412,9 @@
             var rows = await podyumListele();
             var donemler = await podyumDonemleriListele();
             var baslikEl = document.getElementById('podyumDonemBaslik');
+            var topEtiketEl = document.getElementById('podyumTopEtiket');
             var sampiyonlarEl = document.getElementById('podyumSampiyonlar');
+            if (topEtiketEl) topEtiketEl.textContent = PODYUM_BANNER_UST_ETIKET;
             if (baslikEl && donemler.length) {
                 var iso = String(donemler[0]).match(/^(\d{4})-(\d{2})-(\d{2})$/);
                 var kaynak = iso ? iso[3] + '/' + iso[2] + '/' + iso[1] : donemler[0];
@@ -1394,6 +1495,11 @@
         yuklePodyumListe: yuklePodyumListe,
         podyumHibritCanlandir: podyumHibritCanlandir,
         podyumRealtimeKapat: podyumRealtimeKapat,
+        podyumCacheOku: podyumCacheOku,
+        podyumCacheYaz: podyumCacheYaz,
+        podyumCacheDonemUtc: podyumCacheDonemUtc,
+        PODYUM_BANNER_UST_ETIKET: PODYUM_BANNER_UST_ETIKET,
+        podyumDonemTarihSatir: podyumDonemTarihSatir,
         podyumDonemAltSatir: podyumDonemAltSatir,
         hataMesaji: hataMesaji
     };

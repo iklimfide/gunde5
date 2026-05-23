@@ -312,11 +312,18 @@
     }
 
     function init() {
-        mount();
+        function hazirla() {
+            mount();
+            if (document.documentElement.classList.contains('g5-oturum')) {
+                var wrap = document.getElementById('headerBildirimWrap');
+                if (wrap) wrap.classList.add('aktif');
+            }
+            baslat();
+        }
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', baslat);
+            document.addEventListener('DOMContentLoaded', hazirla);
         } else {
-            setTimeout(baslat, 0);
+            setTimeout(hazirla, 0);
         }
     }
 

@@ -50,8 +50,9 @@
             'body.dark-mode .gunde5-arama-input{background:var(--bg-card,#0b0f14);border-color:#1d9bf0;color:var(--text-main);box-shadow:0 2px 12px rgba(0,0,0,.4)}' +
             'body.dark-mode .gunde5-arama-input:focus{border-color:#60a5fa;box-shadow:0 0 0 4px rgba(96,165,250,.25)}' +
             'body.dark-mode .gunde5-arama-input::placeholder{color:var(--text-muted,#9ca3af)}' +
-            '.gunde5-arama-ikon{position:absolute;right:16px;font-size:19px;opacity:.85;pointer-events:none;filter:grayscale(1) brightness(.35)}' +
-            'body.dark-mode .gunde5-arama-ikon{filter:grayscale(1) brightness(1.6)}' +
+            '.gunde5-arama-ikon{position:absolute;right:14px;display:flex;align-items:center;justify-content:center;width:22px;height:22px;pointer-events:none;color:#1d9bf0;opacity:.92}' +
+            'body.dark-mode .gunde5-arama-ikon{color:#60a5fa;opacity:1}' +
+            '.gunde5-arama-ikon svg{display:block;width:20px;height:20px}' +
             '.gunde5-arama-durum{margin:2px 0 0;font-size:11px;font-weight:600;color:var(--text-muted,#6b7280);min-height:0;line-height:1.3}' +
             '.gunde5-arama-durum:empty{display:none;margin:0;padding:0}' +
             '.gunde5-arama-durum--hata{color:#dc2626}' +
@@ -222,7 +223,11 @@
             '<label class="gunde5-arama-kutu" for="gunde5AramaInput">' +
             '<input type="search" class="gunde5-arama-input" id="gunde5AramaInput" ' +
             'placeholder="Ara" autocomplete="off" enterkeyhint="search">' +
-            '<span class="gunde5-arama-ikon" aria-hidden="true">🔍</span>' +
+            '<span class="gunde5-arama-ikon" aria-hidden="true">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" role="img">' +
+            '<circle cx="10.5" cy="10.5" r="6.75"/>' +
+            '<path d="M15.75 15.75L20 20"/>' +
+            '</svg></span>' +
             '</label>' +
             '<p class="gunde5-arama-durum" id="gunde5AramaDurum" aria-live="polite"></p>';
 

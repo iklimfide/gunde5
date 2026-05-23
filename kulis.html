@@ -279,6 +279,8 @@
             line-height: 1.6;
             color: var(--text-main);
             font-weight: 500;
+            text-align: justify;
+            text-justify: inter-word;
         }
         body.dark-mode .card-body { color: #e7e9ea; }
         /* uzun-metin aç/kapa: js/gunde5-kart-cevap.js */
@@ -1076,20 +1078,23 @@
         .gunde5-toast {
             display: none;
             position: fixed;
-            left: 16px;
-            right: 16px;
-            bottom: 90px;
-            max-width: 468px;
-            margin: 0 auto;
+            left: 50%;
+            top: 50%;
+            right: auto;
+            bottom: auto;
+            transform: translate(-50%, -50%);
+            width: calc(100% - 32px);
+            max-width: 400px;
+            margin: 0;
             padding: 12px 16px;
-            border-radius: 12px;
+            border-radius: 14px;
             background: #111827;
             color: #ffffff;
             font-size: 13px;
             font-weight: 700;
             text-align: center;
-            z-index: 3000;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            z-index: 3500;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
         }
         .gunde5-toast--hata { background: #991b1b; }
     </style>
@@ -1108,7 +1113,8 @@
                     <nav class="header-menu-nav" aria-label="Site menüsü">
                         <a href="index.html" class="header-menu-link">🏆 Podyum</a>
                         <a href="kulis.html" class="header-menu-link">🔥 Kulis</a>
-                        <a href="profil.html" class="header-menu-link" id="headerMenuProfil" hidden>👤 Profilim</a>
+                        <a href="hakkinda.html" class="header-menu-link">ℹ️ Hakkında</a>
+                        <a href="iletisim.html" class="header-menu-link">✉️ İletişim</a>
                         <a href="kvkk.html" class="header-menu-link">📋 KVKK</a>
                     </nav>
                 </div>
@@ -1130,10 +1136,10 @@
         <h1 class="seo-sr-only">gunde5.com — Kulis arenası, hikaye yaz ve oyla</h1>
 
         <div class="info-banner">
-            <h4>Yeni şampiyonların belirlenmesi için</h4>
+            <h4>EFSANE OLMAYA</h4>
             <div class="countdown" id="countdown">00:00:00</div>
-            <p>Yarın saat tam <strong class="saat-vurgu">13:12</strong>'de giyotin inecek ve yeni şampiyonlar <a href="index.html">Podyum</a>'a çıkacak.</p>
-            <p>Şampiyon 5 Podyum'a çıkar, geri kalanlar sonsuza dek silinir. Sen de hikayeni yaz, yarışa katıl, şampiyon olup Podyum'a çık.</p>
+            <p>Saat tam <strong class="saat-vurgu">13.12</strong>'de <strong class="saat-vurgu">GİYOTİN</strong> inecek ve efsaneler <a href="index.html" class="sayfa-link">podyuma</a> çıkacak.</p>
+            <p>Efsane olamayanlar sonsuza dek silinecek.</p>
         </div>
 
         <div id="kulisListe"></div>
@@ -1215,6 +1221,7 @@
         </div>
     </div>
 
+    <script src="js/gunde5-shell.js"></script>
     <script src="js/gunde5-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
     <script src="js/gunde5-profil.js"></script>
@@ -1343,7 +1350,7 @@
         }
 
         function acItirafModal() {
-            if (!Gunde5UI.itirafUyeGerekli(openAuthModal)) {
+            if (!Gunde5UI.itirafUyeGerekli()) {
                 return;
             }
             Gunde5UI.closeAuthModal();
@@ -1380,7 +1387,7 @@
         async function gonderItiraf() {
             var metin = document.getElementById('itirafTextarea').value.replace(/^\s+|\s+$/g, '');
             if (!metin) { document.getElementById('itirafTextarea').focus(); return; }
-            if (!Gunde5UI.itirafUyeGerekli(openAuthModal)) { return; }
+            if (!Gunde5UI.itirafUyeGerekli()) { return; }
             var gizli = document.getElementById('gizliUyeSec').classList.contains('aktif');
             var btn = document.getElementById('itirafGonderBtn');
             btn.disabled = true;
@@ -1418,8 +1425,7 @@
         }
 
         async function vote(cardId, score) {
-            if (!Gunde5DB.getGunde5User()) {
-                openAuthModal('login');
+            if (!Gunde5UI.uyeGirisUyarisi('Oy vermek için üye girişi yapmanız gerekiyor.')) {
                 return;
             }
             try {
@@ -1429,10 +1435,6 @@
             } catch (err) {
                 Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
             }
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
         }
 
         Gunde5UI.baslatGeriSayim('countdown');

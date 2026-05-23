@@ -14,7 +14,7 @@
         var s = document.createElement('style');
         s.id = 'gunde5-kart-cevap-styles';
         s.textContent =
-            '.card-body{position:relative}' +
+            '.card-body{position:relative;text-align:justify;text-justify:inter-word}' +
             '.card-body::before{content:"gunde5.com";position:absolute;inset:0;display:grid;place-items:center;transform:rotate(-32deg);font-size:clamp(1.9rem,9vw,2.75rem);font-weight:900;letter-spacing:-0.04em;line-height:1;color:#111827;opacity:0.08;pointer-events:none;z-index:0;user-select:none;white-space:nowrap}' +
             'body.dark-mode .card-body::before{color:#e7e9ea;opacity:0.09}' +
             '.card-body > *{position:relative;z-index:1}' +
@@ -225,16 +225,14 @@
         var liste = blok.querySelector('[data-yorum-liste="' + cevapId + '"]');
 
         ac.addEventListener('click', function () {
-            if (!DB.getGunde5User()) {
-                if (typeof global.openAuthModal === 'function') global.openAuthModal('login');
+            if (!UI.uyeGirisUyarisi('Yorum yazmak için üye girişi yapmanız gerekiyor.')) {
                 return;
             }
             form.hidden = !form.hidden;
             if (!form.hidden) form.querySelector('textarea').focus();
         });
         gonder.addEventListener('click', async function () {
-            if (!DB.getGunde5User()) {
-                if (typeof global.openAuthModal === 'function') global.openAuthModal('login');
+            if (!UI.uyeGirisUyarisi('Yorum yazmak için üye girişi yapmanız gerekiyor.')) {
                 return;
             }
             var metin = form.querySelector('textarea').value;
@@ -340,8 +338,7 @@
 
         if (kokGonder) {
             kokGonder.addEventListener('click', async function () {
-                if (!DB.getGunde5User()) {
-                    if (typeof global.openAuthModal === 'function') global.openAuthModal('login');
+                if (!UI.uyeGirisUyarisi('Cevap yazmak için üye girişi yapmanız gerekiyor.')) {
                     return;
                 }
                 var ta = card.querySelector('[data-kok-metin]');
@@ -372,6 +369,12 @@
         baglaKart(card);
         var s = st(cardId);
         var detay = card.querySelector('[data-kart-detay]');
+
+        if (focusCevap && !s.acik) {
+            if (!UI.uyeGirisUyarisi('Yorum yazmak için üye girişi yapmanız gerekiyor.')) {
+                return;
+            }
+        }
 
         if (s.acik) {
             daraltKart(cardId, card);

@@ -10,12 +10,12 @@ Kullanıcı bu tasarımı onayladı. **Başlık, layout, lazy-load akışı veya
 ## Anasayfa (index.html + JS)
 
 - **Üst altın bant** (`#podyumSampiyonlar` / `#podyumTopEtiket` / `#podyumDonemBaslik`):
-  - `TOP 5`
-  - Alt satır: `podyumDonemAltSatir` → örn. `20/05/2026 ŞAMPİYONLARI`
+ - Üst satır: `EFSANELER` (`PODYUM_BANNER_UST_ETIKET`)
+ - Alt satır: `podyumDonemAltSatir` → örn. `22/5/2026` (gün/ay/yıl, başsıfırsız ay-gün)
 - **En yeni günün 5 kartı** doğrudan `#podyumListe` içinde; ekstra gün başlığı bloğu yok.
 - **Aşağı kaydırınca** eski günler (`gunde5-podyum-lazy.js`):
   - Sıra: yeniden eskiye (kronolojik)
-  - Her eski gün: `TOP 5` + `h2.podyum-sampiyonlar-baslik` (aynı metin stili, yeni başlık icadı yok)
+  - Her eski gün: `EFSANELER` + `h2.podyum-sampiyonlar-baslik` (tarih; aynı stil)
 - Yükleme: `Gunde5PodyumLazy.init` → `podyumDonemleriListele` + `podyumDonemKartlari`
 
 ## Veritabanı (değişmez iş kuralları)

@@ -16,6 +16,11 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://gunde5.com/iletisim.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
     <loc>https://gunde5.com/kvkk.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
