@@ -6,7 +6,7 @@
     var SITE_NAME = 'gunde5.com';
     var DEFAULT_OG_IMAGE = SITE_ORIGIN + '/apple-touch-icon.png';
     var DEFAULT_DESC =
-        'Kulis’te hikayeni yaz, oyla; her gün saat 13:12’de en iyi 5 hikaye Podyum’a çıkar. Eğlence ve mizah odaklı hikâye arenası.';
+        'Otobüste, metroda ya da kahve molasında iki dakikada kafa dağıtıp gülmek isteyenler için halkın içinden komik ve eğlenceli gerçek hikayeler.';
 
     function escAttr(s) {
         return String(s == null ? '' : s)
@@ -119,7 +119,7 @@
                 ? {
                       title: 'gunde5.com — Günün En İyi 5 Hikayesi | Podyum',
                       description:
-                          'Her gün saat 13:12’de Kulis’in en çok oy alan 5 hikayesi Podyum’a çıkar. Arşiv ve şampiyonlar.',
+                          'Otobüste, metroda ya da kahve molasında iki dakikada kafa dağıtıp gülmek isteyenler için halkın içinden komik ve eğlenceli gerçek hikayeler.',
                       canonical: SITE_ORIGIN + '/',
                       ogUrl: SITE_ORIGIN + '/',
                       ogType: 'website'
