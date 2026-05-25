@@ -11,6 +11,43 @@ from urllib.parse import unquote, urlparse
 ROOT = os.path.dirname(os.path.abspath(__file__))
 ITIRAF_INDEX = "/itiraf/index.html"
 ITIRAF_RE = re.compile(r"^/itiraf/(\d+)/?$")
+ROUTE_TO_HTML = {
+    "/": "/index.html",
+    "/podyum": "/index.html",
+    "/kulis": "/kulis.html",
+    "/profil": "/profil.html",
+    "/hakkinda": "/hakkinda.html",
+    "/iletisim": "/iletisim.html",
+    "/kvkk": "/kvkk.html",
+    "/istatistikler": "/istatistikler.html",
+    "/uyeler": "/uyeler.html",
+    "/404": "/404.html",
+}
+HTML_TO_ROUTE = {
+    html: route for route, html in ROUTE_TO_HTML.items()
+    if route not in ("/podyum",)
+}
+
+
+def html_path_for_route(raw: str) -> str | None:
+    if raw in ("", "/"):
+        return ROUTE_TO_HTML["/"]
+
+    route = ROUTE_TO_HTML.get(raw)
+    if route:
+        return route
+
+    if raw.endswith(".html"):
+        local = raw.lstrip("/")
+    else:
+        if "." in os.path.basename(raw):
+            return None
+        local = raw.lstrip("/") + ".html"
+
+    full = os.path.join(ROOT, local.replace("/", os.sep))
+    if os.path.isfile(full):
+        return "/" + local.replace(os.sep, "/")
+    return None
 
 
 class Gunde5Handler(SimpleHTTPRequestHandler):
@@ -20,10 +57,41 @@ class Gunde5Handler(SimpleHTTPRequestHandler):
     def log_message(self, fmt, *args):
         sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
 
+    def _clean_route_for_html(self, raw: str) -> str | None:
+        if raw in HTML_TO_ROUTE:
+            return HTML_TO_ROUTE[raw]
+        if not raw.endswith(".html") or raw.count("/") != 1:
+            return None
+        if raw == ITIRAF_INDEX:
+            return None
+        local = raw.lstrip("/")
+        full = os.path.join(ROOT, local.replace("/", os.sep))
+        if not os.path.isfile(full):
+            return None
+        return "/" + local[:-5]
+
+    def _redirect_target(self, raw: str, query: str) -> str | None:
+        if raw in ("/podyum", "/podyum/"):
+            return "/" + query
+
+        clean_route = self._clean_route_for_html(raw)
+        if clean_route:
+            return clean_route + query
+
+        if raw not in ("", "/") and raw.endswith("/"):
+            clean = raw.rstrip("/")
+            if ITIRAF_RE.match(clean):
+                return clean + query
+            if html_path_for_route(clean):
+                return clean + query
+
+        return None
+
     def _resolve_path(self) -> tuple[str, bool]:
         """İstek yolunu dosya yoluna çevir. İkinci değer: özel 404 mü."""
-        raw = unquote(urlparse(self.path).path)
-        query = ("?" + urlparse(self.path).query) if urlparse(self.path).query else ""
+        parsed = urlparse(self.path)
+        raw = unquote(parsed.path)
+        query = ("?" + parsed.query) if parsed.query else ""
 
         if raw in ("/itiraf", "/itiraf/"):
             return "/404.html" + query, True
@@ -31,8 +99,9 @@ class Gunde5Handler(SimpleHTTPRequestHandler):
         if ITIRAF_RE.match(raw):
             return ITIRAF_INDEX + query, False
 
-        if raw in ("", "/"):
-            return "/index.html" + query, False
+        html_path = html_path_for_route(raw)
+        if html_path:
+            return html_path + query, False
 
         local = raw.lstrip("/").split("?", 1)[0]
         full = os.path.join(ROOT, local.replace("/", os.sep))
@@ -45,10 +114,36 @@ class Gunde5Handler(SimpleHTTPRequestHandler):
 
         return "/404.html" + query, True
 
-    def do_GET(self):
+    def _serve(self):
+        parsed = urlparse(self.path)
+        raw = unquote(parsed.path)
+        query = ("?" + parsed.query) if parsed.query else ""
+        redirect = self._redirect_target(raw, query)
+        if redirect:
+            self.send_response(308)
+            self.send_header("Location", redirect)
+            self.end_headers()
+            return
         self.path, use_404 = self._resolve_path()
         self._gunde5_custom_404 = use_404
         return super().do_GET()
+
+    def do_GET(self):
+        return self._serve()
+
+    def do_HEAD(self):
+        parsed = urlparse(self.path)
+        raw = unquote(parsed.path)
+        query = ("?" + parsed.query) if parsed.query else ""
+        redirect = self._redirect_target(raw, query)
+        if redirect:
+            self.send_response(308)
+            self.send_header("Location", redirect)
+            self.end_headers()
+            return
+        self.path, use_404 = self._resolve_path()
+        self._gunde5_custom_404 = use_404
+        return super().do_HEAD()
 
     def send_response(self, code, message=None):
         if getattr(self, "_gunde5_custom_404", False):
@@ -73,8 +168,8 @@ def main() -> None:
         sys.exit(1)
     with httpd:
         print("gunde5 dev sunucu: http://localhost:%s/" % port)
-        print("  / ve /index.html?itiraf=ID  -> anasayfa")
-        print("  /kulis.html?itiraf=ID       -> kulis")
+        print("  / ve /podyum                -> anasayfa")
+        print("  /kulis, /profil, /kvkk ...  -> clean route")
         print("  /itiraf/123                 -> yönlendirme (eski link)")
         print("Durdurmak: Ctrl+C  |  Baslat: start-dev.bat veya npm run dev")
         try:

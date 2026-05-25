@@ -1,4 +1,4 @@
-/* gunde5 — hikaye iç linki: /index.html?itiraf=id (podyum) veya /kulis.html?itiraf=id (kulis) */
+/* gunde5 — hikaye iç linki: /?itiraf=id (podyum) veya /kulis?itiraf=id (kulis) */
 (function (global) {
     'use strict';
 
@@ -54,9 +54,9 @@
         var sid = encodeURIComponent(String(id));
         var dosya = global.location.protocol === 'file:';
         if (status === 'podyum') {
-            return (dosya ? '' : '/') + 'index.html?itiraf=' + sid;
+            return (dosya ? '' : '/') + '?itiraf=' + sid;
         }
-        return (dosya ? '' : '/') + 'kulis.html?itiraf=' + sid;
+        return (dosya ? '' : '/') + 'kulis?itiraf=' + sid;
     }
 
     function itirafIcLinkTam(id, status) {
@@ -74,7 +74,7 @@
     }
 
     function yonlendirItiraf404(itirafId) {
-        var hedef = kokUrl('/404.html');
+        var hedef = kokUrl('/404');
         if (itirafId) {
             hedef += '?itiraf=' + encodeURIComponent(itirafId);
         }

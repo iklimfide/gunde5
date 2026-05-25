@@ -128,8 +128,8 @@
                       title: 'gunde5.com — Kulis Arenası | Hikaye yaz, oyla',
                       description:
                           'Perde arkası hikayelerini yaz, beğeni ve yorumlarla yarış. Her gün 13:12’de TOP 5 Podyum’a çıkar.',
-                      canonical: SITE_ORIGIN + '/kulis.html',
-                      ogUrl: SITE_ORIGIN + '/kulis.html',
+                      canonical: SITE_ORIGIN + '/kulis',
+                      ogUrl: SITE_ORIGIN + '/kulis',
                       ogType: 'website'
                   };
         apply(varsayilan);

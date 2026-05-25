@@ -1226,22 +1226,22 @@
                 </button>
                 <div class="header-menu-panel" id="headerMenuPanel" hidden>
                     <nav class="header-menu-nav" aria-label="Site menüsü">
-                        <a href="index.html" class="header-menu-link">🏆 Podyum</a>
-                        <a href="kulis.html" class="header-menu-link">🔥 Kulis</a>
-                        <a href="hakkinda.html" class="header-menu-link">ℹ️ Hakkında</a>
-                        <a href="iletisim.html" class="header-menu-link">✉️ İletişim</a>
-                        <a href="kvkk.html" class="header-menu-link">📋 KVKK</a>
+                        <a href="/" class="header-menu-link">🏆 Podyum</a>
+                        <a href="/kulis" class="header-menu-link">🔥 Kulis</a>
+                        <a href="/hakkinda" class="header-menu-link">ℹ️ Hakkında</a>
+                        <a href="/iletisim" class="header-menu-link">✉️ İletişim</a>
+                        <a href="/kvkk" class="header-menu-link">📋 KVKK</a>
                     </nav>
                 </div>
             </div>
         </div>
-        <a href="index.html" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <a href="/" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
         <div class="header-sag">
             <div class="header-auth-btns" id="headerAuthBtns">
                 <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
                 <button type="button" class="header-auth-btn header-auth-btn--giris" id="hdrGiris" onclick="openAuthModal('login')">Giriş</button>
             </div>
-            <a href="profil.html" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+            <a href="/profil" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
                 <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
             </a>
         </div>
@@ -1271,13 +1271,13 @@
     </div>
 
     <div class="bottom-nav" role="navigation" aria-label="Ana menü">
-        <a href="kulis.html" class="nav-item">
+        <a href="/kulis" class="nav-item">
             <div class="icon">🔥</div><span>Kulis</span>
         </a>
         <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn" aria-haspopup="dialog">
             <div class="icon">✍️</div><span>Hikaye Yaz</span>
         </button>
-        <a href="index.html" class="nav-item active">
+        <a href="/" class="nav-item active">
             <div class="icon">🏆</div><span>Podyum</span>
         </a>
     </div>
@@ -1306,7 +1306,7 @@
                 </select>
                 <label class="auth-kvkk">
                     <input type="checkbox" id="authKvk">
-                    <span><a href="kvkk.html#sozlesme" target="_blank" rel="noopener" onclick="event.stopPropagation()">Kullanıcı Sözleşmesi</a>'ni ve <a href="kvkk.html#aydinlatma" target="_blank" rel="noopener" onclick="event.stopPropagation()">KVKK Aydınlatma Metni</a>'ni okudum, onaylıyorum.</span>
+                    <span><a href="/kvkk#sozlesme" target="_blank" rel="noopener" onclick="event.stopPropagation()">Kullanıcı Sözleşmesi</a>'ni ve <a href="/kvkk#aydinlatma" target="_blank" rel="noopener" onclick="event.stopPropagation()">KVKK Aydınlatma Metni</a>'ni okudum, onaylıyorum.</span>
                 </label>
                 <button type="button" class="auth-submit auth-submit--kayit" onclick="kayitOl()">Kayıt Ol</button>
                 <p class="auth-gecis">Zaten üye misin? <button type="button" onclick="toggleAuthMode('login')">Giriş Yap</button></p>
@@ -1519,7 +1519,7 @@
             }));
             sifirlaItirafModal();
             Gunde5UI.kapatItirafModal();
-            window.location.href = 'kulis.html';
+            window.location.href = '/kulis';
         }
 
         function expandCard(cardId) {

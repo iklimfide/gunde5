@@ -160,11 +160,11 @@
         var nav = document.querySelector('.header-menu-nav');
         if (!nav) return;
         link = document.createElement('a');
-        link.href = 'istatistikler.html';
+        link.href = '/istatistikler';
         link.className = 'header-menu-link header-menu-link--master';
         link.id = 'headerMenuIstatistik';
         link.textContent = '📊 İstatistikler';
-        var kvkk = nav.querySelector('a[href="kvkk.html"]');
+        var kvkk = nav.querySelector('a[href="/kvkk"]');
         if (kvkk) nav.insertBefore(link, kvkk);
         else nav.appendChild(link);
     }
@@ -184,14 +184,14 @@
         var nav = document.querySelector('.header-menu-nav');
         if (!nav) return;
         link = document.createElement('a');
-        link.href = 'uyeler.html';
+        link.href = '/uyeler';
         link.className = 'header-menu-link header-menu-link--master';
         link.id = 'headerMenuUyeler';
         link.textContent = '👥 Üyeler';
         var istat = document.getElementById('headerMenuIstatistik');
         if (istat) nav.insertBefore(link, istat);
         else {
-            var kvkk = nav.querySelector('a[href="kvkk.html"]');
+            var kvkk = nav.querySelector('a[href="/kvkk"]');
             if (kvkk) nav.insertBefore(link, kvkk);
             else nav.appendChild(link);
         }

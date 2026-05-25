@@ -145,8 +145,8 @@
         return '<p class="liste-bos">' + html + '</p>';
     }
 
-    var LINK_KULIS = '<a href="kulis.html" class="sayfa-link">Kulis</a>';
-    var LINK_PODYUM = '<a href="index.html" class="sayfa-link">Podyum</a>';
+    var LINK_KULIS = '<a href="/kulis" class="sayfa-link">Kulis</a>';
+    var LINK_PODYUM = '<a href="/" class="sayfa-link">Podyum</a>';
     var SAAT_1312 = '<strong class="saat-vurgu">13:12</strong>';
     var SAAT_1312_NOKTA = '<strong class="saat-vurgu">13.12</strong>';
 
@@ -188,7 +188,7 @@
             '<p class="kulis-bos-paragraf">Bugün saat ' + SAAT_1312 + ' oldu ve giyotin acımasızca indi. Dünün tüm hesabı kesildi; barajı geçemeyen her şey sonsuza dek silindi!</p>' +
             '<p class="kulis-bos-paragraf">' + htmlEsc(podyumGun) + ' gününün o en fiyakalı, en çok konuşulan şampiyonları artık ' + LINK_PODYUM + 'da yerini aldı.</p>' +
             '<p class="kulis-bos-paragraf kulis-bos-cta">' +
-            '👉 Günün şampiyonlarını görmek için hemen <a href="index.html" class="kulis-bos-link sayfa-link" data-kulis-podyum>Podyum\'a tıkla</a>!' +
+            '👉 Günün şampiyonlarını görmek için hemen <a href="/" class="kulis-bos-link sayfa-link" data-kulis-podyum>Podyum\'a tıkla</a>!' +
             '</p>' +
             '<p class="kulis-bos-paragraf">"Yarın ' + SAAT_1312_NOKTA + '\'ye kadar olan büyük yarışta ben de olmalıyım diyorsan:</p>' +
             '<p class="kulis-bos-paragraf kulis-bos-cta">' +
@@ -800,7 +800,7 @@
 
     function gitProfilSayfasi() {
         if (uyeMi()) {
-            window.location.href = 'profil.html';
+            window.location.href = '/profil';
             return;
         }
         uyeGirisUyarisi('Profil yalnızca giriş yapmış üyeler içindir.');
@@ -967,9 +967,9 @@
     function profilMenuPanelHtml() {
         return (
             '<nav class="header-profil-menu-nav" aria-label="Hesap menüsü">' +
-            '<a href="profil.html" class="header-profil-menu-link">👤 Profilim</a>' +
-            '<a href="hakkinda.html" class="header-profil-menu-link">ℹ️ Hakkında</a>' +
-            '<a href="profil.html" class="header-profil-menu-link">⚙️ Ayarlar</a>' +
+            '<a href="/profil" class="header-profil-menu-link">👤 Profilim</a>' +
+            '<a href="/hakkinda" class="header-profil-menu-link">ℹ️ Hakkında</a>' +
+            '<a href="/profil" class="header-profil-menu-link">⚙️ Ayarlar</a>' +
             '<button type="button" class="header-profil-menu-link" id="headerProfilModBtn">🌓 Mod</button>' +
             '<button type="button" class="header-profil-menu-link header-profil-menu-link--cikis" id="headerProfilCikisBtn">🚪 Çıkış yap</button>' +
             '</nav>'
@@ -1055,7 +1055,7 @@
         try {
             await db.cikisYap();
             guncelleHeaderOturum();
-            global.location.href = 'index.html';
+            global.location.href = '/';
         } catch (err) {
             showToast(db.hataMesaji ? db.hataMesaji(err) : String(err), 'hata');
         }

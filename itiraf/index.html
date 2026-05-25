@@ -57,7 +57,7 @@
             }
 
             function git404(id) {
-                var url = kok('/404.html');
+                var url = kok('/404');
                 if (id) url += '?itiraf=' + encodeURIComponent(id);
                 location.replace(url);
             }
@@ -80,7 +80,7 @@
                     git404(id);
                     return;
                 }
-                var sayfa = row.status === 'podyum' ? '/index.html?itiraf=' : '/kulis.html?itiraf=';
+                var sayfa = row.status === 'podyum' ? '/?itiraf=' : '/kulis?itiraf=';
                 location.replace(kok(sayfa) + encodeURIComponent(id));
             }).catch(function () {
                 git404(id);
