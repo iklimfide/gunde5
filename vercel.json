@@ -16,6 +16,18 @@
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
       ]
+    },
+    {
+      "source": "/kamikaze",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/kamikaze.html",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
     }
   ],
   "redirects": [
@@ -29,6 +41,7 @@
     { "source": "/kvkk.html", "destination": "/kvkk", "permanent": true },
     { "source": "/istatistikler.html", "destination": "/istatistikler", "permanent": true },
     { "source": "/uyeler.html", "destination": "/uyeler", "permanent": true },
+    { "source": "/kamikaze.html", "destination": "/kamikaze", "permanent": true },
     { "source": "/404.html", "destination": "/404", "permanent": true }
   ],
   "rewrites": [

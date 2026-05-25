@@ -74,6 +74,21 @@
             --male-border: #bfdbfe;
         }
 
+        body.dark-mode {
+            --bg-main: #0f1419;
+            --bg-card: #15181c;
+            --text-main: #e7e9ea;
+            --text-muted: #71767b;
+            --border-color: #2f3336;
+            --header-bg: #161a1e;
+            --female-color: #f43f5e;
+            --female-bg: #201319;
+            --female-border: #4c1d24;
+            --male-color: #1d9bf0;
+            --male-bg: #0e1924;
+            --male-border: #1d354b;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -402,11 +417,12 @@
         .card-body {
             font-size: 15px;
             line-height: 1.6;
-            color: #1f2937;
+            color: var(--text-main);
             font-weight: 500;
             text-align: justify;
             text-justify: inter-word;
         }
+        body.dark-mode .card-body { color: #e7e9ea; }
         /* uzun-metin aç/kapa: js/gunde5-kart-cevap.js */
         .kart-daralt-satir { width: 100%; text-align: center; margin-top: 10px; }
         .kart-daralt-satir--alt { margin-top: 14px; padding-top: 4px; }
@@ -562,6 +578,7 @@
             align-items: center;
             gap: 8px;
         }
+        body.dark-mode .card-footer { border-top: 1px solid rgba(255,255,255,0.04); }
         .bottom-nav {
             position: fixed;
             bottom: 0;

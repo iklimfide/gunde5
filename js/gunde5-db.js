@@ -12,9 +12,18 @@
 
     function getClient() {
         if (!client && isConfigured() && global.supabase) {
+            var url = global.GUNDE5_SUPABASE_URL;
+            var key = global.GUNDE5_SUPABASE_ANON_KEY;
             client = global.supabase.createClient(
-                global.GUNDE5_SUPABASE_URL,
-                global.GUNDE5_SUPABASE_ANON_KEY
+                url,
+                key,
+                {
+                    global: {
+                        headers: {
+                            apikey: key
+                        }
+                    }
+                }
             );
         }
         return client;
@@ -105,7 +114,22 @@
 
     function hataMesaji(err) {
         if (!err) return 'Bir hata oluştu.';
-        if (err.code === '42501') return 'Profil kaydı için oturum gerekli. Sayfayı yenileyip tekrar dene.';
+        if (err.code === '42501') {
+            var yetkiMsg = err.message || '';
+            if (yetkiMsg.indexOf('profil_uye_guncelle') >= 0 || yetkiMsg.indexOf('profil_uye_ensure') >= 0) {
+                return 'Profil kaydedilemedi (veritabanı izni). Supabase SQL Editor\'da supabase/profil-uye-rpc.sql dosyasını bir kez çalıştırın, sonra sayfayı yenileyin.';
+            }
+            if (yetkiMsg.indexOf('master_kamikaze_') >= 0 || yetkiMsg.indexOf('master_oy_islem') >= 0) {
+                return 'Kamikaze için veritabanı izni eksik. Supabase SQL Editor\'da supabase/master-kamikaze-panel.sql dosyasını çalıştırın, sonra sayfayı yenileyin.';
+            }
+            if (yetkiMsg.indexOf('master_hikaye_islem') >= 0 || yetkiMsg.indexOf('master_cevap_islem') >= 0 ||
+                yetkiMsg.indexOf('itiraflar') >= 0 ||
+                yetkiMsg.indexOf('itiraf_cevaplar') >= 0 || yetkiMsg.indexOf('itiraf_oylar') >= 0 ||
+                yetkiMsg.indexOf('itiraf_puan_guncelle') >= 0) {
+                return 'Master işlemi için veritabanı izni eksik. İlgili SQL kurulum dosyasını tekrar çalıştırıp sayfayı yenileyin.';
+            }
+            return 'Veritabanı izni eksik (42501). İlgili SQL kurulum dosyasını tekrar çalıştırıp sayfayı yenileyin.';
+        }
         if (err.code === '23505') return 'Bu kullanıcı adı veya e-posta zaten kullanılıyor.';
         var msg = err.message || '';
         if (msg.indexOf('avatar_url') >= 0 && (msg.indexOf('column') >= 0 || err.code === 'PGRST204')) {
@@ -120,6 +144,11 @@
             (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
             return 'Üye yönetimi henüz kurulmadı. Supabase SQL Editor\'da supabase/master-uyeler-yonetim.sql ve master-uye-aktivite-icerik.sql dosyalarını çalıştırın.';
         }
+        if ((msg.indexOf('master_kamikaze_panel') >= 0 || msg.indexOf('master_kamikaze_ara') >= 0 ||
+                msg.indexOf('master_kamikaze_hikaye_detay') >= 0 || msg.indexOf('master_oy_islem') >= 0) &&
+            (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
+            return 'Kamikaze henüz kurulmadı. Supabase SQL Editor\'da supabase/master-kamikaze-panel.sql dosyasını çalıştırın.';
+        }
         if (msg.indexOf('master_hikaye_islem') >= 0 && msg.indexOf('meta') >= 0 &&
             (msg.indexOf('bilinmeyen') >= 0 || msg.indexOf('gecersiz') >= 0)) {
             return 'Kart meta düzenleme için supabase/master-hikaye-kart-meta.sql dosyasını çalıştırın.';
@@ -129,6 +158,10 @@
         }
         if (msg.indexOf('itiraf_ara') >= 0 && (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
             return 'Arama henüz kurulmadı. Supabase SQL Editor\'da supabase/itiraf-ara.sql dosyasını çalıştırın.';
+        }
+        if ((msg.indexOf('profil_uye_guncelle') >= 0 || msg.indexOf('profil_uye_ensure') >= 0) &&
+            (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
+            return 'Profil kaydı için supabase/profil-uye-rpc.sql dosyasını Supabase SQL Editor\'da çalıştırın.';
         }
         if (msg) return msg;
         return String(err);
@@ -164,6 +197,23 @@
         }
     }
 
+    /** Giriş yapmış kullanıcı (Auth sunucusu doğrular). */
+    async function aktifOturum() {
+        if (!isConfigured()) throw new Error('Supabase yapılandırılmadı.');
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        if (!ready) await init();
+
+        var authRes = await sb.auth.getUser();
+        if (authRes.error) throw authRes.error;
+        var user = authRes.data && authRes.data.user;
+        if (!user || !user.id) {
+            cacheUser(null);
+            throw new Error('Profil kaydetmek için giriş yapmalısın.');
+        }
+        return { sb: sb, uid: user.id };
+    }
+
     async function init() {
         if (!isConfigured()) {
             ready = false;
@@ -172,9 +222,9 @@
         var sb = getClient();
         if (!sb) return false;
 
-        var sessionRes = await sb.auth.getSession();
-        if (sessionRes.data.session) {
-            await loadProfile(sessionRes.data.session.user.id);
+        var authRes = await sb.auth.getUser();
+        if (authRes.data && authRes.data.user) {
+            await loadProfile(authRes.data.user.id);
         } else {
             cacheUser(null);
         }
@@ -502,44 +552,53 @@
     }
 
     async function profilGuncelle(alanlar) {
-        var u = getGunde5User();
-        if (!u || !u.id) throw new Error('Profil güncellemek için giriş yapmalısın.');
-        var sb = getClient();
-        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var oturum = await aktifOturum();
+        var body = {};
 
-        var payload = {};
         if (alanlar.yasadigiYer !== undefined) {
-            payload.yasadigi_yer = alanlar.yasadigiYer || null;
+            body.yasadigi_yer = alanlar.yasadigiYer || null;
         }
         if (alanlar.yurtdisiSehir !== undefined) {
-            var ys = String(alanlar.yurtdisiSehir || '').replace(/^\s+|\s+$/g, '');
-            payload.yurtdisi_sehir = ys || null;
+            body.yurtdisi_sehir = String(alanlar.yurtdisiSehir || '').replace(/^\s+|\s+$/g, '') || null;
         }
         if (alanlar.meslek !== undefined) {
-            payload.meslek = alanlar.meslek || null;
+            body.meslek = alanlar.meslek || null;
         }
         if (alanlar.medeniDurum !== undefined) {
-            payload.medeni_durum = alanlar.medeniDurum || null;
+            body.medeni_durum = alanlar.medeniDurum || null;
         }
         if (alanlar.avatarUrl !== undefined) {
-            payload.avatar_url = alanlar.avatarUrl || null;
+            body.avatar_url = alanlar.avatarUrl || null;
+        }
+        if (body.yasadigi_yer && body.yasadigi_yer !== 'yurtdisi') {
+            body.yurtdisi_sehir = null;
         }
 
-        if (payload.yasadigi_yer && payload.yasadigi_yer !== 'yurtdisi') {
-            payload.yurtdisi_sehir = null;
+        var rpcRes = await oturum.sb.rpc('profil_uye_guncelle', { p_body: body });
+        if (rpcRes.error) {
+            if (rpcRes.error.code === 'PGRST202' ||
+                (rpcRes.error.message || '').indexOf('profil_uye_guncelle') >= 0) {
+                throw new Error('Profil kaydı için supabase/profil-uye-rpc.sql dosyasını Supabase SQL Editor\'da çalıştırın.');
+            }
+            throw rpcRes.error;
         }
-        var res = await sb.from('uye').update(payload).eq('id', u.id).select(PROFIL_SELECT).single();
-        if (res.error) throw res.error;
-        var guncel = profileToUser(res.data);
+
+        var sonuc = rpcRes.data;
+        if (!sonuc || sonuc.ok === false) {
+            throw new Error((sonuc && sonuc.hata) || 'Profil kaydedilemedi');
+        }
+        if (!sonuc.uye) {
+            throw new Error('Profil yanıtı alınamadı. profil-uye-rpc.sql dosyasını kontrol edin.');
+        }
+
+        var guncel = profileToUser(sonuc.uye);
         cacheUser(guncel);
         return guncel;
     }
 
     async function avatarYukle(file) {
-        var u = getGunde5User();
-        if (!u || !u.id) throw new Error('Fotoğraf yüklemek için giriş yapmalısın.');
-        var sb = getClient();
-        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var oturum = await aktifOturum();
+        var sb = oturum.sb;
 
         if (!file || !file.type || file.type.indexOf('image/') !== 0) {
             throw new Error('JPEG, PNG veya WebP bir görsel seç.');
@@ -553,7 +612,7 @@
         else if (file.type === 'image/webp') ext = 'webp';
         else if (file.type === 'image/gif') ext = 'gif';
 
-        var path = u.id + '/avatar.' + ext;
+        var path = oturum.uid + '/avatar.' + ext;
         var up = await sb.storage.from('avatars').upload(path, file, {
             upsert: true,
             contentType: file.type,
@@ -642,6 +701,29 @@
 
     async function masterUyeGuncelle(body) {
         return masterRpc('master_uye_guncelle', body);
+    }
+
+    async function masterKamikazePanel() {
+        var sb = getClient();
+        if (!sb) return { ok: false };
+        var res = await sb.rpc('master_kamikaze_panel');
+        if (res.error) throw res.error;
+        return res.data || { ok: false };
+    }
+
+    async function masterKamikazeAra(q, limit) {
+        return masterRpc('master_kamikaze_ara', {
+            q: q != null ? q : '',
+            limit: limit || 40
+        });
+    }
+
+    async function masterKamikazeHikayeDetay(itirafId) {
+        return masterRpc('master_kamikaze_hikaye_detay', { itiraf_id: itirafId });
+    }
+
+    async function masterOyIslem(body) {
+        return masterRpc('master_oy_islem', body);
     }
 
     function avatarDosyaDogrula(file) {
@@ -1622,6 +1704,10 @@
         masterUyeAvatarKaldir: masterUyeAvatarKaldir,
         masterUyeIcerik: masterUyeIcerik,
         masterCevapIslem: masterCevapIslem,
+        masterKamikazePanel: masterKamikazePanel,
+        masterKamikazeAra: masterKamikazeAra,
+        masterKamikazeHikayeDetay: masterKamikazeHikayeDetay,
+        masterOyIslem: masterOyIslem,
         profilItiraflarim: profilItiraflarim,
         yukleKulisListe: yukleKulisListe,
         yuklePodyumListe: yuklePodyumListe,

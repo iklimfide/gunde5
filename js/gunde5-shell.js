@@ -7,6 +7,7 @@
     var KEY_USER = 'gunde5_user';
     var KEY_THEME = 'gunde5_tema';
     var STYLE_ID = 'gunde5-shell-styles';
+    var THEME_BTN_ID = 'headerThemeBtn';
 
     function readUser() {
         try {
@@ -57,9 +58,56 @@
             'html.g5-oturum[data-user-gender="female"] #headerProfilLink.cins-female .header-profil-avatar:not(.has-foto),' +
             'html.g5-oturum[data-user-gender="female"] #headerProfilLink:not(.cins-male) .header-profil-avatar:not(.has-foto){background-color:#db2777}' +
             'html.g5-oturum .header-sag{min-width:84px}' +
+            '.header-theme-btn{width:38px;height:38px;padding:0;border:1px solid rgba(255,255,255,.45);border-radius:10px;background:rgba(255,255,255,.18);color:#ffffff;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;cursor:pointer;line-height:1;flex-shrink:0}' +
+            '.header-theme-btn:hover{background:rgba(255,255,255,.24)}' +
+            '.header-theme-btn:active{transform:scale(.96)}' +
+            '.header-theme-btn:focus-visible{outline:2px solid rgba(255,255,255,.55);outline-offset:2px}' +
             'html.g5-tema-koyu{color-scheme:dark}' +
             'html.g5-tema-koyu body{background-color:#0f1419;color:#e7e9ea}';
         (doc.head || doc.documentElement).appendChild(s);
+    }
+
+    function ensureHeaderThemeButton() {
+        var doc = w.document;
+        if (!doc) return;
+        var sag = doc.querySelector('.header-sag');
+        if (!sag) return;
+
+        var btn = doc.getElementById(THEME_BTN_ID);
+        if (!btn) {
+            btn = doc.createElement('button');
+            btn.type = 'button';
+            btn.id = THEME_BTN_ID;
+            btn.className = 'header-theme-btn';
+            btn.addEventListener('click', function () {
+                toggleTheme();
+            });
+        }
+
+        var authBtns = doc.getElementById('headerAuthBtns');
+        var profilLink = doc.getElementById('headerProfilLink');
+        if (authBtns && authBtns.parentNode === sag) {
+            if (btn.parentNode !== sag || btn.nextSibling !== authBtns) {
+                sag.insertBefore(btn, authBtns);
+            }
+        } else if (profilLink && profilLink.parentNode === sag) {
+            if (btn.parentNode !== sag || btn.nextSibling !== profilLink) {
+                sag.insertBefore(btn, profilLink);
+            }
+        } else if (btn.parentNode !== sag) {
+            sag.appendChild(btn);
+        }
+    }
+
+    function syncThemeButton() {
+        var doc = w.document;
+        if (!doc) return;
+        var btn = doc.getElementById(THEME_BTN_ID);
+        if (!btn) return;
+        var dark = !!(doc.body && doc.body.classList.contains('dark-mode'));
+        btn.textContent = dark ? '\u2600' : '\u263E';
+        btn.setAttribute('aria-label', dark ? 'Aydınlık moda geç' : 'Karanlık moda geç');
+        btn.title = dark ? 'Aydınlık moda geç' : 'Karanlık moda geç';
     }
 
     function applyShell() {
@@ -79,7 +127,10 @@
         if (readTheme() === 'dark') html.classList.add('g5-tema-koyu');
         else html.classList.remove('g5-tema-koyu');
         syncBodyClasses();
-        if (doc.body) applyHeaderFromCache();
+        if (doc.body) {
+            ensureHeaderThemeButton();
+            applyHeaderFromCache();
+        }
     }
 
     function syncBodyClasses() {
@@ -89,6 +140,7 @@
         var html = doc.documentElement;
         body.classList.toggle('dark-mode', html.classList.contains('g5-tema-koyu'));
         body.classList.toggle('oturum-acik', html.classList.contains('g5-oturum'));
+        syncThemeButton();
     }
 
     /** F5: avatar hemen (gunde5-ui DOMContentLoaded beklemeden). */
@@ -153,6 +205,7 @@
     }
 
     function onDomReady() {
+        ensureHeaderThemeButton();
         syncBodyClasses();
         applyHeaderFromCache();
         podyumBannerOnbellek();

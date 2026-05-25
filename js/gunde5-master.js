@@ -39,7 +39,7 @@
     }
 
     function modAktifMi() {
-        return masterMi && modAcik;
+        return false;
     }
 
     function injectStyles() {
@@ -92,6 +92,7 @@
             menuGuncelle();
             menuIstatistikGuncelle();
             menuUyelerGuncelle();
+            menuKamikazeGuncelle();
             return;
         }
         try {
@@ -100,54 +101,61 @@
         } catch (e) {
             masterMi = false;
         }
-        modAcik = masterMi && modKayitliAcik();
-        document.body.classList.toggle('master-mod-aktif', modAcik);
+        modAcik = false;
+        document.body.classList.remove('master-mod-aktif');
         menuGuncelle();
         menuIstatistikGuncelle();
         menuUyelerGuncelle();
-        if (modAcik) {
-            kartlariBagla();
-            profilModMount();
-        } else {
-            temizleKartlar();
-            profilModTemizle();
-        }
+        menuKamikazeGuncelle();
+        temizleKartlar();
+        profilModTemizle();
     }
 
     function modToggle() {
-        if (!masterMi) return;
-        modAcik = !modAcik;
-        modKaydet(modAcik);
-        document.body.classList.toggle('master-mod-aktif', modAcik);
+        modAcik = false;
+        document.body.classList.remove('master-mod-aktif');
         menuGuncelle();
-        menuIstatistikGuncelle();
-        if (modAcik) {
-            kartlariBagla();
-            profilModMount();
-        } else {
-            temizleKartlar();
-            profilModTemizle();
-        }
-        if (ui() && ui().showToast) {
-            ui().showToast(modAcik ? 'Moderasyon açık' : 'Moderasyon kapalı');
-        }
+        temizleKartlar();
+        profilModTemizle();
     }
 
     function menuGuncelle() {
         var btn = document.getElementById('headerProfilMasterBtn');
         if (!btn) return;
-        if (!masterMi) {
-            btn.hidden = true;
-            return;
-        }
-        btn.hidden = false;
-        btn.textContent = modAcik ? '🛡️ Moderasyon: Açık' : '🛡️ Moderasyon: Kapalı';
-        btn.classList.toggle('header-profil-menu-link--master', modAcik);
+        btn.hidden = true;
     }
 
     function menuIstatistikKaldir() {
         var link = document.getElementById('headerMenuIstatistik');
         if (link && link.parentNode) link.parentNode.removeChild(link);
+    }
+
+    function menuKamikazeKaldir() {
+        var link = document.getElementById('headerMenuKamikaze');
+        if (link && link.parentNode) link.parentNode.removeChild(link);
+    }
+
+    function menuKamikazeGuncelle() {
+        if (!masterMi) {
+            menuKamikazeKaldir();
+            return;
+        }
+        var link = document.getElementById('headerMenuKamikaze');
+        if (link) return;
+        var nav = document.querySelector('.header-menu-nav');
+        if (!nav) return;
+        link = document.createElement('a');
+        link.href = '/kamikaze';
+        link.className = 'header-menu-link header-menu-link--master';
+        link.id = 'headerMenuKamikaze';
+        link.textContent = '☄️ Kamikaze';
+        var uyeler = document.getElementById('headerMenuUyeler');
+        if (uyeler && uyeler.nextSibling) nav.insertBefore(link, uyeler.nextSibling);
+        else {
+            var kvkk = nav.querySelector('a[href="/kvkk"]');
+            if (kvkk) nav.insertBefore(link, kvkk);
+            else nav.appendChild(link);
+        }
     }
 
     function menuIstatistikGuncelle() {
@@ -199,24 +207,9 @@
 
     function mountMenuItem() {
         var nav = document.querySelector('.header-profil-menu-nav');
-        if (!nav || document.getElementById('headerProfilMasterBtn')) return;
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'header-profil-menu-link header-profil-menu-link--master';
-        btn.id = 'headerProfilMasterBtn';
-        btn.hidden = true;
-        btn.addEventListener('click', function (e) {
-            e.preventDefault();
-            modToggle();
-            if (ui() && ui().closeProfilMenu) ui().closeProfilMenu();
-        });
-        var modTheme = document.getElementById('headerProfilModBtn');
-        if (modTheme && modTheme.parentNode === nav) {
-            nav.insertBefore(btn, modTheme);
-        } else {
-            nav.appendChild(btn);
-        }
-        menuGuncelle();
+        if (!nav) return;
+        var btn = document.getElementById('headerProfilMasterBtn');
+        if (btn && btn.parentNode) btn.parentNode.removeChild(btn);
     }
 
     function temizleKartlar() {
@@ -709,10 +702,7 @@
     }
 
     function kartlariBagla() {
-        if (!modAktifMi()) return;
-        document.querySelectorAll('.card[data-id]').forEach(function (card) {
-            kartBagla(card).catch(function () { /* sessiz */ });
-        });
+        return;
     }
 
     function gozlemciBaslat() {

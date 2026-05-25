@@ -12,6 +12,7 @@
     { "source": "/kvkk.html", "destination": "/kvkk" },
     { "source": "/istatistikler.html", "destination": "/istatistikler" },
     { "source": "/uyeler.html", "destination": "/uyeler" },
+    { "source": "/kamikaze.html", "destination": "/kamikaze" },
     { "source": "/404.html", "destination": "/404" }
   ],
   "rewrites": [

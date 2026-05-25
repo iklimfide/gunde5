@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamikaze — gunde5.com</title>
+    <link rel="icon" href="favicon.ico" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="description" content="gunde5 master Kamikaze paneli.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#1d9bf0">
+    <style>
+        :root {
+            --bg-main: #f7f7f7;
+            --bg-card: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --header-bg: #ffffff;
+            --female-color: #db2777;
+            --male-color: #2563eb;
+        }
+        body.dark-mode {
+            --bg-main: #0f1419;
+            --bg-card: #0b0f14;
+            --text-main: #e7e9ea;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255,255,255,0.10);
+            --header-bg: #161a1e;
+            --female-color: #f43f5e;
+            --male-color: #1d9bf0;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            transition: background-color .2s, color .2s;
+        }
+        header {
+            background-color: #1d9bf0;
+            color: #fff;
+            padding: 16px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            border-bottom: 1px solid #1a8cd8;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-brand {
+            color: #fff;
+            text-decoration: none;
+        }
+        .header-brand-red { color: #ef4444; }
+        .header-sol {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 110;
+        }
+        .header-sag {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 110;
+        }
+        .header-menu-wrap { position: relative; }
+        .header-menu-btn {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 0;
+        }
+        .header-menu-bar {
+            display: block;
+            width: 18px;
+            height: 2px;
+            background: #fff;
+            border-radius: 1px;
+        }
+        .header-menu-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 176px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+            padding: 8px;
+            z-index: 200;
+        }
+        body.dark-mode .header-menu-panel {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+        }
+        .header-menu-nav { display: flex; flex-direction: column; gap: 2px; }
+        .header-menu-link {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #111827;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: left;
+            border: none;
+            background: transparent;
+            width: 100%;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        body.dark-mode .header-menu-link { color: var(--text-main); }
+        .header-menu-link:hover { background: #f3f4f6; }
+        body.dark-mode .header-menu-link:hover { background: #2f3336; }
+        .header-auth-btns { display: flex; align-items: center; gap: 8px; }
+        .header-auth-btns[hidden] { display: none !important; }
+        .header-auth-btn {
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .header-auth-btn--giris {
+            background: #fff;
+            color: #1d9bf0;
+            border-color: #fff;
+        }
+        .header-profil-link {
+            display: none;
+            align-items: center;
+            padding: 4px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            text-decoration: none;
+        }
+        .header-profil-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .header-profil-link.cins-female .header-profil-avatar:not(.has-foto) { background-color: var(--female-color); }
+        .header-profil-link.cins-male .header-profil-avatar:not(.has-foto) { background-color: var(--male-color); }
+        .header-profil-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        .header-profil-avatar.has-foto {
+            background: transparent !important;
+            overflow: hidden;
+        }
+        .container {
+            width: min(1180px, calc(100% - 24px));
+            margin: 18px auto 40px;
+        }
+        .page-title {
+            font-size: clamp(28px, 5vw, 42px);
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            margin-bottom: 8px;
+        }
+        .intro {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+        .kamikaze-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .kamikaze-select,
+        .kamikaze-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .kamikaze-btn {
+            cursor: pointer;
+            border-color: #1d9bf0;
+            background: linear-gradient(180deg, #33a4f5 0%, #1d9bf0 100%);
+            color: #ffffff;
+            box-shadow: 0 10px 24px rgba(29, 155, 240, 0.22);
+            transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+        }
+        .kamikaze-btn:hover {
+            filter: brightness(1.03);
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(29, 155, 240, 0.28);
+        }
+        .kamikaze-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 18px rgba(29, 155, 240, 0.20);
+        }
+        .kamikaze-btn:focus-visible {
+            outline: 3px solid rgba(29, 155, 240, 0.22);
+            outline-offset: 2px;
+        }
+        body.dark-mode .kamikaze-btn {
+            box-shadow: 0 12px 26px rgba(29, 155, 240, 0.20);
+        }
+        .kamikaze-meta {
+            margin-left: auto;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .kamikaze-loading,
+        .kamikaze-empty,
+        .kamikaze-error {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+        .kamikaze-error {
+            color: #b91c1c;
+        }
+        body.dark-mode .kamikaze-error {
+            color: #f87171;
+        }
+        .kamikaze-yetkisiz {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 18px;
+            display: grid;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .kamikaze-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+        .kamikaze-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(29, 155, 240, 0.14);
+        }
+        .kamikaze-section-head h2 {
+            font-size: 15px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            color: #0f5fa8;
+        }
+        body.dark-mode .kamikaze-section-head {
+            border-bottom-color: rgba(29, 155, 240, 0.22);
+        }
+        body.dark-mode .kamikaze-section-head h2 {
+            color: #7dc5ff;
+        }
+        .kamikaze-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .kamikaze-kpi {
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px;
+            background: linear-gradient(180deg, rgba(29, 155, 240, 0.12) 0%, rgba(29, 155, 240, 0.05) 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+        }
+        body.dark-mode .kamikaze-kpi {
+            background: linear-gradient(180deg, rgba(29, 155, 240, 0.18) 0%, rgba(29, 155, 240, 0.08) 100%);
+        }
+        .kamikaze-kpi--ok { background: linear-gradient(180deg, rgba(34, 197, 94, 0.16) 0%, rgba(34, 197, 94, 0.07) 100%); }
+        .kamikaze-kpi--warn { background: linear-gradient(180deg, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.08) 100%); }
+        .kamikaze-kpi--blue { background: linear-gradient(180deg, rgba(37, 99, 235, 0.18) 0%, rgba(37, 99, 235, 0.08) 100%); }
+        .kamikaze-kpi-label {
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .kamikaze-kpi-value {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+        }
+        .kamikaze-chart-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .kamikaze-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            min-height: 160px;
+            overflow-x: auto;
+            padding-top: 6px;
+        }
+        .kamikaze-bar-col {
+            min-width: 34px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+        .kamikaze-bar {
+            width: 24px;
+            border-radius: 10px 10px 4px 4px;
+            background: linear-gradient(180deg, #f59e0b, #d97706);
+        }
+        .kamikaze-bar--green {
+            background: linear-gradient(180deg, #22c55e, #15803d);
+        }
+        .kamikaze-bar--amber {
+            background: linear-gradient(180deg, #f59e0b, #d97706);
+        }
+        .kamikaze-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+        }
+        .kamikaze-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .kamikaze-table th,
+        .kamikaze-table td {
+            padding: 9px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+            font-weight: 600;
+        }
+        .kamikaze-table th {
+            background: linear-gradient(180deg, rgba(29, 155, 240, 0.14) 0%, rgba(29, 155, 240, 0.08) 100%);
+            color: #0f5fa8;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+        body.dark-mode .kamikaze-table th {
+            background: linear-gradient(180deg, rgba(29, 155, 240, 0.22) 0%, rgba(29, 155, 240, 0.12) 100%);
+            color: #7dc5ff;
+        }
+        .kamikaze-table tr:last-child td {
+            border-bottom: none;
+        }
+        .kamikaze-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            border: 1px solid transparent;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.28);
+        }
+        .kamikaze-badge--kulis {
+            background: linear-gradient(180deg, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.10) 100%);
+            border-color: rgba(180, 83, 9, 0.18);
+            color: #b45309;
+        }
+        .kamikaze-badge--podyum {
+            background: linear-gradient(180deg, rgba(34, 197, 94, 0.18) 0%, rgba(34, 197, 94, 0.10) 100%);
+            border-color: rgba(21, 128, 61, 0.18);
+            color: #15803d;
+        }
+        .kamikaze-badge--silindi {
+            background: linear-gradient(180deg, rgba(239, 68, 68, 0.18) 0%, rgba(239, 68, 68, 0.10) 100%);
+            border-color: rgba(185, 28, 28, 0.18);
+            color: #b91c1c;
+        }
+        .kamikaze-note {
+            color: var(--text-muted);
+            font-size: 12px;
+            line-height: 1.5;
+            margin-top: 4px;
+        }
+        @media (max-width: 820px) {
+            .kamikaze-chart-grid {
+                grid-template-columns: 1fr;
+            }
+            .kamikaze-meta {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+        @media (max-width: 640px) {
+            .container {
+                width: min(100% - 16px, 1180px);
+            }
+            header {
+                font-size: 22px;
+                padding-left: 58px;
+                padding-right: 58px;
+            }
+            .header-auth-btn--kayit {
+                display: none;
+            }
+        }
+    </style>
+    <script src="js/gunde5-shell.js"></script>
+    <script defer src="js/gunde5-perf.js"></script>
+    <script src="js/gunde5-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+    <script src="js/gunde5-profil.js"></script>
+    <script src="js/gunde5-ui.js"></script>
+    <script src="js/gunde5-db.js"></script>
+    <script src="js/gunde5-bildirim.js"></script>
+    <script src="js/gunde5-kamikaze.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-sol">
+            <div class="header-menu-wrap">
+                <button type="button" class="header-menu-btn" id="headerMenuBtn" aria-label="Menü" aria-expanded="false" aria-controls="headerMenuPanel" onclick="Gunde5UI.toggleHeaderMenu(event)">
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                </button>
+                <div class="header-menu-panel" id="headerMenuPanel" hidden>
+                    <nav class="header-menu-nav" aria-label="Site menüsü">
+                        <a href="/" class="header-menu-link">🏆 Podyum</a>
+                        <a href="/kulis" class="header-menu-link">🔥 Kulis</a>
+                        <a href="/hakkinda" class="header-menu-link">ℹ️ Hakkında</a>
+                        <a href="/iletisim" class="header-menu-link">✉️ İletişim</a>
+                        <a href="/kvkk" class="header-menu-link">📋 KVKK</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <a href="/" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <div class="header-sag">
+            <div class="header-auth-btns" id="headerAuthBtns">
+                <button type="button" class="header-auth-btn header-auth-btn--kayit" onclick="openAuthModal('register')">Katıl</button>
+                <button type="button" class="header-auth-btn header-auth-btn--giris" onclick="openAuthModal('login')">Giriş</button>
+            </div>
+            <a href="/profil" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+                <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1 class="page-title">☄️ Kamikaze</h1>
+        <p class="intro">Master hesap için üyeleri, hikayeleri, yorumları ve oy kayıtlarını arayıp yönetebileceğin yönetim paneli. Ayrı token girişi yok; erişim mevcut master hesapla sağlanır.</p>
+
+        <div id="kamikazeYetkisiz" class="kamikaze-yetkisiz" hidden>
+            <p id="kamikazeYetkisizMetin"></p>
+            <div>
+                <button type="button" class="kamikaze-btn" id="kamikazeGirisBtn" hidden>Giriş yap</button>
+            </div>
+        </div>
+
+        <div id="kamikazeAraclar" class="kamikaze-toolbar" hidden>
+            <select id="kamikazeItirafFilter" class="kamikaze-select" aria-label="Hikaye filtresi">
+                <option value="hepsi">Hikayeler: Hepsi</option>
+                <option value="kulis">Hikayeler: Kulis</option>
+                <option value="podyum">Hikayeler: Podyum</option>
+                <option value="gizli">Hikayeler: Gizli</option>
+                <option value="silindi">Hikayeler: Silinen</option>
+            </select>
+            <button type="button" class="kamikaze-btn" id="kamikazeYenile">Yenile</button>
+            <div class="kamikaze-meta" id="kamikazeSonMeta">—</div>
+        </div>
+
+        <p id="kamikazeYukleniyor" class="kamikaze-loading" hidden>Yükleniyor…</p>
+        <div id="kamikazeIcerik" hidden></div>
+    </main>
+
+    <script>
+        function guncelleHeaderOturum() {
+            if (window.Gunde5UI && Gunde5UI.guncelleHeaderOturum) Gunde5UI.guncelleHeaderOturum();
+        }
+
+        function openAuthModal() {
+            window.location.href = '/kulis';
+        }
+    </script>
+</body>
+</html>
