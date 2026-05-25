@@ -1485,11 +1485,15 @@
             }).then(function () {
                 var raw = sessionStorage.getItem('gunde5_bekleyen_itiraf');
                 if (!raw) return;
-                sessionStorage.removeItem('gunde5_bekleyen_itiraf');
                 try {
                     var data = JSON.parse(raw);
-                    if (!data.metin || !Gunde5DB.getGunde5User()) return;
+                    if (!data.metin) {
+                        sessionStorage.removeItem('gunde5_bekleyen_itiraf');
+                        return;
+                    }
+                    if (!Gunde5DB.getGunde5User()) return;
                     return Gunde5DB.itirafGonder(data.metin, !!data.gizli).then(function (row) {
+                        sessionStorage.removeItem('gunde5_bekleyen_itiraf');
                         var kart = Gunde5UI.renderKulisCard(row);
                         var liste = document.getElementById('kulisListe');
                         if (liste) {
@@ -1508,7 +1512,9 @@
                         }
                         Gunde5UI.showToast('Hikaye kulise düştü!');
                     });
-                } catch (e) { /* sessiz */ }
+                } catch (e) {
+                    sessionStorage.removeItem('gunde5_bekleyen_itiraf');
+                }
             }).catch(function (err) {
                 Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
             });

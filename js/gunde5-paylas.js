@@ -128,7 +128,9 @@
         var sayilar = await DB.kokCevapSayilari([row.id]);
         row.cevap_sayisi = sayilar[String(row.id)] != null ? sayilar[String(row.id)] : 0;
 
-        var kart = sayfa === 'podyum' ? UI.renderPodyumCard(row, 4) : UI.renderKulisCard(row);
+        var kart = sayfa === 'podyum'
+            ? UI.renderPodyumCard(row, row.podyum_sira != null ? Math.max(0, parseInt(row.podyum_sira, 10) - 1) : null)
+            : UI.renderKulisCard(row);
         kart.classList.add('card--paylas-hedef');
         if (sayfa === 'kulis') {
             var giyotin = document.getElementById('kulisGiyotinBaraj');

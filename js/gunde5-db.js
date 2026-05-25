@@ -60,7 +60,7 @@
     }
 
     var PROFIL_SELECT = 'id, username, email, gender, dogum_yili, avatar_url, yasadigi_yer, yurtdisi_sehir, meslek, medeni_durum, durum, durum_notu, zorunlu_gizli';
-    var UYE_KART_SELECT = 'id, username, gender, dogum_yili, avatar_url, yasadigi_yer, yurtdisi_sehir, meslek, medeni_durum';
+    var UYE_KART_SELECT = 'id, username, gender, age, avatar_url, yasadigi_yer, yurtdisi_sehir, meslek, medeni_durum';
 
     function cacheUser(u) {
         cachedUser = u;
@@ -277,8 +277,18 @@
         }
         if (!uniq.length) return map;
 
-        var res = await sb.from('uye').select(UYE_KART_SELECT).in('id', uniq);
-        if (res.error) throw res.error;
+        var res = await sb.rpc('uye_kart_profilleri', { p_ids: uniq });
+        if (res.error) {
+            var msg = String(res.error.message || '');
+            if (
+                res.error.code === 'PGRST202' ||
+                res.error.code === '42501' ||
+                (msg.indexOf('uye_kart_profilleri') >= 0 && msg.indexOf('function') >= 0)
+            ) {
+                return map;
+            }
+            throw res.error;
+        }
         var rows = res.data || [];
         for (i = 0; i < rows.length; i++) {
             map[rows[i].id] = rows[i];
@@ -295,9 +305,9 @@
         row.yurtdisi_sehir = profil.yurtdisi_sehir || null;
         row.meslek = profil.meslek || null;
         row.medeni_durum = profil.medeni_durum || null;
-        var yil = parseInt(profil.dogum_yili, 10);
-        if (!isNaN(yil)) {
-            row.age = new Date().getFullYear() - yil;
+        var yas = parseInt(profil.age, 10);
+        if (!isNaN(yas)) {
+            row.age = yas;
         }
         return row;
     }

@@ -146,13 +146,44 @@
         return { kutu: kutu, liste: liste };
     }
 
+    function domdaKartVarMi(id) {
+        if (id == null) return false;
+        return !!document.querySelector('.card[data-id="' + String(id) + '"]');
+    }
+
+    function stateKartVarMi(id) {
+        var sid = String(id || '');
+        var i;
+        for (i = 0; i < state.tumKartlar.length; i++) {
+            if (String(state.tumKartlar[i] && state.tumKartlar[i].id) === sid) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function stateKartaEkle(row) {
+        if (!row || row.id == null || stateKartVarMi(row.id)) return;
+        state.tumKartlar.push(row);
+    }
+
     function kartlariEkle(rows, donem, ilkGun) {
         var liste = document.getElementById(state.konteynerId);
         if (!liste || !rows || !rows.length) return;
         var sentinel = document.getElementById(SENTINEL_ID);
         var hedef = liste;
         var KC = global.Gunde5KartCevap;
+        var eklenecek = [];
         var i;
+
+        for (i = 0; i < rows.length; i++) {
+            stateKartaEkle(rows[i]);
+            if (!domdaKartVarMi(rows[i].id)) {
+                eklenecek.push(rows[i]);
+            }
+        }
+
+        if (!eklenecek.length) return;
 
         if (!ilkGun) {
             var blok = document.createElement('div');
@@ -168,9 +199,8 @@
             hedef = gunKutu.liste;
         }
 
-        for (i = 0; i < rows.length; i++) {
-            var kart = UI.renderPodyumCard(rows[i]);
-            state.tumKartlar.push(rows[i]);
+        for (i = 0; i < eklenecek.length; i++) {
+            var kart = UI.renderPodyumCard(eklenecek[i]);
             if (sentinel && ilkGun) {
                 liste.insertBefore(kart, sentinel);
             } else {
@@ -343,6 +373,17 @@
         return initPromise;
     }
 
+    function initSifirla() {
+        observerDurdur();
+        if (DB && DB.podyumRealtimeKapat) DB.podyumRealtimeKapat();
+        initPromise = null;
+    }
+
+    function yenidenYukle(konteynerId) {
+        initSifirla();
+        return init(konteynerId);
+    }
+
     async function initCalistir(konteynerId) {
         injectStyles();
         if (!DB || !DB.isConfigured || !DB.isConfigured()) {
@@ -428,7 +469,8 @@
     }
 
     global.Gunde5PodyumLazy = {
-        init: init
+        init: init,
+        yenidenYukle: yenidenYukle
     };
 
     if (document.readyState === 'loading') {

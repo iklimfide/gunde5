@@ -96,6 +96,9 @@
         var KC = global.Gunde5KartCevap;
         var i;
         for (i = 0; i < rows.length; i++) {
+            if (rows[i] && rows[i].id != null && document.querySelector('.card[data-id="' + String(rows[i].id) + '"]')) {
+                continue;
+            }
             var kart = UI.renderKulisCard(rows[i]);
             if (sentinel) {
                 el.insertBefore(kart, sentinel);

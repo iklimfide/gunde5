@@ -89,7 +89,9 @@
         if (DB.podyumRealtimeKapat) DB.podyumRealtimeKapat();
         var samp = document.getElementById('podyumSampiyonlar');
         if (samp) samp.hidden = false;
-        if (global.Gunde5PodyumLazy && global.Gunde5PodyumLazy.init) {
+        if (global.Gunde5PodyumLazy && global.Gunde5PodyumLazy.yenidenYukle) {
+            global.Gunde5PodyumLazy.yenidenYukle(cfg.listeId);
+        } else if (global.Gunde5PodyumLazy && global.Gunde5PodyumLazy.init) {
             global.Gunde5PodyumLazy.init(cfg.listeId);
         } else if (DB.yuklePodyumListe) {
             DB.yuklePodyumListe(cfg.listeId);

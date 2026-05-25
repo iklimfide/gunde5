@@ -1,16 +1,7 @@
--- Cevap/yorum yazan üyelerin gender bilgisi kartlarda renklensin (anon okuyabilir).
--- Mevcut uye_select_kart yalnızca herkese açık itiraf sahibi üyeleri kapsar.
+-- Cevap/yorum yazan üyeler için de tam uye satırı public açılmaz.
+-- Ön yüz artık public.uye yerine public.uye_kart_profilleri(uuid[]) RPC'sini kullanır.
+
+revoke all on public.uye from anon;
+grant select on public.uye to authenticated;
 
 drop policy if exists uye_select_cevap_yazar on public.uye;
-create policy uye_select_cevap_yazar on public.uye
-    for select to anon, authenticated
-    using (
-        exists (
-            select 1
-            from public.itiraf_cevaplar c
-            inner join public.itiraflar i on i.id = c.itiraf_id
-            where c.user_id = uye.id
-              and i.is_gizli = false
-              and i.silindi_at is null
-        )
-    );

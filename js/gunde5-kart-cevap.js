@@ -73,6 +73,34 @@
         return document.querySelector('.card[data-id="' + cardId + '"]');
     }
 
+    function pointerTiklamasiMi(ev) {
+        return !!(ev && typeof ev.detail === 'number' && ev.detail > 0);
+    }
+
+    function mevcutScrollY() {
+        return global.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    }
+
+    function viewportKonumunuKoru(anchorEl, islem) {
+        if (typeof islem !== 'function') return;
+        var anchor = anchorEl && anchorEl.getBoundingClientRect ? anchorEl : null;
+        if (!anchor) {
+            islem();
+            return;
+        }
+        var onceTop = anchor.getBoundingClientRect().top;
+        islem();
+        [0, 80, 180, 320].forEach(function (ms) {
+            global.setTimeout(function () {
+                if (!anchor || !anchor.isConnected || !anchor.getBoundingClientRect) return;
+                var fark = anchor.getBoundingClientRect().top - onceTop;
+                if (Math.abs(fark) > 1) {
+                    global.scrollTo(0, Math.max(0, mevcutScrollY() + fark));
+                }
+            }, ms);
+        });
+    }
+
     function guncelleReadBtn(card, acik) {
         if (!card) return;
         var btn = card.querySelector('.read-more--ac');
@@ -319,7 +347,10 @@
         readBtns.forEach(function (btn) {
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
-                toggle(cardId, false);
+                if (pointerTiklamasiMi(e) && document.activeElement === btn && btn.blur) {
+                    btn.blur();
+                }
+                toggle(cardId, false, btn);
             });
         });
 
@@ -364,13 +395,17 @@
         }
     }
 
-    async function toggle(cardId, focusCevap) {
+    async function toggle(cardId, focusCevap, triggerEl) {
         injectStyles();
         var card = getCard(cardId);
         if (!card) return;
+        if (!focusCevap && triggerEl && document.activeElement === triggerEl && triggerEl.blur) {
+            triggerEl.blur();
+        }
         baglaKart(card);
         var s = st(cardId);
         var detay = card.querySelector('[data-kart-detay]');
+        var anchorEl = !focusCevap ? (card.querySelector('.read-more--ac') || triggerEl || card) : null;
 
         if (focusCevap && !s.acik) {
             if (!UI.uyeGirisUyarisi('Yorum yazmak için üye girişi yapmanız gerekiyor.')) {
@@ -379,16 +414,20 @@
         }
 
         if (s.acik) {
-            daraltKart(cardId, card);
+            viewportKonumunuKoru(anchorEl, function () {
+                daraltKart(cardId, card);
+            });
             return;
         }
 
-        daraltDigerKartlari(cardId);
-        s.acik = true;
-        card.classList.add('acik');
-        guncelleReadBtn(card, true);
-        detay.hidden = false;
-        uygulaKokCevapKurali(card);
+        viewportKonumunuKoru(anchorEl, function () {
+            daraltDigerKartlari(cardId);
+            s.acik = true;
+            card.classList.add('acik');
+            guncelleReadBtn(card, true);
+            detay.hidden = false;
+            uygulaKokCevapKurali(card);
+        });
         if (!s.yuklendi) {
             var dahaBtn = card.querySelector('[data-cevap-daha]');
             if (dahaBtn) guncelleDahaEskiBtn(dahaBtn, 0);
@@ -424,4 +463,9 @@
     };
     global.toggleKartDetay = toggle;
     injectStyles();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSayfa);
+    } else {
+        initSayfa();
+    }
 })(window);
