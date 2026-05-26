@@ -32,6 +32,8 @@
   ],
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/kulis", "destination": "/", "permanent": false },
+    { "source": "/kulis/", "destination": "/", "permanent": false },
     { "source": "/kulis.html", "destination": "/kulis", "permanent": true },
     { "source": "/podyum", "destination": "/", "permanent": true },
     { "source": "/podyum/", "destination": "/", "permanent": true },
