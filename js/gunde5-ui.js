@@ -588,8 +588,12 @@
         return overlay.style.display === 'flex' || overlay.classList.contains('acik');
     }
 
+    function hikayeModalEl() {
+        return document.getElementById('itirafModal') || document.getElementById('hikayeModal');
+    }
+
     function itirafModalAcikMi() {
-        var modal = document.getElementById('itirafModal');
+        var modal = hikayeModalEl();
         return !!(modal && modal.classList.contains('acik'));
     }
 
@@ -607,11 +611,15 @@
     }
 
     function kapatItirafModal() {
-        var modal = document.getElementById('itirafModal');
+        var modal = hikayeModalEl();
         if (!modal) return;
         modal.classList.remove('acik');
         modal.setAttribute('aria-hidden', 'true');
         guncelleModalScrollKilidi();
+    }
+
+    function kapatHikayeModal() {
+        kapatItirafModal();
     }
 
     function oturumModallariKapat() {
@@ -621,6 +629,7 @@
 
     global.closeAuthModal = closeAuthModal;
     global.kapatItirafModal = kapatItirafModal;
+    global.kapatHikayeModal = kapatHikayeModal;
     global.oturumModallariKapat = oturumModallariKapat;
 
     function kapatSikayetModal() {
@@ -1188,6 +1197,8 @@
         uyeMi: uyeMi,
         gitProfilSayfasi: gitProfilSayfasi,
         itirafUyeGerekli: itirafUyeGerekli,
+        hikayeUyeGerekli: itirafUyeGerekli,
+        kapatHikayeModal: kapatHikayeModal,
         uygulaAvatarElement: uygulaAvatarElement,
         closeAuthModal: closeAuthModal,
         kapatItirafModal: kapatItirafModal,

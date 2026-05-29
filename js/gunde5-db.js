@@ -411,14 +411,75 @@
     var INDEX_ITIRAF_SELECT =
         'id,username,age,gender,city,yasadigi_yer,content_short,content_full,up_votes,down_votes';
 
-    async function indexHikayeListeleSayfa(offset, limit) {
+    /** Gelecek tarihli kayıtlar (planlı yayın) anasayfada görünmez. */
+    function indexYayindaFiltre(q) {
+        return q.lte('created_at', new Date().toISOString());
+    }
+
+    /** @param {'yeni'|'eski'|'populer'} sort */
+    async function indexHikayeListeleSayfa(offset, limit, sort) {
         var sb = getClient();
         if (!sb) return [];
         var lim = limit || INDEX_SAYFA_BOYUT;
         var off = offset || 0;
-        var res = await sb
-            .from('itiraflar')
-            .select(INDEX_ITIRAF_SELECT)
+        var s = sort || 'yeni';
+        var q = indexYayindaFiltre(
+            sb.from('itiraflar').select(INDEX_ITIRAF_SELECT).is('silindi_at', null)
+        );
+
+        if (s === 'eski') {
+            q = q.order('created_at', { ascending: true });
+        } else if (s === 'populer') {
+            q = q.order('r', { ascending: false }).order('created_at', { ascending: false });
+        } else {
+            q = q.order('created_at', { ascending: false });
+        }
+
+        var res = await q.range(off, off + lim - 1);
+        if (res.error) throw res.error;
+        return res.data || [];
+    }
+
+    /** Ortaya karışık: silinmemiş tüm hikayeler (sayfalı çekim). */
+    async function indexItirafHavuzGetir() {
+        var sb = getClient();
+        if (!sb) return [];
+        var tumu = [];
+        var off = 0;
+        var batch = 200;
+        while (true) {
+            var res = await indexYayindaFiltre(
+                sb
+                    .from('itiraflar')
+                    .select(INDEX_ITIRAF_SELECT)
+                    .is('silindi_at', null)
+                    .order('created_at', { ascending: false })
+            ).range(off, off + batch - 1);
+            if (res.error) throw res.error;
+            var parca = res.data || [];
+            if (!parca.length) break;
+            tumu = tumu.concat(parca);
+            if (parca.length < batch) break;
+            off += batch;
+        }
+        return tumu;
+    }
+
+    async function indexItirafAra(q, offset, limit) {
+        var sb = getClient();
+        if (!sb) return [];
+        var metin = String(q || '').trim();
+        if (metin.length < 2) return [];
+        var lim = limit || INDEX_SAYFA_BOYUT;
+        var off = offset || 0;
+        var p = '%' + metin.replace(/[%_\\]/g, '') + '%';
+        var res = await indexYayindaFiltre(
+            sb
+                .from('itiraflar')
+                .select(INDEX_ITIRAF_SELECT)
+                .is('silindi_at', null)
+                .or('username.ilike.' + p + ',content_full.ilike.' + p + ',content_short.ilike.' + p)
+        )
             .order('created_at', { ascending: false })
             .range(off, off + lim - 1);
         if (res.error) throw res.error;
@@ -696,6 +757,17 @@
             b.content_full = metinPerdele(String(b.content_full).replace(/^\s+|\s+$/g, ''));
         }
         return masterRpc('master_hikaye_islem', b);
+    }
+
+    async function masterHikayeEkle(body) {
+        var b = Object.assign({}, body || {});
+        if (b.content_full != null) {
+            b.content_full = metinPerdele(String(b.content_full).replace(/^\s+|\s+$/g, ''));
+        }
+        if (b.username != null) {
+            b.username = String(b.username).replace(/^\s+|\s+$/g, '');
+        }
+        return masterRpc('master_hikaye_ekle', b);
     }
 
     async function masterUyeIcerik(uyeId, opts) {
@@ -1749,6 +1821,8 @@
         profilItiraflarim: profilHikayelerim,
         itirafAra: hikayeAra,
         indexItirafListeleSayfa: indexHikayeListeleSayfa,
+        indexItirafAra: indexItirafAra,
+        indexItirafHavuzGetir: indexItirafHavuzGetir,
         INDEX_ITIRAF_SELECT: INDEX_ITIRAF_SELECT,
         kokCevapSayilari: kokCevapSayilari,
         hikayeYorumToplam: hikayeYorumToplam,
@@ -1777,6 +1851,7 @@
         hikayeGuncelle: hikayeGuncelle,
         masterDurum: masterDurum,
         masterHikayeIslem: masterHikayeIslem,
+        masterHikayeEkle: masterHikayeEkle,
         masterUyeIslem: masterUyeIslem,
         masterUyeAra: masterUyeAra,
         masterUyeBul: masterUyeBul,

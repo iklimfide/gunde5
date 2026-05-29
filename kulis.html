@@ -596,6 +596,55 @@
             box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.28);
         }
         .hikaye-textarea::placeholder { color: #9ca3af; }
+        .hikaye-master-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .hikaye-master-alan label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            letter-spacing: 0.02em;
+        }
+        .hikaye-master-alan input,
+        .hikaye-master-alan select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #111827;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .hikaye-master-alan input:focus,
+        .hikaye-master-alan select:focus {
+            border-color: #1d9bf0;
+            box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.22);
+        }
+        body.dark-mode .hikaye-master-alan input,
+        body.dark-mode .hikaye-master-alan select {
+            background: #0f1419;
+            color: var(--text-main);
+            border-color: #2f3336;
+        }
+        .hikaye-master-yurtdisi--gizli { display: none; }
+        .hikaye-master-form .hikaye-textarea {
+            min-height: 160px;
+        }
+        .hikaye-master-ipucu {
+            margin: 0;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
         .hikaye-modal-alt {
             margin-top: 14px;
             display: flex;
@@ -1232,10 +1281,49 @@
                     <p class="hikaye-modal-ipucu">Unutma, Sadece en güzel 5 hikaye <strong class="saat-vurgu">13.12</strong>'de giyotine kurban gitmez,<br>EFSANE olur, podyuma çıkar.</p>
                 </div>
             </div>
-            <textarea class="hikaye-textarea" id="hikayeTextarea" placeholder="Tüm hikayeni buraya yaz…" rows="10"></textarea>
-            <div class="hikaye-modal-alt">
-                <button type="button" class="gizli-uye-sec" id="gizliUyeSec" aria-pressed="false">🎭 Gizli Üye olarak yaz</button>
-                <button type="button" class="hikaye-gonder-btn" id="hikayeGonderBtn">Gönder</button>
+            <div id="hikayeUyeIcerik">
+                <textarea class="hikaye-textarea" id="hikayeTextarea" placeholder="Tüm hikayeni buraya yaz…" rows="10"></textarea>
+                <div class="hikaye-modal-alt">
+                    <button type="button" class="gizli-uye-sec" id="gizliUyeSec" aria-pressed="false">🎭 Gizli Üye olarak yaz</button>
+                    <button type="button" class="hikaye-gonder-btn" id="hikayeGonderBtn">Gönder</button>
+                </div>
+            </div>
+            <div id="hikayeMasterIcerik" class="hikaye-master-form" hidden>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayeRumuz">Rumuz</label>
+                    <input type="text" id="masterHikayeRumuz" maxlength="50" autocomplete="off" placeholder="Örn. KaktüsAvcısı">
+                </div>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayeYas">Yaş</label>
+                    <input type="number" id="masterHikayeYas" min="18" max="120" inputmode="numeric" placeholder="18–120">
+                </div>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayeCinsiyet">Cinsiyet</label>
+                    <select id="masterHikayeCinsiyet">
+                        <option value="female">Kadın</option>
+                        <option value="male">Erkek</option>
+                    </select>
+                </div>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayeIl">Yaşadığı il</label>
+                    <select id="masterHikayeIl"></select>
+                </div>
+                <div class="hikaye-master-alan hikaye-master-yurtdisi" id="masterHikayeYurtdisiWrap" hidden>
+                    <label for="masterHikayeYurtdisi">Yurtdışı şehir</label>
+                    <input type="text" id="masterHikayeYurtdisi" maxlength="80" autocomplete="off" placeholder="Örn. Berlin">
+                </div>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayePlan">Yayınlanma zamanı planla</label>
+                    <input type="datetime-local" id="masterHikayePlan">
+                    <p class="hikaye-master-ipucu">Boş bırakırsan hemen yayınlanır. Gelecek tarih anasayfada görünmez; kuliste görünür.</p>
+                </div>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayeMetin">Hikaye</label>
+                    <textarea class="hikaye-textarea" id="masterHikayeMetin" placeholder="Tüm hikayeyi buraya yaz…" rows="8"></textarea>
+                </div>
+                <div class="hikaye-modal-alt" style="margin-top:0">
+                    <button type="button" class="hikaye-gonder-btn" id="hikayeMasterGonderBtn">Gönder</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1358,17 +1446,69 @@
             }
         }
 
-        function acHikayeModal() {
+        var hikayeModalMasterMi = false;
+
+        function doldurMasterIlSecenekleri() {
+            var sel = document.getElementById('masterHikayeIl');
+            if (!sel || sel.options.length > 1) return;
+            var P = window.Gunde5Profil;
+            var html = '<option value="">— Seç —</option>';
+            if (P && P.YER_SECENEKLERI) {
+                P.YER_SECENEKLERI.forEach(function (s) {
+                    if (!s.value) return;
+                    html += '<option value="' + s.value.replace(/"/g, '&quot;') + '">' +
+                        String(s.label).replace(/</g, '&lt;') + '</option>';
+                });
+            }
+            sel.innerHTML = html;
+        }
+
+        function masterYurtdisiGoster() {
+            var il = document.getElementById('masterHikayeIl');
+            var wrap = document.getElementById('masterHikayeYurtdisiWrap');
+            if (!il || !wrap) return;
+            var yurtdisi = il.value === 'yurtdisi';
+            wrap.hidden = !yurtdisi;
+        }
+
+        function hikayeModalModuAyarla(master) {
+            hikayeModalMasterMi = !!master;
+            var uye = document.getElementById('hikayeUyeIcerik');
+            var mst = document.getElementById('hikayeMasterIcerik');
+            var baslik = document.getElementById('hikayeModalBaslik');
+            var ipucu = document.querySelector('.hikaye-modal-ipucu');
+            if (uye) uye.hidden = master;
+            if (mst) mst.hidden = !master;
+            if (baslik) {
+                baslik.textContent = master ? 'Hikaye ekle' : 'Hikayeni Yaz';
+            }
+            if (ipucu) ipucu.style.display = master ? 'none' : '';
+            if (master) {
+                doldurMasterIlSecenekleri();
+                masterYurtdisiGoster();
+            }
+        }
+
+        async function acHikayeModal() {
             if (!Gunde5UI.hikayeUyeGerekli()) {
                 return;
             }
             Gunde5UI.closeAuthModal();
+            var master = false;
+            try {
+                var d = await Gunde5DB.masterDurum();
+                master = !!(d && d.master);
+            } catch (eMaster) { /* ignore */ }
+            hikayeModalModuAyarla(master);
             var modal = document.getElementById('hikayeModal');
             modal.classList.add('acik');
             modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
             setTimeout(function () {
-                document.getElementById('hikayeTextarea').focus();
+                var el = master
+                    ? document.getElementById('masterHikayeRumuz')
+                    : document.getElementById('hikayeTextarea');
+                if (el) el.focus();
             }, 220);
         }
 
@@ -1393,6 +1533,10 @@
                 });
             }
             if (gonderBtn) gonderBtn.addEventListener('click', gonderHikaye);
+            var masterIl = document.getElementById('masterHikayeIl');
+            if (masterIl) masterIl.addEventListener('change', masterYurtdisiGoster);
+            var masterGonder = document.getElementById('hikayeMasterGonderBtn');
+            if (masterGonder) masterGonder.addEventListener('click', gonderHikaye);
         }
 
         window.acHikayeModal = acHikayeModal;
@@ -1404,16 +1548,121 @@
         }
 
         function sifirlaHikayeModal() {
-            document.getElementById('hikayeTextarea').value = '';
+            var ta = document.getElementById('hikayeTextarea');
+            if (ta) ta.value = '';
             var gizli = document.getElementById('gizliUyeSec');
-            gizli.classList.remove('aktif');
-            gizli.setAttribute('aria-pressed', 'false');
+            if (gizli) {
+                gizli.classList.remove('aktif');
+                gizli.setAttribute('aria-pressed', 'false');
+            }
+            var rumuz = document.getElementById('masterHikayeRumuz');
+            var yas = document.getElementById('masterHikayeYas');
+            var cins = document.getElementById('masterHikayeCinsiyet');
+            var il = document.getElementById('masterHikayeIl');
+            var yurtdisi = document.getElementById('masterHikayeYurtdisi');
+            var plan = document.getElementById('masterHikayePlan');
+            var metin = document.getElementById('masterHikayeMetin');
+            if (rumuz) rumuz.value = '';
+            if (yas) yas.value = '';
+            if (cins) cins.value = 'female';
+            if (il) il.value = '';
+            if (yurtdisi) yurtdisi.value = '';
+            if (plan) plan.value = '';
+            if (metin) metin.value = '';
+            masterYurtdisiGoster();
+        }
+
+        function planliTarihIso() {
+            var inp = document.getElementById('masterHikayePlan');
+            if (!inp || !inp.value) return null;
+            var d = new Date(inp.value);
+            if (isNaN(d.getTime())) return null;
+            return d.toISOString();
+        }
+
+        function hikayeKuliseEkle(row) {
+            try {
+                var kart = Gunde5UI.renderKulisCard(row);
+                var liste = document.getElementById('kulisListe');
+                if (!liste) return;
+                var giyotin = document.getElementById('kulisGiyotinBaraj');
+                if (giyotin) giyotin.remove();
+                var ilk = liste.firstChild;
+                if (ilk && ilk.id === 'kulisLazySentinel') {
+                    liste.insertBefore(kart, ilk);
+                } else {
+                    liste.insertBefore(kart, liste.firstChild);
+                }
+                if (Gunde5KartCevap && Gunde5KartCevap.baglaKart) {
+                    Gunde5KartCevap.baglaKart(kart);
+                }
+                if (Gunde5UI.kulisBarajGuncelle) Gunde5UI.kulisBarajGuncelle(liste);
+            } catch (kartErr) {
+                Gunde5UI.showToast('Hikaye gönderildi; listeyi yenile.', 'hata');
+            }
+        }
+
+        async function gonderMasterHikaye() {
+            var rumuz = (document.getElementById('masterHikayeRumuz').value || '').replace(/^\s+|\s+$/g, '');
+            var yas = parseInt(document.getElementById('masterHikayeYas').value, 10);
+            var cinsiyet = document.getElementById('masterHikayeCinsiyet').value;
+            var yer = document.getElementById('masterHikayeIl').value;
+            var yurtdisi = document.getElementById('masterHikayeYurtdisi').value.replace(/^\s+|\s+$/g, '');
+            var metin = (document.getElementById('masterHikayeMetin').value || '').replace(/^\s+|\s+$/g, '');
+            if (!rumuz) {
+                document.getElementById('masterHikayeRumuz').focus();
+                return;
+            }
+            if (!yas || yas < 18 || yas > 120) {
+                document.getElementById('masterHikayeYas').focus();
+                Gunde5UI.showToast('Yaş 18–120 arasında olmalı.', 'hata');
+                return;
+            }
+            if (!metin) {
+                document.getElementById('masterHikayeMetin').focus();
+                return;
+            }
+            var btn = document.getElementById('hikayeMasterGonderBtn');
+            if (btn) btn.disabled = true;
+            try {
+                var body = {
+                    username: rumuz,
+                    age: yas,
+                    gender: cinsiyet,
+                    yasadigi_yer: yer || null,
+                    yurtdisi_sehir: yer === 'yurtdisi' ? (yurtdisi || null) : null,
+                    content_full: metin
+                };
+                var planIso = planliTarihIso();
+                if (planIso) body.created_at = planIso;
+                var sonuc = await Gunde5DB.masterHikayeEkle(body);
+                if (!sonuc || !sonuc.ok) {
+                    throw new Error((sonuc && sonuc.hata) || 'Kayıt başarısız');
+                }
+                var row = sonuc.hikaye;
+                sifirlaHikayeModal();
+                Gunde5UI.kapatHikayeModal();
+                if (row) hikayeKuliseEkle(row);
+                var planInp = document.getElementById('masterHikayePlan');
+                if (planInp && planInp.value && planIso && new Date(planIso).getTime() > Date.now()) {
+                    Gunde5UI.showToast('Hikaye planlandı — anasayfada yayın saatinde görünür.');
+                } else {
+                    Gunde5UI.showToast('Hikaye kulise düştü!');
+                }
+            } catch (err) {
+                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+            }
+            if (btn) btn.disabled = false;
         }
 
         async function gonderHikaye() {
+            if (!Gunde5UI.hikayeUyeGerekli()) { return; }
+            if (hikayeModalMasterMi) {
+                await gonderMasterHikaye();
+                return;
+            }
             var metin = document.getElementById('hikayeTextarea').value.replace(/^\s+|\s+$/g, '');
             if (!metin) { document.getElementById('hikayeTextarea').focus(); return; }
-            if (!Gunde5UI.hikayeUyeGerekli()) { return; }
             var gizli = document.getElementById('gizliUyeSec').classList.contains('aktif');
             var btn = document.getElementById('hikayeGonderBtn');
             btn.disabled = true;
@@ -1421,26 +1670,7 @@
                 var row = await Gunde5DB.hikayeGonder(metin, gizli);
                 sifirlaHikayeModal();
                 Gunde5UI.kapatHikayeModal();
-                try {
-                    var kart = Gunde5UI.renderKulisCard(row);
-                    var liste = document.getElementById('kulisListe');
-                    if (liste) {
-                        var giyotin = document.getElementById('kulisGiyotinBaraj');
-                        if (giyotin) giyotin.remove();
-                        var ilk = liste.firstChild;
-                        if (ilk && ilk.id === 'kulisLazySentinel') {
-                            liste.insertBefore(kart, ilk);
-                        } else {
-                            liste.insertBefore(kart, liste.firstChild);
-                        }
-                        if (Gunde5KartCevap && Gunde5KartCevap.baglaKart) {
-                            Gunde5KartCevap.baglaKart(kart);
-                        }
-                        if (Gunde5UI.kulisBarajGuncelle) Gunde5UI.kulisBarajGuncelle(liste);
-                    }
-                } catch (kartErr) {
-                    Gunde5UI.showToast('Hikaye gönderildi; listeyi yenile.', 'hata');
-                }
+                if (row) hikayeKuliseEkle(row);
                 Gunde5UI.showToast('Hikaye kulise düştü!');
             } catch (err) { Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata'); }
             btn.disabled = false;
