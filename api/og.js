@@ -106,9 +106,11 @@ function kart(rumuz, ozet, metaSatir) {
 async function varsayilanPng() {
     var res = await fetch(DEFAULT_PNG);
     if (!res.ok) throw new Error('og-share.png alinamadi');
-    return new Response(res.body, {
+    var buf = await res.arrayBuffer();
+    return new Response(buf, {
         headers: {
             'Content-Type': 'image/png',
+            'Content-Length': String(buf.byteLength),
             'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800'
         }
     });
@@ -130,10 +132,15 @@ export default async function handler(req) {
         if (yer) meta.push(String(yer).trim());
         var metaSatir = meta.join(' · ');
 
-        return new ImageResponse(kart(rumuz, ozet, metaSatir), {
+        var img = new ImageResponse(kart(rumuz, ozet, metaSatir), {
             width: 1200,
-            height: 630,
+            height: 630
+        });
+        var buf = await img.arrayBuffer();
+        return new Response(buf, {
             headers: {
+                'Content-Type': 'image/png',
+                'Content-Length': String(buf.byteLength),
                 'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800'
             }
         });

@@ -5,6 +5,14 @@ export const config = { runtime: 'edge' };
 var SITE = 'https://gunde5.com';
 var DEFAULT_IMG = SITE + '/og-share.png';
 
+/** X/Telegram/FB önizleme botları — anında yönlendirme kartı bozar */
+function onizlemeBotu(ua) {
+    if (!ua) return false;
+    return /twitterbot|facebookexternalhit|facebot|linkedinbot|telegrambot|whatsapp|slackbot|discordbot|pinterest|embedly|quora link preview|vkshare|w3c_validator/i.test(
+        ua
+    );
+}
+
 function escHtml(s) {
     return String(s == null ? '' : s)
         .replace(/&/g, '&amp;')
@@ -33,8 +41,9 @@ export default async function handler(req) {
     var baslik = row ? rumuz + ' | gunde5.com' : 'gunde5.com | Günün harbi hikayeleri';
     var okumaUrl = id ? SITE + '/?itiraf=' + id : SITE + '/';
     var paylasUrl = id ? SITE + '/h/' + id : SITE + '/';
-    var ogImage = id ? SITE + '/api/og?id=' + encodeURIComponent(id) : DEFAULT_IMG;
+    var ogImage = id ? SITE + '/og/' + id + '.png' : DEFAULT_IMG;
     var ogImageAlt = row ? rumuz + ' — gunde5.com' : 'gunde5.com';
+    var bot = onizlemeBotu(req.headers.get('user-agent') || '');
 
     var html =
         '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8">' +
@@ -69,6 +78,12 @@ export default async function handler(req) {
         escHtml(ogImageAlt) +
         '">' +
         '<meta name="twitter:card" content="summary_large_image">' +
+        '<meta name="twitter:domain" content="gunde5.com">' +
+        '<meta name="twitter:url" content="' +
+        escHtml(paylasUrl) +
+        '">' +
+        '<meta name="twitter:image:width" content="1200">' +
+        '<meta name="twitter:image:height" content="630">' +
         '<meta name="twitter:image:alt" content="' +
         escHtml(ogImageAlt) +
         '">' +
@@ -80,16 +95,25 @@ export default async function handler(req) {
         '">' +
         '<meta name="twitter:image" content="' +
         escHtml(ogImage) +
-        '">' +
-        '<meta http-equiv="refresh" content="0;url=' +
-        escHtml(okumaUrl) +
-        '">' +
+        '">';
+
+    if (!bot) {
+        html +=
+            '<meta http-equiv="refresh" content="0;url=' +
+            escHtml(okumaUrl) +
+            '">';
+    }
+
+    html +=
         '</head><body><p><a href="' +
         escHtml(okumaUrl) +
-        '">gunde5.com</a></p>' +
-        '<script>location.replace(' +
-        JSON.stringify(okumaUrl) +
-        ');</script></body></html>';
+        '">gunde5.com</a></p>';
+
+    if (!bot) {
+        html += '<script>location.replace(' + JSON.stringify(okumaUrl) + ');</script>';
+    }
+
+    html += '</body></html>';
 
     return new Response(html, {
         headers: {

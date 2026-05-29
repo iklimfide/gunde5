@@ -47,6 +47,7 @@
     { "source": "/itiraf/:id", "destination": "/h/:id", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/h/:id", "destination": "/api/itiraf-share?id=:id" }
+    { "source": "/h/:id", "destination": "/api/itiraf-share?id=:id" },
+    { "source": "/og/:id.png", "destination": "/api/og?id=:id" }
   ]
 }

@@ -46,7 +46,7 @@
             'Günün harbi hikayeleri — reklamsız, ücretsiz.';
         var baslik = rumuz + ' | gunde5.com';
         var url = SITE + '/h/' + id;
-        var ogImage = SITE + '/og-share.png';
+        var ogImage = SITE + '/og/' + id + '.png';
 
         document.title = baslik;
         metaAyar('description', aciklama, false);
