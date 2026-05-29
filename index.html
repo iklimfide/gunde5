@@ -683,6 +683,18 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            padding: 12px;
+            border-radius: 18px;
+            border: 1px solid rgba(29, 155, 240, 0.18);
+            background: linear-gradient(145deg, rgba(239, 246, 255, 0.95) 0%, rgba(255, 251, 235, 0.55) 100%);
+            box-shadow: 0 4px 18px rgba(29, 155, 240, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+        }
+
+        body.dark-mode .index-toolbar,
+        [data-theme="dark"] .index-toolbar {
+            border-color: rgba(29, 155, 240, 0.28);
+            background: linear-gradient(145deg, rgba(14, 25, 36, 0.92) 0%, rgba(28, 22, 12, 0.75) 100%);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
         }
 
         .index-arama-kutu {
@@ -693,76 +705,139 @@
 
         .index-arama-input {
             width: 100%;
-            padding: 14px 44px 14px 16px;
-            border: 2px solid #1d9bf0;
+            padding: 13px 48px 13px 16px;
+            border: 2px solid #38bdf8;
             border-radius: 14px;
             font-size: 16px;
             font-weight: 600;
             font-family: inherit;
-            background: var(--bg-card);
-            color: var(--text-main);
-            box-shadow: 0 2px 10px rgba(29, 155, 240, 0.12);
+            color: #0c4a6e;
+            background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
+            box-shadow: 0 2px 12px rgba(14, 165, 233, 0.2), 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .index-arama-input::placeholder {
-            color: var(--text-muted);
+            color: #64748b;
             opacity: 1;
             font-weight: 500;
         }
 
         .index-arama-input:focus {
             outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(29, 155, 240, 0.22), 0 2px 10px rgba(29, 155, 240, 0.15);
+            border-color: #0284c7;
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.35), 0 4px 14px rgba(14, 165, 233, 0.25);
         }
 
         body.dark-mode .index-arama-input,
         [data-theme="dark"] .index-arama-input {
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+            color: #e0f2fe;
+            border-color: #1d9bf0;
+            background: linear-gradient(180deg, #15202b 0%, #0e1924 100%);
+            box-shadow: 0 2px 14px rgba(29, 155, 240, 0.15), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+        }
+
+        body.dark-mode .index-arama-input::placeholder,
+        [data-theme="dark"] .index-arama-input::placeholder {
+            color: #71767b;
         }
 
         .index-arama-ikon {
             position: absolute;
-            right: 14px;
+            right: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 22px;
-            height: 22px;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
             pointer-events: none;
-            color: #1d9bf0;
+            color: #fff;
+            background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+        }
+
+        body.dark-mode .index-arama-ikon,
+        [data-theme="dark"] .index-arama-ikon {
+            background: linear-gradient(135deg, #1d9bf0 0%, #1e40af 100%);
         }
 
         .index-arama-ikon svg {
             display: block;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .index-siralama-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .index-siralama-etiket {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #b45309;
+            padding-left: 2px;
+        }
+
+        body.dark-mode .index-siralama-etiket,
+        [data-theme="dark"] .index-siralama-etiket {
+            color: #fbbf24;
         }
 
         .index-siralama {
             width: 100%;
-            padding: 12px 36px 12px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
+            padding: 12px 40px 12px 14px;
+            border: 2px solid #fbbf24;
+            border-radius: 14px;
             font-size: 14px;
             font-weight: 700;
             font-family: inherit;
-            background: var(--bg-card);
-            color: var(--text-main);
+            color: #78350f;
             cursor: pointer;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+            background-color: #fffbeb;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23b45309' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 14px center;
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.18), 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .index-siralama:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.35), 0 2px 12px rgba(245, 158, 11, 0.22);
+        }
+
+        body.dark-mode .index-siralama,
+        [data-theme="dark"] .index-siralama {
+            color: #fde68a;
+            border-color: #d97706;
+            background-color: #1c1408;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23fbbf24' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
         }
 
         .index-arama-durum {
             margin: 0;
+            padding: 6px 10px;
             font-size: 11px;
-            font-weight: 600;
-            color: var(--text-muted);
+            font-weight: 700;
+            color: #0369a1;
             min-height: 0;
             line-height: 1.3;
+            border-radius: 8px;
+            background: rgba(224, 242, 254, 0.85);
+        }
+
+        body.dark-mode .index-arama-durum,
+        [data-theme="dark"] .index-arama-durum {
+            color: #7dd3fc;
+            background: rgba(14, 25, 36, 0.85);
         }
 
         .index-arama-durum:empty {
@@ -770,7 +845,14 @@
         }
 
         .index-arama-durum--hata {
-            color: #dc2626;
+            color: #b91c1c;
+            background: rgba(254, 226, 226, 0.9);
+        }
+
+        body.dark-mode .index-arama-durum--hata,
+        [data-theme="dark"] .index-arama-durum--hata {
+            color: #fca5a5;
+            background: rgba(69, 10, 10, 0.65);
         }
     </style>
 </head>
@@ -794,12 +876,15 @@
                     </svg>
                 </span>
             </label>
-            <select class="index-siralama" id="indexSiralama" aria-label="Sıralama">
-                <option value="yeni">En yeniler</option>
-                <option value="eski">En eskiler</option>
-                <option value="populer">En popülerler</option>
-                <option value="rastgele">Ortaya karışık</option>
-            </select>
+            <div class="index-siralama-wrap">
+                <span class="index-siralama-etiket" id="indexSiralamaEtiket">Sıralama</span>
+                <select class="index-siralama" id="indexSiralama" aria-labelledby="indexSiralamaEtiket">
+                    <option value="yeni">En yeniler</option>
+                    <option value="eski">En eskiler</option>
+                    <option value="populer">En popülerler</option>
+                    <option value="rastgele">Ortaya karışık</option>
+                </select>
+            </div>
             <p class="index-arama-durum" id="indexAramaDurum" aria-live="polite"></p>
         </div>
 
