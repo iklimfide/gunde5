@@ -34,6 +34,7 @@ export default async function handler(req) {
     var okumaUrl = id ? SITE + '/?itiraf=' + id : SITE + '/';
     var paylasUrl = id ? SITE + '/h/' + id : SITE + '/';
     var ogImage = id ? SITE + '/api/og?id=' + encodeURIComponent(id) : DEFAULT_IMG;
+    var ogImageAlt = row ? rumuz + ' — gunde5.com' : 'gunde5.com';
 
     var html =
         '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8">' +
@@ -63,7 +64,14 @@ export default async function handler(req) {
         '">' +
         '<meta property="og:image:width" content="1200">' +
         '<meta property="og:image:height" content="630">' +
+        '<meta property="og:image:type" content="image/png">' +
+        '<meta property="og:image:alt" content="' +
+        escHtml(ogImageAlt) +
+        '">' +
         '<meta name="twitter:card" content="summary_large_image">' +
+        '<meta name="twitter:image:alt" content="' +
+        escHtml(ogImageAlt) +
+        '">' +
         '<meta name="twitter:title" content="' +
         escHtml(baslik) +
         '">' +
