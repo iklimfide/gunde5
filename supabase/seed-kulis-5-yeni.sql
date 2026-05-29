@@ -1,7 +1,7 @@
 -- Kulis seed (5 hikaye) — KULİSE EKLENDİ, TEKRAR ÇALIŞTIRMAYIN (çift kayıt olur).
 -- Yeni bot hikayeleri için: supabase/seed-kulis-sablon.sql
 
-insert into public.itiraflar (
+insert into public.hikayeler (
   user_id,
   username,
   age,

@@ -1,4 +1,4 @@
-/* gunde5 — Kulis itiraf listesi: sayfa sayfa lazy load (IntersectionObserver) */
+/* gunde5 — Kulis hikaye listesi: sayfa sayfa lazy load (IntersectionObserver) */
 (function (global) {
     var DB = global.Gunde5DB;
     var UI = global.Gunde5UI;

@@ -2,7 +2,7 @@
 -- Bot/seed içerik: user_id NULL (anon). UI'da ekstra rozet yok.
 -- Not: content_short <= 140.
 
-insert into public.itiraflar (
+insert into public.hikayeler (
   user_id,
   username,
   age,

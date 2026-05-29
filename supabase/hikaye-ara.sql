@@ -1,8 +1,8 @@
 -- Kulis / Podyum arama: rumuz, hikaye, cevap/yorum (SQL Editor'da bir kez)
 
-drop function if exists public.itiraf_ara(jsonb);
+drop function if exists public.hikaye_ara(jsonb);
 
-create or replace function public.itiraf_ara(
+create or replace function public.hikaye_ara(
     p_q text,
     p_status text default 'kulis',
     p_limit int default 40
@@ -36,7 +36,7 @@ begin
     v_pattern := '%' || lower(v_q) || '%';
 
     select count(*)::int into v_adet
-    from public.itiraflar i
+    from public.hikayeler i
     where i.status = v_status
       and i.silindi_at is null
       and (
@@ -44,14 +44,14 @@ begin
           or lower(coalesce(i.content_full, '')) like v_pattern
           or lower(coalesce(i.content_short, '')) like v_pattern
           or exists (
-              select 1 from public.itiraf_cevaplar c
-              where c.itiraf_id = i.id and lower(c.content) like v_pattern
+              select 1 from public.hikaye_cevaplar c
+              where c.hikaye_id = i.id and lower(c.content) like v_pattern
           )
       );
 
     with eslesen as (
         select distinct on (i.id) i.*
-        from public.itiraflar i
+        from public.hikayeler i
         where i.status = v_status
           and i.silindi_at is null
           and (
@@ -59,8 +59,8 @@ begin
               or lower(coalesce(i.content_full, '')) like v_pattern
               or lower(coalesce(i.content_short, '')) like v_pattern
               or exists (
-                  select 1 from public.itiraf_cevaplar c
-                  where c.itiraf_id = i.id and lower(c.content) like v_pattern
+                  select 1 from public.hikaye_cevaplar c
+                  where c.hikaye_id = i.id and lower(c.content) like v_pattern
               )
           )
         order by i.id, i.created_at desc
@@ -84,7 +84,7 @@ begin
 end;
 $$;
 
-revoke all on function public.itiraf_ara(text, text, int) from public;
-grant execute on function public.itiraf_ara(text, text, int) to anon, authenticated;
+revoke all on function public.hikaye_ara(text, text, int) from public;
+grant execute on function public.hikaye_ara(text, text, int) to anon, authenticated;
 
 notify pgrst, 'reload schema';

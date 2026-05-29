@@ -46,7 +46,11 @@
                 var parcalar = location.pathname.replace(/\/+$/, '').split('/');
                 var i;
                 for (i = 0; i < parcalar.length; i++) {
-                    if (parcalar[i] === 'itiraf' && parcalar[i + 1] && /^\d+$/.test(parcalar[i + 1])) {
+                    if (
+                        (parcalar[i] === 'itiraf' || parcalar[i] === 'h') &&
+                        parcalar[i + 1] &&
+                        /^\d+$/.test(parcalar[i + 1])
+                    ) {
                         return parcalar[i + 1];
                     }
                 }

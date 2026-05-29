@@ -156,8 +156,8 @@
 
     async function yenileYorumOzeti(cardId) {
         var card = getCard(cardId);
-        if (!card || !DB.itirafYorumToplam) return;
-        var n = await DB.itirafYorumToplam(cardId);
+        if (!card || !DB.hikayeYorumToplam) return;
+        var n = await DB.hikayeYorumToplam(cardId);
         guncelleCevapOzet(card, n);
         return n;
     }
@@ -315,15 +315,15 @@
         uygulaKokCevapKurali(card);
     }
 
-    function itirafSahibiMi(card) {
-        var itirafUid = card.getAttribute('data-itiraf-user-id');
+    function hikayeSahibiMi(card) {
+        var hikayeUid = card.getAttribute('data-hikaye-user-id');
         var u = DB.getGunde5User();
-        return !!(itirafUid && u && u.id && itirafUid === u.id);
+        return !!(hikayeUid && u && u.id && hikayeUid === u.id);
     }
 
     function uygulaKokCevapKurali(card) {
         if (!card) return;
-        var sahip = itirafSahibiMi(card);
+        var sahip = hikayeSahibiMi(card);
         var form = card.querySelector('.kart-cevap-form');
         var not = card.querySelector('[data-kok-cevap-yasak]');
         if (form) form.hidden = sahip;
@@ -434,7 +434,7 @@
             await kokCevaplariYukle(cardId, false);
         }
         if (focusCevap) {
-            if (itirafSahibiMi(card)) {
+            if (hikayeSahibiMi(card)) {
                 var yanitBtn = card.querySelector('[data-yorum-ac]');
                 if (yanitBtn) {
                     yanitBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

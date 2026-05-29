@@ -1,7 +1,7 @@
 -- Yeni kulis bot hikayeleri — hikayeyi bir kez yazın (hikaye sütunu); content_short otomatik.
--- İsteğe bağlı: itiraf-content-short-trigger.sql (INSERT’te short’u DB de üretir).
+-- İsteğe bağlı: hikaye-content-short-trigger.sql (INSERT’te short’u DB de üretir).
 
-insert into public.itiraflar (
+insert into public.hikayeler (
   user_id,
   username,
   age,

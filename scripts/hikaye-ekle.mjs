@@ -62,7 +62,7 @@ function shortText(t) {
 }
 
 async function mevcutMu(username, contentFull) {
-  const q = new URL(`${URL}/rest/v1/itiraflar`);
+  const q = new URL(`${URL}/rest/v1/hikayeler`);
   q.searchParams.set('select', 'id');
   q.searchParams.set('username', `eq.${username}`);
   q.searchParams.set('content_full', `eq.${contentFull}`);
@@ -94,7 +94,7 @@ async function ekle(h) {
     status: 'kulis',
     is_gizli: false,
   };
-  const res = await fetch(`${URL}/rest/v1/itiraflar`, {
+  const res = await fetch(`${URL}/rest/v1/hikayeler`, {
     method: 'POST',
     headers: {
       apikey: KEY,

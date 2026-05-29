@@ -5,17 +5,17 @@ create table if not exists public.bildirimler (
     id bigserial primary key,
     alici_id uuid not null references auth.users (id) on delete cascade,
     tip varchar(10) not null check (tip in ('begeni', 'yorum')),
-    itiraf_id bigint not null references public.itiraflar (id) on delete cascade,
+    hikaye_id bigint not null references public.hikayeler (id) on delete cascade,
     yapan_id uuid not null references auth.users (id) on delete cascade,
     yapan_username varchar(50) not null,
-    cevap_id bigint references public.itiraf_cevaplar (id) on delete set null,
-    itiraf_status varchar(10),
+    cevap_id bigint references public.hikaye_cevaplar (id) on delete set null,
+    hikaye_status varchar(10),
     okundu boolean not null default false,
     created_at timestamptz not null default now()
 );
 
 alter table public.bildirimler
-    add column if not exists itiraf_status varchar(10);
+    add column if not exists hikaye_status varchar(10);
 
 create index if not exists bildirimler_alici_okundu_idx
     on public.bildirimler (alici_id, okundu, created_at desc);
@@ -42,7 +42,7 @@ create policy bildirimler_update_own on public.bildirimler
 create or replace function public.bildirim_olustur(
     p_alici_id uuid,
     p_tip text,
-    p_itiraf_id bigint,
+    p_hikaye_id bigint,
     p_yapan_id uuid,
     p_yapan_username text,
     p_cevap_id bigint default null
@@ -63,20 +63,20 @@ begin
     end if;
 
     select i.status into v_status
-    from public.itiraflar i
-    where i.id = p_itiraf_id and i.silindi_at is null;
+    from public.hikayeler i
+    where i.id = p_hikaye_id and i.silindi_at is null;
 
     if not found then
         return;
     end if;
 
     insert into public.bildirimler (
-        alici_id, tip, itiraf_id, yapan_id, yapan_username, cevap_id, itiraf_status
+        alici_id, tip, hikaye_id, yapan_id, yapan_username, cevap_id, hikaye_status
     )
     values (
         p_alici_id,
         p_tip,
-        p_itiraf_id,
+        p_hikaye_id,
         p_yapan_id,
         coalesce(nullif(trim(p_yapan_username), ''), 'uye'),
         p_cevap_id,
@@ -87,7 +87,7 @@ $$;
 
 revoke all on function public.bildirim_olustur(uuid, text, bigint, uuid, text, bigint) from public, anon, authenticated;
 
-create or replace function public.trg_itiraf_oy_bildirim()
+create or replace function public.trg_hikaye_oy_bildirim()
 returns trigger
 language plpgsql
 security definer
@@ -105,8 +105,8 @@ begin
     end if;
 
     select i.user_id into v_alici
-    from public.itiraflar i
-    where i.id = NEW.itiraf_id;
+    from public.hikayeler i
+    where i.id = NEW.hikaye_id;
 
     if v_alici is null or v_alici = NEW.user_id then
         return NEW;
@@ -117,19 +117,19 @@ begin
     where u.id = NEW.user_id;
 
     perform public.bildirim_olustur(
-        v_alici, 'begeni', NEW.itiraf_id, NEW.user_id, v_rumuz, null
+        v_alici, 'begeni', NEW.hikaye_id, NEW.user_id, v_rumuz, null
     );
     return NEW;
 end;
 $$;
 
-drop trigger if exists trg_itiraf_oy_bildirim on public.itiraf_oylar;
-create trigger trg_itiraf_oy_bildirim
-    after insert or update of oy on public.itiraf_oylar
+drop trigger if exists trg_hikaye_oy_bildirim on public.hikaye_oylar;
+create trigger trg_hikaye_oy_bildirim
+    after insert or update of oy on public.hikaye_oylar
     for each row
-    execute function public.trg_itiraf_oy_bildirim();
+    execute function public.trg_hikaye_oy_bildirim();
 
-create or replace function public.trg_itiraf_cevap_bildirim()
+create or replace function public.trg_hikaye_cevap_bildirim()
 returns trigger
 language plpgsql
 security definer
@@ -139,8 +139,8 @@ declare
     v_alici uuid;
 begin
     select i.user_id into v_alici
-    from public.itiraflar i
-    where i.id = NEW.itiraf_id;
+    from public.hikayeler i
+    where i.id = NEW.hikaye_id;
 
     if v_alici is null or v_alici = NEW.user_id then
         return NEW;
@@ -149,7 +149,7 @@ begin
     perform public.bildirim_olustur(
         v_alici,
         'yorum',
-        NEW.itiraf_id,
+        NEW.hikaye_id,
         NEW.user_id,
         NEW.username,
         NEW.id
@@ -158,13 +158,13 @@ begin
 end;
 $$;
 
-drop trigger if exists trg_itiraf_cevap_bildirim on public.itiraf_cevaplar;
-create trigger trg_itiraf_cevap_bildirim
-    after insert on public.itiraf_cevaplar
+drop trigger if exists trg_hikaye_cevap_bildirim on public.hikaye_cevaplar;
+create trigger trg_hikaye_cevap_bildirim
+    after insert on public.hikaye_cevaplar
     for each row
-    execute function public.trg_itiraf_cevap_bildirim();
+    execute function public.trg_hikaye_cevap_bildirim();
 
-revoke all on function public.trg_itiraf_oy_bildirim() from public, anon, authenticated;
-revoke all on function public.trg_itiraf_cevap_bildirim() from public, anon, authenticated;
+revoke all on function public.trg_hikaye_oy_bildirim() from public, anon, authenticated;
+revoke all on function public.trg_hikaye_cevap_bildirim() from public, anon, authenticated;
 
 notify pgrst, 'reload schema';

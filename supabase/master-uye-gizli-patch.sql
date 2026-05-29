@@ -39,12 +39,12 @@ begin
 
     if v_islem = 'gizli_uye' then
         update public.uye set zorunlu_gizli = true where id = v_uid;
-        update public.itiraflar
+        update public.hikayeler
         set is_gizli = true, username = 'Gizli Üye'
         where user_id = v_uid and silindi_at is null;
     elsif v_islem = 'gizli_kaldir' then
         update public.uye set zorunlu_gizli = false where id = v_uid;
-        update public.itiraflar i
+        update public.hikayeler i
         set is_gizli = false,
             username = v_row.username
         where i.user_id = v_uid and silindi_at is null;

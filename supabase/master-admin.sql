@@ -11,6 +11,18 @@ alter table public.uye drop constraint if exists uye_durum_check;
 alter table public.uye add constraint uye_durum_check
     check (durum in ('aktif', 'askida', 'ban'));
 
+alter table public.hikayeler
+    drop constraint if exists hikayeler_status_check;
+
+alter table public.hikayeler
+    add constraint hikayeler_status_check
+    check (status in ('kulis', 'podyum', 'silindi'));
+
+update public.hikayeler
+set status = 'silindi'
+where silindi_at is not null
+  and status <> 'silindi';
+
 insert into public.site_ayar (anahtar, deger)
 values ('master_email', 'arifguvenc@gmail.com')
 on conflict (anahtar) do update set deger = excluded.deger, updated_at = now();
@@ -70,8 +82,8 @@ $$;
 revoke all on function public.master_email_eslesir() from public, anon;
 grant execute on function public.master_email_eslesir() to authenticated;
 
-drop policy if exists itiraflar_update_master on public.itiraflar;
-create policy itiraflar_update_master on public.itiraflar
+drop policy if exists hikayeler_update_master on public.hikayeler;
+create policy hikayeler_update_master on public.hikayeler
     for update to authenticated
     using (public.master_email_eslesir())
     with check (public.master_email_eslesir());
@@ -114,7 +126,7 @@ grant execute on function public.master_durum() to authenticated;
 -- ---------------------------------------------------------------------------
 -- Podyum koruması: master RPC güncellemelerinde bypass
 -- ---------------------------------------------------------------------------
-create or replace function public.itiraflar_podyum_koruma()
+create or replace function public.hikayeler_podyum_koruma()
 returns trigger
 language plpgsql
 set search_path = public
@@ -125,14 +137,14 @@ begin
     end if;
     if tg_op = 'UPDATE' and old.status = 'podyum' then
         if new.status is distinct from 'podyum' then
-            raise exception 'Podyum itiraflari kulise indirilemez (id=%)', old.id;
+            raise exception 'Podyum hikayeleri kulise indirilemez (id=%)', old.id;
         end if;
         if new.silindi_at is not null then
-            raise exception 'Podyum itiraflari silinemez (id=%)', old.id;
+            raise exception 'Podyum hikayeleri silinemez (id=%)', old.id;
         end if;
     end if;
     if tg_op = 'DELETE' and old.status = 'podyum' then
-        raise exception 'Podyum itiraflari silinemez (id=%)', old.id;
+        raise exception 'Podyum hikayeleri silinemez (id=%)', old.id;
     end if;
     return coalesce(new, old);
 end;
@@ -140,7 +152,7 @@ $$;
 
 -- ---------------------------------------------------------------------------
 -- Hikaye işlemleri
--- p_body: { itiraf_id, islem, content_full?, is_gizli?, up_votes?, down_votes?, status? }
+-- p_body: { hikaye_id, islem, content_full?, is_gizli?, up_votes?, down_votes?, status? }
 -- islem: guncelle | gizle | goster | sil | geri_al | oylar | status
 -- ---------------------------------------------------------------------------
 create or replace function public.master_hikaye_islem(p_body jsonb)
@@ -152,7 +164,7 @@ as $$
 declare
     v_id bigint;
     v_islem text;
-    v_row public.itiraflar%rowtype;
+    v_row public.hikayeler%rowtype;
     v_tam text;
     v_kisa text;
     v_up int;
@@ -165,13 +177,13 @@ begin
         return jsonb_build_object('ok', false, 'hata', 'yetkisiz');
     end if;
 
-    v_id := (p_body->>'itiraf_id')::bigint;
+    v_id := (p_body->>'hikaye_id')::bigint;
     v_islem := lower(trim(coalesce(p_body->>'islem', '')));
     if v_id is null or v_islem = '' then
-        return jsonb_build_object('ok', false, 'hata', 'itiraf_id ve islem gerekli');
+        return jsonb_build_object('ok', false, 'hata', 'hikaye_id ve islem gerekli');
     end if;
 
-    select * into v_row from public.itiraflar where id = v_id;
+    select * into v_row from public.hikayeler where id = v_id;
     if not found then
         return jsonb_build_object('ok', false, 'hata', 'hikaye bulunamadi');
     end if;
@@ -184,42 +196,53 @@ begin
             return jsonb_build_object('ok', false, 'hata', 'metin bos');
         end if;
         v_kisa := case when char_length(v_tam) <= 140 then v_tam else left(v_tam, 137) || '...' end;
-        update public.itiraflar
+        update public.hikayeler
         set content_full = v_tam, content_short = v_kisa
         where id = v_id;
     elsif v_islem = 'gizle' then
-        update public.itiraflar set is_gizli = true where id = v_id;
+        update public.hikayeler set is_gizli = true where id = v_id;
     elsif v_islem = 'goster' then
-        update public.itiraflar set is_gizli = false where id = v_id;
+        update public.hikayeler set is_gizli = false where id = v_id;
     elsif v_islem = 'sil' then
-        update public.itiraflar set silindi_at = now() where id = v_id;
+        update public.hikayeler
+        set silindi_at = now(),
+            status = 'silindi'
+        where id = v_id;
     elsif v_islem = 'geri_al' then
-        update public.itiraflar set silindi_at = null where id = v_id;
+        update public.hikayeler
+        set silindi_at = null,
+            status = 'kulis'
+        where id = v_id;
     elsif v_islem = 'oylar' then
         v_up := coalesce((p_body->>'up_votes')::int, v_row.up_votes);
         v_down := coalesce((p_body->>'down_votes')::int, v_row.down_votes);
         if v_up < 0 or v_down < 0 then
             return jsonb_build_object('ok', false, 'hata', 'oy sayisi negatif olamaz');
         end if;
-        select count(*)::int into v_yorum from public.itiraf_cevaplar c where c.itiraf_id = v_id;
-        v_b := v_up - v_down;
-        update public.itiraflar
-        set up_votes = v_up, down_votes = v_down, b = v_b, r = v_b + (coalesce(v_yorum, 0) * 5)
+        update public.hikayeler
+        set up_votes = v_up, down_votes = v_down
         where id = v_id;
+        perform public.hikaye_puan_guncelle(v_id);
     elsif v_islem = 'status' then
         v_status := lower(trim(coalesce(p_body->>'status', '')));
-        if v_status not in ('kulis', 'podyum') then
-            return jsonb_build_object('ok', false, 'hata', 'status kulis veya podyum olmali');
+        if v_status not in ('kulis', 'podyum', 'silindi') then
+            return jsonb_build_object('ok', false, 'hata', 'status kulis, podyum veya silindi olmali');
         end if;
-        update public.itiraflar set status = v_status where id = v_id;
+        update public.hikayeler
+        set status = v_status,
+            silindi_at = case
+                when v_status = 'silindi' then coalesce(silindi_at, now())
+                else null
+            end
+        where id = v_id;
     else
         return jsonb_build_object('ok', false, 'hata', 'bilinmeyen islem');
     end if;
 
-    select * into v_row from public.itiraflar where id = v_id;
+    select * into v_row from public.hikayeler where id = v_id;
     return jsonb_build_object(
         'ok', true,
-        'itiraf', jsonb_build_object(
+        'hikaye', jsonb_build_object(
             'id', v_row.id,
             'status', v_row.status,
             'is_gizli', v_row.is_gizli,
@@ -276,12 +299,12 @@ begin
 
     if v_islem = 'gizli_uye' then
         update public.uye set zorunlu_gizli = true where id = v_uid;
-        update public.itiraflar
+        update public.hikayeler
         set is_gizli = true, username = 'Gizli Üye'
         where user_id = v_uid and silindi_at is null;
     elsif v_islem = 'gizli_kaldir' then
         update public.uye set zorunlu_gizli = false where id = v_uid;
-        update public.itiraflar i
+        update public.hikayeler i
         set is_gizli = false,
             username = v_row.username
         where i.user_id = v_uid and silindi_at is null;
@@ -396,9 +419,9 @@ $$;
 revoke all on function public.master_uye_bul(jsonb) from public, anon;
 grant execute on function public.master_uye_bul(jsonb) to authenticated;
 
-revoke all on function public.trg_itiraf_oy_bildirim() from public, anon, authenticated;
-revoke all on function public.trg_itiraf_cevap_bildirim() from public, anon, authenticated;
-revoke all on function public.itiraf_oy_sayaclarini_yenile(bigint[]) from public, anon, authenticated;
-grant execute on function public.itiraf_oy_sayaclarini_yenile(bigint[]) to service_role;
+revoke all on function public.trg_hikaye_oy_bildirim() from public, anon, authenticated;
+revoke all on function public.trg_hikaye_cevap_bildirim() from public, anon, authenticated;
+revoke all on function public.hikaye_oy_sayaclarini_yenile(bigint[]) from public, anon, authenticated;
+grant execute on function public.hikaye_oy_sayaclarini_yenile(bigint[]) to service_role;
 
 notify pgrst, 'reload schema';

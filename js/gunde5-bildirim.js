@@ -184,7 +184,7 @@
         }
 
         var sid = encodeURIComponent(String(iid));
-        global.location.href = (status === 'podyum' ? '/?itiraf=' : '/kulis?itiraf=') + sid;
+        global.location.href = (status === 'podyum' ? '/podyum?itiraf=' : '/kulis?itiraf=') + sid;
     }
 
     async function tumunuOkundu() {

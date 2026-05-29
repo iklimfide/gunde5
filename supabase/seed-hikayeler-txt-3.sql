@@ -1,7 +1,7 @@
 -- 3 hikaye (hikayeler.txt) — Supabase SQL Editor'da bir kez Run.
 -- Aynı rumuz + metin zaten varsa tekrar eklemez.
 
-insert into public.itiraflar (
+insert into public.hikayeler (
   user_id,
   username,
   age,
@@ -75,7 +75,7 @@ Kızın babası o ölümcül sessizlikte yavaşça kuzene dönüp, "Sen bunu ner
     )
 ) as v(username, age, gender, yasadigi_yer, yurtdisi_sehir, hikaye)
 where not exists (
-  select 1 from public.itiraflar i
+  select 1 from public.hikayeler i
   where i.username = v.username
     and i.content_full = v.hikaye
     and i.silindi_at is null

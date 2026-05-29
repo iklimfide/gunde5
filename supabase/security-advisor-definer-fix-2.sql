@@ -4,6 +4,61 @@
 -- Public RPC'ler SECURITY INVOKER; auth.users / dedup için private şema (PostgREST'te yok).
 -- security-advisor-definer-fix.sql + master-uyeler-yonetim.sql sonrası.
 
+do $$
+begin
+    if exists (
+        select 1
+        from information_schema.tables
+        where table_schema = 'public'
+          and table_name = 'hikaye_cevaplar'
+    ) then
+        alter table public.hikaye_cevaplar
+            alter column user_id drop not null;
+
+        alter table public.hikaye_cevaplar
+            drop constraint if exists hikaye_cevaplar_user_id_fkey;
+
+        alter table public.hikaye_cevaplar
+            add constraint hikaye_cevaplar_user_id_fkey
+            foreign key (user_id) references auth.users (id) on delete set null;
+    end if;
+end;
+$$;
+
+create or replace function public.handle_deleted_user_content()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    update public.hikayeler
+    set is_gizli = true,
+        username = 'Gizli Üye'
+    where user_id = old.id;
+
+    if exists (
+        select 1
+        from information_schema.tables
+        where table_schema = 'public'
+          and table_name = 'hikaye_cevaplar'
+    ) then
+        update public.hikaye_cevaplar
+        set username = 'Gizli Üye'
+        where user_id = old.id;
+    end if;
+
+    return old;
+end;
+$$;
+
+drop trigger if exists on_auth_user_deleted_content on auth.users;
+create trigger on_auth_user_deleted_content
+    before delete on auth.users
+    for each row execute function public.handle_deleted_user_content();
+
+revoke all on function public.handle_deleted_user_content() from public, anon, authenticated;
+
 -- ---------------------------------------------------------------------------
 -- private: PostgREST dışı DEFINER yardımcılar (RPC linter uyarısı yok)
 -- ---------------------------------------------------------------------------
@@ -288,7 +343,7 @@ begin
     select * into v_row from public.uye where id = v_uid;
     v_yas := extract(year from now())::int - v_row.dogum_yili;
 
-    update public.itiraflar i
+    update public.hikayeler i
     set
         username = case
             when i.is_gizli or coalesce(v_row.zorunlu_gizli, false) then i.username
@@ -348,20 +403,18 @@ begin
     perform set_config('gunde5.master_bypass', '1', true);
 
     if v_islem = 'sil' then
-        update public.itiraflar set silindi_at = now()
-        where user_id = v_uid and silindi_at is null;
         perform private.gunde5_master_auth_user_sil(v_uid);
         return jsonb_build_object('ok', true, 'silindi', true);
     end if;
 
     if v_islem = 'gizli_uye' then
         update public.uye set zorunlu_gizli = true where id = v_uid;
-        update public.itiraflar
+        update public.hikayeler
         set is_gizli = true, username = 'Gizli Üye'
         where user_id = v_uid and silindi_at is null;
     elsif v_islem = 'gizli_kaldir' then
         update public.uye set zorunlu_gizli = false where id = v_uid;
-        update public.itiraflar i
+        update public.hikayeler i
         set is_gizli = false,
             username = v_row.username
         where i.user_id = v_uid and silindi_at is null;

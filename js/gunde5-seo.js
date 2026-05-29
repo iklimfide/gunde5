@@ -120,8 +120,8 @@
                       title: 'gunde5.com — Günün En İyi 5 Hikayesi | Podyum',
                       description:
                           'Otobüste, metroda ya da kahve molasında iki dakikada kafa dağıtıp gülmek isteyenler için halkın içinden komik ve eğlenceli gerçek hikayeler.',
-                      canonical: SITE_ORIGIN + '/',
-                      ogUrl: SITE_ORIGIN + '/',
+                      canonical: SITE_ORIGIN + '/podyum',
+                      ogUrl: SITE_ORIGIN + '/podyum',
                       ogType: 'website'
                   }
                 : {

@@ -7,9 +7,21 @@
 --   3) Mevcut podyum satırlarına dokunulmaz (podyum-koruma.sql).
 --   4) Kulis’te kalanlar soft-delete (silindi_at); siteden kaybolur.
 --
--- Önkoşul: itiraf-puan.sql (r sütunu), podyum-koruma.sql
+-- Önkoşul: hikaye-puan.sql (r sütunu), podyum-koruma.sql
 -- Supabase SQL Editor’da BU DOSYANIN TAMAMINI bir kez çalıştır.
 -- =============================================================================
+
+alter table public.hikayeler
+    drop constraint if exists hikayeler_status_check;
+
+alter table public.hikayeler
+    add constraint hikayeler_status_check
+    check (status in ('kulis', 'podyum', 'silindi'));
+
+update public.hikayeler
+set status = 'silindi'
+where silindi_at is not null
+  and status <> 'silindi';
 
 create or replace function public.podyum_gunluk_gecis()
 returns void
@@ -26,7 +38,7 @@ begin
         || ' Şampiyonları — Top 5';
 
     -- Kulis’teki r değerlerini seçimden önce tazele
-    update public.itiraflar i
+    update public.hikayeler i
     set
         b = sub.b,
         r = sub.r
@@ -37,10 +49,10 @@ begin
             (coalesce(k.up_votes, 0) - coalesce(k.down_votes, 0))
                 + coalesce((
                     select count(*)::int
-                    from public.itiraf_cevaplar c
-                    where c.itiraf_id = k.id
+                    from public.hikaye_cevaplar c
+                    where c.hikaye_id = k.id
                 ), 0) * 5 as r
-        from public.itiraflar k
+        from public.hikayeler k
         where k.status = 'kulis'
           and k.silindi_at is null
     ) sub
@@ -56,11 +68,11 @@ begin
                     (case when i.user_id is not null then 1 else 0 end) desc,
                     i.created_at desc
             ) as sira
-        from public.itiraflar i
+        from public.hikayeler i
         where i.status = 'kulis'
           and i.silindi_at is null
     )
-    update public.itiraflar i
+    update public.hikayeler i
     set
         status = 'podyum',
         podyum_sira = s.sira::smallint,
@@ -71,8 +83,9 @@ begin
       and s.sira <= 5;
 
     -- Giyotin: kuliste kalanlar (top 5 dışı) soft-delete
-    update public.itiraflar
-    set silindi_at = now()
+    update public.hikayeler
+    set silindi_at = now(),
+        status = 'silindi'
     where status = 'kulis'
       and silindi_at is null;
 

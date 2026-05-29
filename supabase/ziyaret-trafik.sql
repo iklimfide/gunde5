@@ -208,13 +208,13 @@ begin
         ), '[]'::jsonb),
         'site', jsonb_build_object(
             'uyeler', (select count(*)::int from public.uye),
-            'kulis', (select count(*)::int from public.itiraflar i where i.status = 'kulis' and i.silindi_at is null),
-            'podyum', (select count(*)::int from public.itiraflar i where i.status = 'podyum' and i.silindi_at is null),
-            'gizli_hikaye', (select count(*)::int from public.itiraflar i where i.is_gizli = true and i.silindi_at is null),
-            'silinen', (select count(*)::int from public.itiraflar i where i.silindi_at is not null),
-            'cevaplar', (select count(*)::int from public.itiraf_cevaplar),
-            'oylar', (select count(*)::int from public.itiraf_oylar),
-            'sikayetler', (select count(*)::int from public.itiraf_sikayetler)
+            'kulis', (select count(*)::int from public.hikayeler i where i.status = 'kulis' and i.silindi_at is null),
+            'podyum', (select count(*)::int from public.hikayeler i where i.status = 'podyum' and i.silindi_at is null),
+            'gizli_hikaye', (select count(*)::int from public.hikayeler i where i.is_gizli = true and i.silindi_at is null),
+            'silinen', (select count(*)::int from public.hikayeler i where i.silindi_at is not null),
+            'cevaplar', (select count(*)::int from public.hikaye_cevaplar),
+            'oylar', (select count(*)::int from public.hikaye_oylar),
+            'sikayetler', (select count(*)::int from public.hikaye_sikayetler)
         ),
         'son_kayitlar', coalesce((
             select jsonb_agg(jsonb_build_object(

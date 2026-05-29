@@ -17,7 +17,7 @@
 
 Siteyi **dosyadan çift tıklayarak** (`file://`) açmayın — bildirim ve hikaye linkleri çalışmaz. Tarayıcıda mutlaka:
 
-**http://localhost:8080/** (veya `index.html`)
+**http://localhost:8080/podyum** (veya `podyum.html`)
 
 Bunlardan biri (proje kökünde):
 
@@ -26,7 +26,7 @@ Bunlardan biri (proje kökünde):
 
 PowerShell’de `cd D:\gunde5 && npm run dev` çalışmazsa: `Set-Location D:\gunde5; npm run dev`
 
-Hikaye iç linki: `http://localhost:8080/index.html?itiraf=7` (podyum), `http://localhost:8080/kulis.html?itiraf=7` (kulis).
+Hikaye iç linki: `http://localhost:8080/podyum?itiraf=7` (podyum), `http://localhost:8080/kulis?itiraf=7` (kulis).
 
 ## Ziyaret / trafik kaynağı
 
@@ -53,6 +53,22 @@ Yeni txt dosyaları için: `python scripts/hikaye-txt-to-sql.py dosya.txt -o sup
 
 SQL Editor → `itiraf-ara.sql` (rumuz, hikaye metni, cevap/yorum). Sayaç kutusunun altındaki arama kutusu yazdıkça sonuçları listeler.
 
+## Profil kaydet (profil.html)
+
+**`profil-uye-rpc.sql`** — SQL Editor'da bir kez Run (zorunlu). Kulis/podyum master işlemleri farklı RPC kullanır; profil kaydı bu dosya olmadan çalışmaz.
+
+## Master manuel oy + gerçek oylar
+
+Master moderasyonda **Oylar** ile yazdığınız sayılar `itiraflar` tablosuna gider; üye oyları `itiraf_oylar` tablosundadır. Eski kurulumda trigger yalnızca `itiraf_oylar` sayımını yazardı → bir üye oy verince master sayısı sıfırlanıyordu. **`itiraf-oy-offset.sql`** bir kez çalıştırın (`oy_offset_up` / `oy_offset_down` + güncel trigger + `master_hikaye_islem`).
+
+**Anasayfa (üyeliksiz) oy:** **`itiraf-oy-ver-rpc.sql`** — SQL Editor'da bir kez Run. Ziyaretçi oyu `viewer_key` ile `itiraf_oylar`'a yazılır; sayaçlar `up_votes` / `down_votes` üzerinden herkese görünür.
+
+## Paylaşım önizlemesi (OG görsel)
+
+- Varsayılan kart: kökte **`og-share.png`** (1200×630).
+- Hikaye linki: `https://gunde5.com/h/{id}` — Vercel **`api/itiraf-share`** (meta) + **`api/og`** (görsel). Eski `/itiraf/{id}` → `/h/{id}` yönlendirilir.
+- Vercel proje ayarlarında ortam değişkenleri: `GUNDE5_SUPABASE_URL`, `GUNDE5_SUPABASE_ANON_KEY` (anon, yalnızca okuma).
+
 ## Her gün 13:12 — Kulis → Podyum
 
 1. `itiraf-puan.sql` — `r` puan sütunu
@@ -71,7 +87,7 @@ SQL Editor → `itiraf-ara.sql` (rumuz, hikaye metni, cevap/yorum). Sayaç kutus
 2. Bu hesapla giriş yap → profil menüsü → **Moderasyon: Açık**.
 3. Açıkken: rumuz altında **Gizli üye yap / Askıya al / Banla**; hikaye altında **Değiştir / Gizle / Sil**. Bot/seed kartlarda (üye hesabı yok) **Kart** satırından yaş, cinsiyet, il düzenlenir → `master-hikaye-kart-meta.sql`.
 4. Mevcut DB için ek: `master-uye-gizli-patch.sql` (gizli üye + güncel RPC).
-5. Üye listesi / profil düzenleme / fotoğraf yükleme / hesap silme: `master-uyeler-yonetim.sql` → hamburger **👥 Üyeler** → `uyeler.html` (avatar depolama için master storage politikası da bu dosyada).
+5. Üye listesi / profil düzenleme / fotoğraf yükleme / hesap silme: `master-uyeler-yonetim.sql` → hamburger **👥 Üyeler** → `uyeler.html` (avatar depolama için master storage politikası da bu dosyada). Hesap silmede içerikler kalır; hikaye/cevap bağı kopar ve görünen ad `Gizli Üye` olur.
 6. Son aktif / IP / hikaye-yorum düzenleme: `master-uye-aktivite-icerik.sql` (`ziyaret_kaydet` güncellenir; IP proxy başlığı veya istemci ipify yedek).
 
 ## Bildirimler

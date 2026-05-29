@@ -121,8 +121,8 @@
     }
 
     function yorumDurumBadge(row) {
-        if (row && row.itiraf_silindi) return '<span class="kamikaze-badge kamikaze-badge--silindi">hikaye silindi</span>';
-        if (row && row.itiraf_status === 'podyum') return '<span class="kamikaze-badge kamikaze-badge--podyum">podyum</span>';
+        if (row && row.hikaye_silindi) return '<span class="kamikaze-badge kamikaze-badge--silindi">hikaye silindi</span>';
+        if (row && row.hikaye_status === 'podyum') return '<span class="kamikaze-badge kamikaze-badge--podyum">podyum</span>';
         return '<span class="kamikaze-badge kamikaze-badge--kulis">kulis</span>';
     }
 
@@ -563,7 +563,7 @@
         if (!ozet) return '';
         var items = [
             { etiket: 'Üye', deger: ozet.uye },
-            { etiket: 'Aktif hikaye', deger: ozet.itiraf_aktif },
+            { etiket: 'Aktif hikaye', deger: ozet.hikaye_aktif },
             { etiket: 'Kulis', deger: ozet.kulis, cls: 'warn' },
             { etiket: 'Podyum', deger: ozet.podyum, cls: 'ok' },
             { etiket: 'Silinen', deger: ozet.silindi },
@@ -637,7 +637,7 @@
         return (
             '<div class="kamikaze-actions">' +
             '<button type="button" class="kamikaze-action-btn" data-km-act="comment-open" data-comment-id="' + esc(r.id) + '">Yorum</button>' +
-            '<button type="button" class="kamikaze-action-btn" data-km-act="story-open" data-story-id="' + esc(r.itiraf_id) + '" data-comment-focus="' + esc(r.id) + '">Hikaye</button>' +
+            '<button type="button" class="kamikaze-action-btn" data-km-act="story-open" data-story-id="' + esc(r.hikaye_id) + '" data-comment-focus="' + esc(r.id) + '">Hikaye</button>' +
             (r.user_id
                 ? '<button type="button" class="kamikaze-action-btn" data-km-act="user-open" data-user-id="' + esc(r.user_id) + '">Üye</button>'
                 : '') +
@@ -764,17 +764,17 @@
                 key: 'icerik',
                 etiket: 'İçerik',
                 value: function (r) {
-                    return fmtSayi(r.itiraf_sayisi != null ? r.itiraf_sayisi : (r.istatistik && r.istatistik.hikaye) || 0) +
+                    return fmtSayi(r.hikaye_sayisi != null ? r.hikaye_sayisi : (r.istatistik && r.istatistik.hikaye) || 0) +
                         ' hikaye / ' +
                         fmtSayi(r.yorum_sayisi != null ? r.yorum_sayisi : (r.istatistik && r.istatistik.yorum) || 0) +
                         ' yorum';
                 },
                 filter: 'text',
                 filterValue: function (r) {
-                    return String(r.itiraf_sayisi != null ? r.itiraf_sayisi : 0) + ' ' +
+                    return String(r.hikaye_sayisi != null ? r.hikaye_sayisi : 0) + ' ' +
                         String(r.yorum_sayisi != null ? r.yorum_sayisi : 0);
                 },
-                sortValue: function (r) { return num(r.itiraf_sayisi, 0) + num(r.yorum_sayisi, 0); }
+                sortValue: function (r) { return num(r.hikaye_sayisi, 0) + num(r.yorum_sayisi, 0); }
             },
             {
                 key: 'kayit',
@@ -801,17 +801,17 @@
                 etiket: 'ID',
                 value: function (r) { return '#' + r.id; },
                 filter: 'text',
-                filterValue: function (r) { return String(r.id) + ' ' + String(r.itiraf_id); },
+                filterValue: function (r) { return String(r.id) + ' ' + String(r.hikaye_id); },
                 sortValue: function (r) { return num(r.id, 0); }
             },
             {
                 key: 'hikaye',
                 etiket: 'Hikaye',
-                value: function (r) { return '#' + r.itiraf_id + ' ' + yorumDurumBadge(r); },
+                value: function (r) { return '#' + r.hikaye_id + ' ' + yorumDurumBadge(r); },
                 raw: true,
                 filter: 'text',
-                filterValue: function (r) { return String(r.itiraf_id) + ' ' + (r.itiraf_status || ''); },
-                sortValue: function (r) { return num(r.itiraf_id, 0); }
+                filterValue: function (r) { return String(r.hikaye_id) + ' ' + (r.hikaye_status || ''); },
+                sortValue: function (r) { return num(r.hikaye_id, 0); }
             },
             {
                 key: 'kullanici',
@@ -904,18 +904,18 @@
             return;
         }
 
-        var itiraflar = hikayeleriFiltrele(veri.son_itiraflar, aktifFiltre);
+        var hikayeler = hikayeleriFiltrele(veri.son_hikayeler, aktifFiltre);
         var html = '';
         html += renderAramaBolumu();
         html += kpiHtml(veri.ozet);
         html += '<div class="kamikaze-chart-grid">';
-        html += barChartHtml('Son 14 gün — yeni hikaye', veri.gunluk_itiraf, 'kamikaze-bar--amber');
+        html += barChartHtml('Son 14 gün — yeni hikaye', veri.gunluk_hikaye, 'kamikaze-bar--amber');
         html += barChartHtml('Son 14 gün — yeni üye', veri.gunluk_uye, 'kamikaze-bar--green');
         html += '</div>';
         html += renderTableSection({
             id: 'hikayeler',
             title: 'Hikayeler',
-            rows: itiraflar,
+            rows: hikayeler,
             columns: hikayeKolonlari(),
             note: 'Durum filtresi üst çubuktan; sütun başlıkları ayrıca filtrelenebilir.',
             empty: 'Bu filtrede hikaye yok.'
@@ -958,11 +958,11 @@
             rows: arr(veri.sikayetler),
             columns: [
                 { key: 'id', etiket: 'ID', value: function (r) { return '#' + r.id; }, filter: 'text', sortValue: function (r) { return num(r.id, 0); } },
-                { key: 'hikaye', etiket: 'Hikaye', value: function (r) { return '#' + r.itiraf_id + ' ' + statusBadge(r.itiraf_status, false); }, raw: true, filter: 'text', filterValue: function (r) { return String(r.itiraf_id) + ' ' + (r.itiraf_status || ''); }, sortValue: function (r) { return num(r.itiraf_id, 0); } },
+                { key: 'hikaye', etiket: 'Hikaye', value: function (r) { return '#' + r.hikaye_id + ' ' + statusBadge(r.hikaye_status, false); }, raw: true, filter: 'text', filterValue: function (r) { return String(r.hikaye_id) + ' ' + (r.hikaye_status || ''); }, sortValue: function (r) { return num(r.hikaye_id, 0); } },
                 { key: 'sebep', etiket: 'Sebep', alan: 'sebep', filter: 'text' },
                 { key: 'aciklama', etiket: 'Açıklama', value: function (r) { return kisaMetin(r.aciklama, 120); }, raw: true, filter: 'text', filterValue: function (r) { return r.aciklama || ''; }, sortable: false },
                 { key: 'tarih', etiket: 'Tarih', value: function (r) { return fmtTarih(r.created_at); }, filter: 'text', sortValue: function (r) { return new Date(r.created_at || 0).getTime(); } },
-                { key: 'aksiyon', etiket: 'İşlem', value: function (r) { return '<div class="kamikaze-actions"><button type="button" class="kamikaze-action-btn" data-km-act="story-open" data-story-id="' + esc(r.itiraf_id) + '">Hikaye</button></div>'; }, raw: true, sortable: false }
+                { key: 'aksiyon', etiket: 'İşlem', value: function (r) { return '<div class="kamikaze-actions"><button type="button" class="kamikaze-action-btn" data-km-act="story-open" data-story-id="' + esc(r.hikaye_id) + '">Hikaye</button></div>'; }, raw: true, sortable: false }
             ],
             empty: 'Şikayet yok.'
         });
@@ -1279,12 +1279,12 @@
                 ? yorumlar.map(function (y) {
                     return (
                         '<article class="kamikaze-mini-card">' +
-                        '<div class="kamikaze-mini-head"><span>Yorum #' + esc(y.id) + ' · Hikaye #' + esc(y.itiraf_id) + '</span><span>' + esc(fmtTarih(y.created_at)) + '</span></div>' +
+                        '<div class="kamikaze-mini-head"><span>Yorum #' + esc(y.id) + ' · Hikaye #' + esc(y.hikaye_id) + '</span><span>' + esc(fmtTarih(y.created_at)) + '</span></div>' +
                         '<textarea rows="3" data-km-user-comment-text="' + esc(y.id) + '">' + esc(y.content || '') + '</textarea>' +
                         '<div class="kamikaze-mini-actions">' +
                         '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="user-comment-save" data-comment-id="' + esc(y.id) + '">Kaydet</button>' +
                         '<button type="button" class="kamikaze-modal-btn kamikaze-modal-btn--tehlike" data-km-modal-act="user-comment-delete" data-comment-id="' + esc(y.id) + '">Sil</button>' +
-                        '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="open-story" data-story-id="' + esc(y.itiraf_id) + '" data-comment-focus="' + esc(y.id) + '">Hikaye</button>' +
+                        '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="open-story" data-story-id="' + esc(y.hikaye_id) + '" data-comment-focus="' + esc(y.id) + '">Hikaye</button>' +
                         '</div></article>'
                     );
                 }).join('')
@@ -1358,12 +1358,12 @@
         var yorum = veri || {};
         return (
             '<section class="kamikaze-modal-section">' +
-            '<div class="kamikaze-modal-meta"><span>Yorum #' + esc(yorum.id) + '</span><span>Hikaye #' + esc(yorum.itiraf_id) + '</span><span>' + yorumDurumBadge(yorum) + '</span><span>' + esc(fmtTarih(yorum.created_at)) + '</span></div>' +
+            '<div class="kamikaze-modal-meta"><span>Yorum #' + esc(yorum.id) + '</span><span>Hikaye #' + esc(yorum.hikaye_id) + '</span><span>' + yorumDurumBadge(yorum) + '</span><span>' + esc(fmtTarih(yorum.created_at)) + '</span></div>' +
             '<textarea id="kmCommentText" rows="8">' + esc(yorum.content || '') + '</textarea>' +
             '<div class="kamikaze-modal-actions">' +
             '<button type="button" class="kamikaze-modal-btn kamikaze-modal-btn--primary" data-km-modal-act="comment-quick-save">Yorumu kaydet</button>' +
             '<button type="button" class="kamikaze-modal-btn kamikaze-modal-btn--tehlike" data-km-modal-act="comment-quick-delete">Sil</button>' +
-            '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="open-story" data-story-id="' + esc(yorum.itiraf_id) + '" data-comment-focus="' + esc(yorum.id) + '">Hikayeyi aç</button>' +
+            '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="open-story" data-story-id="' + esc(yorum.hikaye_id) + '" data-comment-focus="' + esc(yorum.id) + '">Hikayeyi aç</button>' +
             (yorum.user_id ? '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="open-user" data-user-id="' + esc(yorum.user_id) + '">Üye</button>' : '') +
             '</div>' +
             '</section>'
@@ -1385,18 +1385,18 @@
         return bulunan;
     }
 
-    async function hikayeDetayAc(itirafId, focusCommentId) {
+    async function hikayeDetayAc(hikayeId, focusCommentId) {
         var D = db();
         if (!D || !D.masterKamikazeHikayeDetay) return;
         modalState.type = 'loading';
-        modalState.title = 'Hikaye #' + itirafId;
+        modalState.title = 'Hikaye #' + hikayeId;
         modalState.highlightCommentId = focusCommentId || null;
         modalGuncelle();
         try {
-            var sonuc = await D.masterKamikazeHikayeDetay(itirafId);
+            var sonuc = await D.masterKamikazeHikayeDetay(hikayeId);
             if (!sonuc || !sonuc.ok) throw new Error((sonuc && sonuc.hata) || 'Hikaye yüklenemedi');
             modalState.type = 'story';
-            modalState.title = 'Hikaye #' + itirafId;
+            modalState.title = 'Hikaye #' + hikayeId;
             modalState.data = sonuc;
             modalGuncelle();
         } catch (e) {
@@ -1510,7 +1510,7 @@
         }
         if (act === 'story-save-text') {
             success = await hikayeIslemUygula({
-                itiraf_id: id,
+                hikaye_id: id,
                 islem: 'guncelle',
                 content_full: document.getElementById('kmStoryText').value
             });
@@ -1519,7 +1519,7 @@
         }
         if (act === 'story-toggle-visibility') {
             success = await hikayeIslemUygula({
-                itiraf_id: id,
+                hikaye_id: id,
                 islem: hikaye.is_gizli ? 'goster' : 'gizle'
             });
             if (success) await hikayeDetayAc(id, modalState.highlightCommentId);
@@ -1527,18 +1527,18 @@
         }
         if (act === 'story-delete') {
             if (!global.confirm('Bu hikayeyi silmek istiyor musun?')) return;
-            success = await hikayeIslemUygula({ itiraf_id: id, islem: 'sil' });
+            success = await hikayeIslemUygula({ hikaye_id: id, islem: 'sil' });
             if (success) await hikayeDetayAc(id, modalState.highlightCommentId);
             return;
         }
         if (act === 'story-restore') {
-            success = await hikayeIslemUygula({ itiraf_id: id, islem: 'geri_al' });
+            success = await hikayeIslemUygula({ hikaye_id: id, islem: 'geri_al' });
             if (success) await hikayeDetayAc(id, modalState.highlightCommentId);
             return;
         }
         if (act === 'story-save-status') {
             success = await hikayeIslemUygula({
-                itiraf_id: id,
+                hikaye_id: id,
                 islem: 'status',
                 status: document.getElementById('kmStoryStatus').value
             });
@@ -1547,7 +1547,7 @@
         }
         if (act === 'story-save-counts') {
             success = await hikayeIslemUygula({
-                itiraf_id: id,
+                hikaye_id: id,
                 islem: 'oylar',
                 up_votes: parseInt(document.getElementById('kmStoryUpVotes').value, 10) || 0,
                 down_votes: parseInt(document.getElementById('kmStoryDownVotes').value, 10) || 0
@@ -1558,7 +1558,7 @@
         if (act === 'story-save-meta') {
             var yer = document.getElementById('kmStoryYer').value;
             success = await hikayeIslemUygula({
-                itiraf_id: id,
+                hikaye_id: id,
                 islem: 'meta',
                 age: parseInt(document.getElementById('kmStoryAge').value, 10),
                 gender: document.getElementById('kmStoryGender').value,
@@ -1607,7 +1607,7 @@
         }
         if (act === 'story-vote-add') {
             success = await oyIslemUygula({
-                itiraf_id: id,
+                hikaye_id: id,
                 uye_id: btn.getAttribute('data-user-id'),
                 islem: 'ekle',
                 oy: parseInt(btn.getAttribute('data-vote'), 10) || 1
@@ -1715,7 +1715,7 @@
         }
         if (act === 'user-story-save') {
             success = await hikayeIslemUygula({
-                itiraf_id: btn.getAttribute('data-story-id'),
+                hikaye_id: btn.getAttribute('data-story-id'),
                 islem: 'guncelle',
                 content_full: (document.querySelector('[data-km-user-story-text="' + btn.getAttribute('data-story-id') + '"]') || {}).value || ''
             });
@@ -1724,7 +1724,7 @@
         }
         if (act === 'user-story-toggle') {
             success = await hikayeIslemUygula({
-                itiraf_id: btn.getAttribute('data-story-id'),
+                hikaye_id: btn.getAttribute('data-story-id'),
                 islem: btn.getAttribute('data-hidden') === '1' ? 'goster' : 'gizle'
             });
             if (success) await uyeDetayAc(uye.id);
@@ -1733,7 +1733,7 @@
         if (act === 'user-story-delete') {
             if (!global.confirm('Bu hikayeyi silmek istiyor musun?')) return;
             success = await hikayeIslemUygula({
-                itiraf_id: btn.getAttribute('data-story-id'),
+                hikaye_id: btn.getAttribute('data-story-id'),
                 islem: 'sil'
             });
             if (success) await uyeDetayAc(uye.id);
@@ -1741,7 +1741,7 @@
         }
         if (act === 'user-story-restore') {
             success = await hikayeIslemUygula({
-                itiraf_id: btn.getAttribute('data-story-id'),
+                hikaye_id: btn.getAttribute('data-story-id'),
                 islem: 'geri_al'
             });
             if (success) await uyeDetayAc(uye.id);
@@ -1823,7 +1823,7 @@
         ensureToolbar();
         ensureModalRoot();
 
-        var sec = document.getElementById('kamikazeItirafFilter');
+        var sec = document.getElementById('kamikazeHikayeFilter');
         if (sec) {
             sec.addEventListener('change', function () {
                 aktifFiltre = sec.value || 'hepsi';

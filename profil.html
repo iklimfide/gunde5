@@ -868,7 +868,7 @@
                 </button>
                 <div class="header-menu-panel" id="headerMenuPanel" hidden>
                     <nav class="header-menu-nav" aria-label="Site menüsü">
-                        <a href="/" class="header-menu-link">🏆 Podyum</a>
+                        <a href="/podyum" class="header-menu-link">🏆 Podyum</a>
                         <a href="/kulis" class="header-menu-link">🔥 Kulis</a>
                         <a href="/hakkinda" class="header-menu-link">ℹ️ Hakkında</a>
                         <a href="/iletisim" class="header-menu-link">✉️ İletişim</a>
@@ -877,7 +877,7 @@
                 </div>
             </div>
         </div>
-        <a href="/" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <a href="/podyum" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
         <div class="header-sag">
             <div class="header-auth-btns" id="headerAuthBtns">
                 <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
@@ -902,7 +902,7 @@
         <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn">
             <div class="icon">✍️</div><span>Hikaye Yaz</span>
         </button>
-        <a href="/" class="nav-item">
+        <a href="/podyum" class="nav-item">
             <div class="icon">🏆</div><span>Podyum</span>
         </a>
     </div>
@@ -1035,7 +1035,7 @@
                     var durumSinif = it.status === 'podyum' ? 'durum-podyum' : 'durum-kulis';
                     var durumHref = (window.Gunde5Paylas && Gunde5Paylas.itirafIcLink)
                         ? Gunde5Paylas.itirafIcLink(it.id, it.status)
-                        : (it.status === 'podyum' ? '/?itiraf=' : '/kulis?itiraf=') + encodeURIComponent(String(it.id));
+                        : (it.status === 'podyum' ? '/podyum?itiraf=' : '/kulis?itiraf=') + encodeURIComponent(String(it.id));
                     var durumMetin = it.status === 'podyum' ? 'Podyum' : 'Kulis';
                     var tarih = '';
                     if (it.created_at) {
@@ -1103,7 +1103,7 @@
                 '</div>' +
                 '<div class="profil-istat">' +
                 '<div class="profil-istat-kutu"><strong>' + kulisSay + '</strong><span><a href="/kulis">Kulis</a></span></div>' +
-                '<div class="profil-istat-kutu"><strong>' + podyumSay + '</strong><span><a href="/">Podyum</a></span></div>' +
+                '<div class="profil-istat-kutu"><strong>' + podyumSay + '</strong><span><a href="/podyum">Podyum</a></span></div>' +
                 '<div class="profil-istat-kutu"><strong>' + itiraflar.length + '</strong><span>Toplam</span></div>' +
                 '</div>' +
                 '<h2 class="profil-bolum-baslik">Hikayelerim</h2>' +

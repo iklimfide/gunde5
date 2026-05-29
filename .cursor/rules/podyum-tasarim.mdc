@@ -7,7 +7,7 @@ alwaysApply: true
 
 Kullanıcı bu tasarımı onayladı. **Başlık, layout, lazy-load akışı veya podyum veri modeli değişikliği yapmadan önce kullanıcıya sor.** Onay olmadan uygulama.
 
-## Anasayfa (index.html + JS)
+## Anasayfa (podyum.html + JS)
 
 - **Üst altın bant** (`#podyumSampiyonlar` / `#podyumTopEtiket` / `#podyumDonemBaslik`):
  - Üst satır: `EFSANELER` (`PODYUM_BANNER_UST_ETIKET`)
@@ -26,7 +26,7 @@ Kullanıcı bu tasarımı onayladı. **Başlık, layout, lazy-load akışı veya
 
 ## Dokunulurken dikkat (izin gerekir)
 
-- `index.html` podyum CSS/HTML yapısı
+- `podyum.html` podyum CSS/HTML yapısı
 - `js/gunde5-podyum-lazy.js`, `js/gunde5-db.js` (podyum* fonksiyonları), `js/gunde5-ui.js` (`renderPodyumCard`)
 - `supabase/saat-1312-podyum.sql`, `podyum-koruma.sql`
 

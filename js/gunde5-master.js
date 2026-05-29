@@ -351,7 +351,7 @@
             return;
         }
         var id = card.getAttribute('data-id');
-        var body = { itiraf_id: parseInt(id, 10), islem: islem };
+        var body = { hikaye_id: parseInt(id, 10), islem: islem };
         if (ek) {
             Object.keys(ek).forEach(function (k) {
                 body[k] = ek[k];
@@ -362,7 +362,7 @@
             if (!sonuc || !sonuc.ok) {
                 throw new Error((sonuc && sonuc.hata) || 'İşlem başarısız');
             }
-            var it = sonuc.itiraf;
+            var it = sonuc.hikaye;
             if (!it) return;
             if (islem === 'sil') {
                 card.remove();
@@ -405,9 +405,9 @@
             uyeToast(islem);
             if (kartBaglam) {
                 if (islem === 'gizli_uye') {
-                    document.querySelectorAll('.card[data-itiraf-user-id="' + uyeId + '"]').forEach(kartRumuzGizli);
+                    document.querySelectorAll('.card[data-hikaye-user-id="' + uyeId + '"]').forEach(kartRumuzGizli);
                 } else if (islem === 'gizli_kaldir' && sonuc.uye && sonuc.uye.username) {
-                    document.querySelectorAll('.card[data-itiraf-user-id="' + uyeId + '"]').forEach(function (c) {
+                    document.querySelectorAll('.card[data-hikaye-user-id="' + uyeId + '"]').forEach(function (c) {
                         kartRumuzGoster(c, sonuc.uye.username);
                     });
                 }
@@ -418,14 +418,14 @@
     }
 
     async function uyeIdCoz(card) {
-        var uid = card.getAttribute('data-itiraf-user-id');
+        var uid = card.getAttribute('data-hikaye-user-id');
         if (uid) return uid;
-        var rumuz = card.getAttribute('data-itiraf-username');
+        var rumuz = card.getAttribute('data-hikaye-username');
         if (!rumuz) {
             var el = card.querySelector('.username');
             rumuz = el ? el.textContent.trim() : '';
             if (rumuz && rumuz !== 'Gizli Üye' && rumuz !== 'Müdavim') {
-                card.setAttribute('data-itiraf-username', rumuz);
+                card.setAttribute('data-hikaye-username', rumuz);
             }
         }
         if (!rumuz || rumuz === 'Gizli Üye' || rumuz === 'Müdavim') return null;
@@ -437,7 +437,7 @@
             var sonuc = await D.masterUyeBul(rumuz);
             if (sonuc && sonuc.ok && sonuc.uye && sonuc.uye.id) {
                 uyeIdOnbellek[rumuz] = sonuc.uye.id;
-                card.setAttribute('data-itiraf-user-id', sonuc.uye.id);
+                card.setAttribute('data-hikaye-user-id', sonuc.uye.id);
                 return sonuc.uye.id;
             }
             if (sonuc && !sonuc.ok && sonuc.hata && sonuc.hata !== 'uye bulunamadi') {
@@ -458,7 +458,7 @@
     }
 
     function kartMetaOku(card) {
-        var age = parseInt(card.getAttribute('data-itiraf-age'), 10);
+        var age = parseInt(card.getAttribute('data-hikaye-age'), 10);
         if (isNaN(age)) {
             var metaEl = card.querySelector('.user-meta');
             if (metaEl) {
@@ -466,15 +466,15 @@
                 if (m) age = parseInt(m[1], 10);
             }
         }
-        var gender = card.getAttribute('data-itiraf-gender');
+        var gender = card.getAttribute('data-hikaye-gender');
         if (!gender) {
             gender = card.classList.contains('male') ? 'male' : 'female';
         }
         return {
             age: isNaN(age) ? 25 : age,
             gender: gender === 'male' ? 'male' : 'female',
-            yasadigi_yer: card.getAttribute('data-itiraf-yer') || '',
-            yurtdisi_sehir: card.getAttribute('data-itiraf-yurtdisi') || ''
+            yasadigi_yer: card.getAttribute('data-hikaye-yer') || '',
+            yurtdisi_sehir: card.getAttribute('data-hikaye-yurtdisi') || ''
         };
     }
 
@@ -483,17 +483,17 @@
         var cins = it.gender === 'male' ? 'male' : 'female';
         card.classList.remove('male', 'female');
         card.classList.add(cins);
-        if (it.age != null) card.setAttribute('data-itiraf-age', String(it.age));
-        if (it.gender) card.setAttribute('data-itiraf-gender', it.gender);
+        if (it.age != null) card.setAttribute('data-hikaye-age', String(it.age));
+        if (it.gender) card.setAttribute('data-hikaye-gender', it.gender);
         if (it.yasadigi_yer) {
-            card.setAttribute('data-itiraf-yer', it.yasadigi_yer);
+            card.setAttribute('data-hikaye-yer', it.yasadigi_yer);
         } else {
-            card.removeAttribute('data-itiraf-yer');
+            card.removeAttribute('data-hikaye-yer');
         }
         if (it.yurtdisi_sehir) {
-            card.setAttribute('data-itiraf-yurtdisi', it.yurtdisi_sehir);
+            card.setAttribute('data-hikaye-yurtdisi', it.yurtdisi_sehir);
         } else {
-            card.removeAttribute('data-itiraf-yurtdisi');
+            card.removeAttribute('data-hikaye-yurtdisi');
         }
         var det = card.querySelector('.user-details');
         if (det && ui() && ui().kullaniciMetaHtml) {
@@ -678,7 +678,7 @@
             if (uid) {
                 header.insertAdjacentElement('afterend', uyeAksiyonBar(uid, true));
             } else if (!card.querySelector('.master-bot-meta-wrap')) {
-                var rumuz = card.getAttribute('data-itiraf-username') ||
+                var rumuz = card.getAttribute('data-hikaye-username') ||
                     (card.querySelector('.username') && card.querySelector('.username').textContent.trim());
                 if (rumuz && rumuz !== 'Gizli Üye' && rumuz !== 'Müdavim') {
                     header.insertAdjacentElement('afterend', botMetaBar(card));

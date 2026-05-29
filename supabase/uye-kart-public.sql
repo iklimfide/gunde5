@@ -41,15 +41,15 @@ as $$
       and (
           exists (
               select 1
-              from public.itiraflar i
+              from public.hikayeler i
               where i.user_id = u.id
                 and i.is_gizli = false
                 and i.silindi_at is null
           )
           or exists (
               select 1
-              from public.itiraf_cevaplar c
-              inner join public.itiraflar i on i.id = c.itiraf_id
+              from public.hikaye_cevaplar c
+              inner join public.hikayeler i on i.id = c.hikaye_id
               where c.user_id = u.id
                 and i.is_gizli = false
                 and i.silindi_at is null

@@ -1,7 +1,7 @@
 -- İsteğe bağlı: yalnızca INSERT’te content_short üretir (mevcut satırlara dokunmaz).
 -- Uygulama ve seed-kulis-sablon.sql zaten short üretir; trigger olmadan da çalışır.
 
-create or replace function public.itiraf_content_short_uret()
+create or replace function public.hikaye_content_short_uret()
 returns trigger
 language plpgsql
 as $$
@@ -21,8 +21,8 @@ begin
 end;
 $$;
 
-drop trigger if exists trg_itiraflar_content_short on public.itiraflar;
-create trigger trg_itiraflar_content_short
-    before insert on public.itiraflar
+drop trigger if exists trg_hikayeler_content_short on public.hikayeler;
+create trigger trg_hikayeler_content_short
+    before insert on public.hikayeler
     for each row
-    execute function public.itiraf_content_short_uret();
+    execute function public.hikaye_content_short_uret();

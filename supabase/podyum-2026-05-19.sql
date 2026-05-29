@@ -1,6 +1,6 @@
 -- 19/05/2026 podyum şampiyonları: top 5 kulis → podyum (SQL Editor'da bir kez çalıştırın)
 
-alter table public.itiraflar
+alter table public.hikayeler
     add column if not exists podyum_sira smallint,
     add column if not exists podyum_donem varchar(32);
 
@@ -32,14 +32,14 @@ with ranked as (
         row_number() over (
             order by (
                 (up_votes - down_votes) +
-                ((select count(*)::int from public.itiraf_cevaplar c where c.itiraf_id = public.itiraflar.id) * 5)
+                ((select count(*)::int from public.hikaye_cevaplar c where c.hikaye_id = public.hikayeler.id) * 5)
             ) desc,
             created_at desc
         ) as sira
-    from public.itiraflar
+    from public.hikayeler
     where status = 'kulis'
 )
-update public.itiraflar i
+update public.hikayeler i
 set
     status = 'podyum',
     podyum_sira = r.sira::smallint,

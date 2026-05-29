@@ -364,7 +364,7 @@
 
     function sayfaPodyumMu() {
         var p = (global.location.pathname || '').toLowerCase();
-        return p.indexOf('index') >= 0 || p === '/' || p.endsWith('/');
+        return p.indexOf('podyum') >= 0 || p === '/' || p.endsWith('/');
     }
 
     async function init(konteynerId) {

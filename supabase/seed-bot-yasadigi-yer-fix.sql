@@ -1,7 +1,7 @@
--- Bot/seed itirafları: city → yasadigi_yer (UI yasadigi_yer okur)
+-- Bot/seed hikayelerı: city → yasadigi_yer (UI yasadigi_yer okur)
 -- Supabase SQL Editor'da bir kez çalıştır.
 
-update public.itiraflar
+update public.hikayeler
 set yasadigi_yer = case city
     when 'İstanbul' then 'istanbul_avrupa'
     when 'İzmir' then 'izmir'

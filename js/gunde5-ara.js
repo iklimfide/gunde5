@@ -24,7 +24,7 @@
                 render: function (row) { return UI.renderKulisCard(row); }
             };
         }
-        if (path.indexOf('index') >= 0 || path === '/' || path.endsWith('/')) {
+        if (path.indexOf('podyum') >= 0 || path === '/' || path.endsWith('/')) {
             return {
                 status: 'podyum',
                 listeId: 'podyumListe',

@@ -165,7 +165,7 @@ def render_sql(stories: list[dict], baslik: str) -> str:
     return f"""-- {baslik}
 -- Supabase SQL Editor'da çalıştırın. Aynı rumuz+metin varsa eklenmez.
 
-insert into public.itiraflar (
+insert into public.hikayeler (
   user_id,
   username,
   age,
@@ -196,7 +196,7 @@ from (
 {joined}
 ) as v(username, age, gender, yasadigi_yer, yurtdisi_sehir, hikaye)
 where not exists (
-  select 1 from public.itiraflar i
+  select 1 from public.hikayeler i
   where i.username = v.username
     and i.content_full = v.hikaye
     and i.silindi_at is null

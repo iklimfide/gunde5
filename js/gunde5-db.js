@@ -10,6 +10,22 @@
         return !!(url && key && url.indexOf('http') === 0 && key.length > 20);
     }
 
+    /** RPC adı kuruluma göre değişebilir (itiraf_* / hikaye_*). */
+    async function rpcIlk(adlar, params) {
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var i;
+        var res;
+        var sonHata = null;
+        for (i = 0; i < adlar.length; i++) {
+            res = await sb.rpc(adlar[i], params);
+            if (!res.error) return res;
+            sonHata = res.error;
+            if (res.error.code !== 'PGRST202') throw res.error;
+        }
+        throw sonHata || new Error('RPC bulunamadı: ' + adlar.join(', '));
+    }
+
     function getClient() {
         if (!client && isConfigured() && global.supabase) {
             var url = global.GUNDE5_SUPABASE_URL;
@@ -123,17 +139,24 @@
                 return 'Kamikaze için veritabanı izni eksik. Supabase SQL Editor\'da supabase/master-kamikaze-panel.sql dosyasını çalıştırın, sonra sayfayı yenileyin.';
             }
             if (yetkiMsg.indexOf('master_hikaye_islem') >= 0 || yetkiMsg.indexOf('master_cevap_islem') >= 0 ||
-                yetkiMsg.indexOf('itiraflar') >= 0 ||
-                yetkiMsg.indexOf('itiraf_cevaplar') >= 0 || yetkiMsg.indexOf('itiraf_oylar') >= 0 ||
-                yetkiMsg.indexOf('itiraf_puan_guncelle') >= 0) {
+                yetkiMsg.indexOf('itiraflar') >= 0 || yetkiMsg.indexOf('hikayeler') >= 0 ||
+                yetkiMsg.indexOf('itiraf_cevaplar') >= 0 || yetkiMsg.indexOf('hikaye_cevaplar') >= 0 ||
+                yetkiMsg.indexOf('itiraf_oylar') >= 0 || yetkiMsg.indexOf('hikaye_oylar') >= 0 ||
+                yetkiMsg.indexOf('hikaye_puan_guncelle') >= 0) {
                 return 'Master işlemi için veritabanı izni eksik. İlgili SQL kurulum dosyasını tekrar çalıştırıp sayfayı yenileyin.';
             }
             return 'Veritabanı izni eksik (42501). İlgili SQL kurulum dosyasını tekrar çalıştırıp sayfayı yenileyin.';
         }
         if (err.code === '23505') return 'Bu kullanıcı adı veya e-posta zaten kullanılıyor.';
         var msg = err.message || '';
+        if (msg.indexOf('zaten_oyladin') >= 0) {
+            return 'Bu hikayeyi zaten oyladın esnaf!';
+        }
+        if (msg.indexOf('itiraf_oy_ver') >= 0 && err.code === 'PGRST202') {
+            return 'Oy sistemi kurulmamış. Supabase\'de supabase/itiraf-oy-ver-rpc.sql dosyasını bir kez çalıştırın.';
+        }
         if (msg.indexOf('avatar_url') >= 0 && (msg.indexOf('column') >= 0 || err.code === 'PGRST204')) {
-            return 'Veritabanında avatar_url sütunu yok. Supabase SQL Editor\'da supabase/itiraf-avatar.sql dosyasını çalıştırın.';
+            return 'Veritabanında avatar_url sütunu yok. Supabase SQL Editor\'da supabase/hikaye-avatar.sql dosyasını çalıştırın.';
         }
         if (msg.indexOf('bildirimler') >= 0 && (msg.indexOf('relation') >= 0 || err.code === 'PGRST205')) {
             return 'Bildirim tablosu yok. Supabase SQL Editor\'da supabase/bildirimler.sql dosyasını çalıştırın.';
@@ -156,8 +179,9 @@
         if (msg.indexOf('master_') >= 0 && (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
             return 'Master yönetim yok. Supabase SQL Editor\'da supabase/master-admin.sql dosyasını çalıştırın.';
         }
-        if (msg.indexOf('itiraf_ara') >= 0 && (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
-            return 'Arama henüz kurulmadı. Supabase SQL Editor\'da supabase/itiraf-ara.sql dosyasını çalıştırın.';
+        if ((msg.indexOf('itiraf_ara') >= 0 || msg.indexOf('hikaye_ara') >= 0) &&
+            (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
+            return 'Arama henüz kurulmadı. Supabase SQL Editor\'da supabase/hikaye-ara.sql dosyasını çalıştırın.';
         }
         if ((msg.indexOf('profil_uye_guncelle') >= 0 || msg.indexOf('profil_uye_ensure') >= 0) &&
             (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
@@ -346,7 +370,7 @@
         return map;
     }
 
-    function itirafSatirProfilBirlestir(row, profil) {
+    function hikayeSatirProfilBirlestir(row, profil) {
         if (!row || row.is_gizli || !profil) return row;
         row.username = profil.username || row.username;
         row.gender = profil.gender || row.gender;
@@ -362,7 +386,7 @@
         return row;
     }
 
-    async function itirafSatirlariProfilZenginlestir(rows) {
+    async function hikayeSatirlariProfilZenginlestir(rows) {
         if (!rows || !rows.length) return rows;
         var ids = [];
         var i;
@@ -374,13 +398,32 @@
         var profiller = await uyeKartProfilleriGetir(ids);
         for (i = 0; i < rows.length; i++) {
             if (!rows[i].is_gizli && rows[i].user_id && profiller[rows[i].user_id]) {
-                itirafSatirProfilBirlestir(rows[i], profiller[rows[i].user_id]);
+                hikayeSatirProfilBirlestir(rows[i], profiller[rows[i].user_id]);
             }
         }
         return rows;
     }
 
     var KULIS_SAYFA_BOYUT = 12;
+    var INDEX_SAYFA_BOYUT = 5;
+
+    /** Index — yalnızca kartta kullanılan sütunlar (ek sorgu / profil birleştirme yok). */
+    var INDEX_ITIRAF_SELECT =
+        'id,username,age,gender,city,yasadigi_yer,content_short,content_full,up_votes,down_votes';
+
+    async function indexHikayeListeleSayfa(offset, limit) {
+        var sb = getClient();
+        if (!sb) return [];
+        var lim = limit || INDEX_SAYFA_BOYUT;
+        var off = offset || 0;
+        var res = await sb
+            .from('itiraflar')
+            .select(INDEX_ITIRAF_SELECT)
+            .order('created_at', { ascending: false })
+            .range(off, off + lim - 1);
+        if (res.error) throw res.error;
+        return res.data || [];
+    }
 
     async function kulisListeleSayfa(offset, limit) {
         var sb = getClient();
@@ -395,7 +438,7 @@
             .order('created_at', { ascending: false })
             .range(off, off + lim - 1);
         if (res.error) throw res.error;
-        return itirafSatirlariProfilZenginlestir(res.data || []);
+        return hikayeSatirlariProfilZenginlestir(res.data || []);
     }
 
     async function kulisSayfaHazirla(offset, limit) {
@@ -410,7 +453,7 @@
         return kulisListeleSayfa(0, 80);
     }
 
-    function itirafAraSonucParse(sonuc) {
+    function hikayeAraSonucParse(sonuc) {
         if (!sonuc) return [];
         if (Array.isArray(sonuc)) return sonuc;
         if (typeof sonuc === 'string') {
@@ -425,19 +468,18 @@
         return [];
     }
 
-    async function itirafAra(q, status, limit) {
+    async function hikayeAra(q, status, limit) {
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
         var metin = String(q || '').trim();
         var st = status === 'podyum' ? 'podyum' : 'kulis';
         var lim = limit || 50;
 
-        var res = await sb.rpc('itiraf_ara', {
+        var res = await rpcIlk(['itiraf_ara', 'hikaye_ara'], {
             p_q: metin,
             p_status: st,
             p_limit: lim
         });
-        if (res.error) throw res.error;
 
         var data = res.data;
         if (typeof data === 'string') {
@@ -451,14 +493,14 @@
             throw new Error((data && data.hata) || 'Arama başarısız');
         }
 
-        var rows = itirafAraSonucParse(data.sonuc);
+        var rows = hikayeAraSonucParse(data.sonuc);
         var i;
         for (i = 0; i < rows.length; i++) {
             if (rows[i].cevap_sayisi == null) rows[i].cevap_sayisi = 0;
         }
 
         try {
-            rows = await itirafSatirlariProfilZenginlestir(rows);
+            rows = await hikayeSatirlariProfilZenginlestir(rows);
         } catch (eProfil) { /* kartlar yine de listelenir */ }
 
         if (rows.length) {
@@ -538,7 +580,7 @@
             .order('podyum_sira', { ascending: true, nullsFirst: false })
             .limit(5);
         if (res.error) throw res.error;
-        var rows = podyumKartlariSirala(await itirafSatirlariProfilZenginlestir(res.data || []));
+        var rows = podyumKartlariSirala(await hikayeSatirlariProfilZenginlestir(res.data || []));
         if (!rows.length) return rows;
         var ids = rows.map(function (r) { return r.id; });
         var sayilar = await kokCevapSayilari(ids);
@@ -718,8 +760,8 @@
         });
     }
 
-    async function masterKamikazeHikayeDetay(itirafId) {
-        return masterRpc('master_kamikaze_hikaye_detay', { itiraf_id: itirafId });
+    async function masterKamikazeHikayeDetay(hikayeId) {
+        return masterRpc('master_kamikaze_hikaye_detay', { hikaye_id: hikayeId });
     }
 
     async function masterOyIslem(body) {
@@ -785,13 +827,13 @@
         return sonuc;
     }
 
-    async function itirafGuncelle(itirafId, metin) {
+    async function hikayeGuncelle(hikayeId, metin) {
         var u = getGunde5User();
         if (!u || !u.id) throw new Error('Hikaye düzenlemek için giriş yapmalısın.');
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
 
-        var id = parseInt(itirafId, 10);
+        var id = parseInt(hikayeId, 10);
         if (!id) throw new Error('Geçersiz hikaye.');
 
         var tam = metinPerdele(String(metin || '').replace(/^\s+|\s+$/g, ''));
@@ -806,10 +848,10 @@
 
         var res = await sb.from('itiraflar').update(payload).eq('id', id).eq('user_id', u.id).is('silindi_at', null).select().single();
         if (res.error) throw res.error;
-        return (await itirafSatirlariProfilZenginlestir([res.data]))[0];
+        return (await hikayeSatirlariProfilZenginlestir([res.data]))[0];
     }
 
-    async function profilItiraflarim() {
+    async function profilHikayelerim() {
         var u = getGunde5User();
         if (!u || !u.id) return [];
         var sb = getClient();
@@ -825,7 +867,7 @@
         return res.data || [];
     }
 
-    async function itirafGonder(metin, gizli) {
+    async function hikayeGonder(metin, gizli) {
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
 
@@ -860,16 +902,16 @@
         var res = await sb.from('itiraflar').insert(kayit).select().single();
 
         if (res.error) throw res.error;
-        return (await itirafSatirlariProfilZenginlestir([res.data]))[0];
+        return (await hikayeSatirlariProfilZenginlestir([res.data]))[0];
     }
 
-    async function sikayetGonder(itirafId, sebep, aciklama) {
+    async function sikayetGonder(hikayeId, sebep, aciklama) {
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
         var u = getGunde5User();
         if (!u || !u.id) throw new Error('Şikayet göndermek için giriş yapmalısın.');
 
-        var id = parseInt(itirafId, 10);
+        var id = parseInt(hikayeId, 10);
         if (!sebep) throw new Error('Bir şikayet sebebi seç.');
 
         var not = String(aciklama || '').replace(/^\s+|\s+$/g, '');
@@ -891,7 +933,7 @@
     var CEVAP_SAYFA = 15;
     var YORUM_SAYFA = 8;
 
-    async function itirafGetir(id) {
+    async function hikayeGetir(id) {
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
         var nid = parseInt(id, 10);
@@ -899,28 +941,28 @@
         var res = await sb.from('itiraflar').select('*').eq('id', nid).is('silindi_at', null).maybeSingle();
         if (res.error) throw res.error;
         if (!res.data) return null;
-        return (await itirafSatirlariProfilZenginlestir([res.data]))[0];
+        return (await hikayeSatirlariProfilZenginlestir([res.data]))[0];
     }
 
-    async function kokCevapSayilari(itirafIds) {
+    async function kokCevapSayilari(hikayeIds) {
         var map = {};
         var i;
-        if (!itirafIds || !itirafIds.length) return map;
+        if (!hikayeIds || !hikayeIds.length) return map;
         var sb = getClient();
         if (!sb) return map;
         var ids = [];
-        for (i = 0; i < itirafIds.length; i++) {
-            var nid = parseInt(itirafIds[i], 10);
+        for (i = 0; i < hikayeIds.length; i++) {
+            var nid = parseInt(hikayeIds[i], 10);
             if (nid) ids.push(nid);
         }
         if (!ids.length) return map;
 
         try {
-            var rpc = await sb.rpc('itiraf_cevap_sayilari', { p_ids: ids });
-            if (!rpc.error && rpc.data && rpc.data.length) {
+            var rpc = await rpcIlk(['itiraf_cevap_sayilari', 'hikaye_cevap_sayilari'], { p_ids: ids });
+            if (rpc.data && rpc.data.length) {
                 for (i = 0; i < rpc.data.length; i++) {
                     var row = rpc.data[i];
-                    map[String(row.itiraf_id)] = row.adet != null ? row.adet : 0;
+                    map[String(row.itiraf_id != null ? row.itiraf_id : row.hikaye_id)] = row.adet != null ? row.adet : 0;
                 }
                 return map;
             }
@@ -940,10 +982,10 @@
         return map;
     }
 
-    async function itirafYorumToplam(itirafId) {
+    async function hikayeYorumToplam(hikayeId) {
         var sb = getClient();
         if (!sb) return 0;
-        var nid = parseInt(itirafId, 10);
+        var nid = parseInt(hikayeId, 10);
         var res = await sb
             .from('itiraf_cevaplar')
             .select('id', { count: 'exact', head: true })
@@ -986,10 +1028,10 @@
         return rows;
     }
 
-    async function kokCevaplariListele(itirafId, offset, limit) {
+    async function kokCevaplariListele(hikayeId, offset, limit) {
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
-        var nid = parseInt(itirafId, 10);
+        var nid = parseInt(hikayeId, 10);
         var off = offset || 0;
         var lim = limit || CEVAP_SAYFA;
         var res = await sb
@@ -1003,10 +1045,10 @@
         return cevapSatirlariCinsZenginlestir(res.data || []);
     }
 
-    async function kokCevapToplam(itirafId) {
+    async function kokCevapToplam(hikayeId) {
         var sb = getClient();
         if (!sb) return 0;
-        var nid = parseInt(itirafId, 10);
+        var nid = parseInt(hikayeId, 10);
         var res = await sb
             .from('itiraf_cevaplar')
             .select('id', { count: 'exact', head: true })
@@ -1044,25 +1086,25 @@
         return res.count || 0;
     }
 
-    async function cevapGonder(itirafId, metin, parentCevapId) {
+    async function cevapGonder(hikayeId, metin, parentCevapId) {
         var u = getGunde5User();
         if (!u || !u.id) throw new Error('Yanıt yazmak için giriş yapmalısın.');
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
 
-        var nid = parseInt(itirafId, 10);
+        var nid = parseInt(hikayeId, 10);
         var icerik = metinPerdele(String(metin || '').replace(/^\s+|\s+$/g, ''));
         if (!icerik) throw new Error('Metin boş olamaz.');
         if (icerik.length > 2000) throw new Error('En fazla 2000 karakter yazabilirsin.');
 
-        var itirafRes = await sb
+        var hikayeRes = await sb
             .from('itiraflar')
             .select('id, user_id')
             .eq('id', nid)
             .is('silindi_at', null)
             .maybeSingle();
-        if (itirafRes.error) throw itirafRes.error;
-        if (!itirafRes.data) throw new Error('Hikaye bulunamadı veya süresi dolmuş.');
+        if (hikayeRes.error) throw hikayeRes.error;
+        if (!hikayeRes.data) throw new Error('Hikaye bulunamadı veya süresi dolmuş.');
 
         var parentId = null;
         if (parentCevapId) {
@@ -1075,8 +1117,8 @@
             parentId = pid;
         } else if (
             u.id &&
-            itirafRes.data.user_id &&
-            u.id === itirafRes.data.user_id
+            hikayeRes.data.user_id &&
+            u.id === hikayeRes.data.user_id
         ) {
             throw new Error('Kendi hikayene doğrudan cevap yazamazsın. Başkalarının cevaplarına yanıt verebilirsin.');
         }
@@ -1097,37 +1139,62 @@
         return satir;
     }
 
-    async function oyVer(itirafId, oy) {
-        var sb = getClient();
-        if (!sb) throw new Error('Supabase yapılandırılmadı.');
-        var u = getGunde5User();
-        if (!u || !u.id) throw new Error('Oy vermek için giriş yapmalısın.');
+    function oyVerSonucParse(data, oy) {
+        var satir = data;
+        if (typeof satir === 'string') {
+            try {
+                satir = JSON.parse(satir);
+            } catch (e) {
+                satir = null;
+            }
+        }
+        if (!satir) {
+            throw new Error('Oy yanıtı okunamadı');
+        }
+        return Object.assign({}, satir, { oy: oy });
+    }
 
-        var id = parseInt(itirafId, 10);
+    async function oyVerRpcDene(id, oy) {
+        var sb = getClient();
+        var key = getViewerKey();
+        var denemeler = [
+            {
+                ad: 'itiraf_oy_ver',
+                p: { p_itiraf_id: id, p_oy: oy, p_viewer_key: key }
+            },
+            {
+                ad: 'oy_ver',
+                p: { p_hikaye_id: id, p_oy: oy, p_viewer_key: key }
+            },
+            {
+                ad: 'oy_ver',
+                p: { p_itiraf_id: id, p_oy: oy, p_viewer_key: key }
+            }
+        ];
+        var i;
+        var res;
+        var sonHata = null;
+        for (i = 0; i < denemeler.length; i++) {
+            res = await sb.rpc(denemeler[i].ad, denemeler[i].p);
+            if (!res.error) {
+                return oyVerSonucParse(res.data, oy);
+            }
+            sonHata = res.error;
+            if (res.error.code !== 'PGRST202') {
+                throw res.error;
+            }
+        }
+        throw sonHata || new Error('Oy RPC bulunamadı (itiraf-oy-ver-rpc.sql çalıştırın)');
+    }
+
+    async function oyVer(hikayeId, oy) {
+        if (!getClient()) throw new Error('Supabase yapılandırılmadı.');
+
+        var id = parseInt(hikayeId, 10);
+        if (!id) throw new Error('Geçersiz hikaye.');
         oy = oy === 1 ? 1 : -1;
 
-        var mevcutRes = await sb.from('itiraf_oylar')
-            .select('oy')
-            .eq('itiraf_id', id)
-            .eq('user_id', u.id)
-            .maybeSingle();
-        if (mevcutRes.error) throw mevcutRes.error;
-
-        if (mevcutRes.data && mevcutRes.data.oy === oy) {
-            var ayniSay = await sb.from('itiraflar').select('up_votes, down_votes').eq('id', id).is('silindi_at', null).single();
-            if (ayniSay.error) throw ayniSay.error;
-            return Object.assign({}, ayniSay.data, { oy: oy });
-        }
-
-        var oyRes = await sb.from('itiraf_oylar').upsert(
-            { itiraf_id: id, user_id: u.id, oy: oy },
-            { onConflict: 'itiraf_id,user_id' }
-        );
-        if (oyRes.error) throw oyRes.error;
-
-        var sayRes = await sb.from('itiraflar').select('up_votes, down_votes').eq('id', id).is('silindi_at', null).single();
-        if (sayRes.error) throw sayRes.error;
-        return Object.assign({}, sayRes.data, { oy: oy });
+        return oyVerRpcDene(id, oy);
     }
 
     function getViewerKey() {
@@ -1169,20 +1236,28 @@
         return res.data || { ok: false };
     }
 
-    async function goruntulenmeKaydet(itirafId) {
+    async function goruntulenmeKaydet(hikayeId) {
         var sb = getClient();
         if (!sb) return null;
-        var id = parseInt(itirafId, 10);
+        var id = parseInt(hikayeId, 10);
         if (!id) return null;
         try {
-            var res = await sb.rpc('itiraf_goruntulenme_kaydet', {
+            var res = await rpcIlk(['itiraf_goruntulenme_kaydet', 'hikaye_goruntulenme_kaydet'], {
                 p_itiraf_id: id,
                 p_viewer_key: getViewerKey()
             });
-            if (res.error) return null;
             return res.data;
-        } catch (e) {
-            return null;
+        } catch (e1) {
+            try {
+                var res2 = await sb.rpc('hikaye_goruntulenme_kaydet', {
+                    p_hikaye_id: id,
+                    p_viewer_key: getViewerKey()
+                });
+                if (res2.error) return null;
+                return res2.data;
+            } catch (e2) {
+                return null;
+            }
         }
     }
 
@@ -1477,13 +1552,13 @@
     }
 
     /** Podyum kartları: güncel up/down + tüm kök/yanıt satırlarından yorum (cevap) sayısı — hafif sorgu. */
-    async function podyumSayilariTazeGetir(itirafIds) {
+    async function podyumSayilariTazeGetir(hikayeIds) {
         var sb = getClient();
-        if (!sb || !itirafIds || !itirafIds.length) return {};
+        if (!sb || !hikayeIds || !hikayeIds.length) return {};
         var ids = [];
         var i;
-        for (i = 0; i < itirafIds.length; i++) {
-            var n = parseInt(itirafIds[i], 10);
+        for (i = 0; i < hikayeIds.length; i++) {
+            var n = parseInt(hikayeIds[i], 10);
             if (n) ids.push(n);
         }
         if (!ids.length) return {};
@@ -1517,8 +1592,8 @@
         }
     }
 
-    function podyumHibritZamanlanmisCevapTaze(listeEl, itirafId) {
-        var key = String(itirafId);
+    function podyumHibritZamanlanmisCevapTaze(listeEl, hikayeId) {
+        var key = String(hikayeId);
         if (podyumCevapTazeZamanlayicilar[key]) {
             clearTimeout(podyumCevapTazeZamanlayicilar[key]);
         }
@@ -1542,9 +1617,9 @@
         var ch = sb.channel('g5_podyum_' + String(Date.now()) + '_' + String(Math.random()).slice(2, 9));
         var j;
         for (j = 0; j < ids.length; j++) {
-            (function (itirafNum) {
-                if (!itirafNum) return;
-                var idFiltre = String(itirafNum);
+            (function (hikayeNum) {
+                if (!hikayeNum) return;
+                var idFiltre = String(hikayeNum);
                 ch.on(
                     'postgres_changes',
                     { event: 'UPDATE', schema: 'public', table: 'itiraflar', filter: 'id=eq.' + idFiltre },
@@ -1567,14 +1642,14 @@
                     'postgres_changes',
                     { event: 'INSERT', schema: 'public', table: 'itiraf_cevaplar', filter: 'itiraf_id=eq.' + idFiltre },
                     function () {
-                        podyumHibritZamanlanmisCevapTaze(listeEl, itirafNum);
+                        podyumHibritZamanlanmisCevapTaze(listeEl, hikayeNum);
                     }
                 );
                 ch.on(
                     'postgres_changes',
                     { event: 'DELETE', schema: 'public', table: 'itiraf_cevaplar', filter: 'itiraf_id=eq.' + idFiltre },
                     function () {
-                        podyumHibritZamanlanmisCevapTaze(listeEl, itirafNum);
+                        podyumHibritZamanlanmisCevapTaze(listeEl, hikayeNum);
                     }
                 );
             })(parseInt(ids[j], 10));
@@ -1661,16 +1736,22 @@
         kayitOl: kayitOl,
         girisYap: girisYap,
         cikisYap: cikisYap,
-        itirafGonder: itirafGonder,
+        hikayeGonder: hikayeGonder,
         oyVer: oyVer,
         goruntulenmeKaydet: goruntulenmeKaydet,
         ziyaretKaydet: ziyaretKaydet,
         masterZiyaretIstatistik: masterZiyaretIstatistik,
         getViewerKey: getViewerKey,
         sikayetGonder: sikayetGonder,
-        itirafGetir: itirafGetir,
+        hikayeGetir: hikayeGetir,
+        itirafGetir: hikayeGetir,
+        itirafGonder: hikayeGonder,
+        profilItiraflarim: profilHikayelerim,
+        itirafAra: hikayeAra,
+        indexItirafListeleSayfa: indexHikayeListeleSayfa,
+        INDEX_ITIRAF_SELECT: INDEX_ITIRAF_SELECT,
         kokCevapSayilari: kokCevapSayilari,
-        itirafYorumToplam: itirafYorumToplam,
+        hikayeYorumToplam: hikayeYorumToplam,
         kokCevaplariListele: kokCevaplariListele,
         kokCevapToplam: kokCevapToplam,
         yorumlariListele: yorumlariListele,
@@ -1679,19 +1760,21 @@
         CEVAP_SAYFA: CEVAP_SAYFA,
         YORUM_SAYFA: YORUM_SAYFA,
         KULIS_SAYFA_BOYUT: KULIS_SAYFA_BOYUT,
+        INDEX_SAYFA_BOYUT: INDEX_SAYFA_BOYUT,
+        indexHikayeListeleSayfa: indexHikayeListeleSayfa,
         kulisListele: kulisListele,
-        itirafAra: itirafAra,
+        hikayeAra: hikayeAra,
         kulisListeleSayfa: kulisListeleSayfa,
         kulisSayfaHazirla: kulisSayfaHazirla,
         podyumBaslikGetir: podyumBaslikGetir,
         podyumDonemleriListele: podyumDonemleriListele,
         podyumDonemKartlari: podyumDonemKartlari,
         podyumListele: podyumListele,
-        itirafSatirlariProfilZenginlestir: itirafSatirlariProfilZenginlestir,
+        hikayeSatirlariProfilZenginlestir: hikayeSatirlariProfilZenginlestir,
         profilGuncelle: profilGuncelle,
         avatarYukle: avatarYukle,
         avatarKaldir: avatarKaldir,
-        itirafGuncelle: itirafGuncelle,
+        hikayeGuncelle: hikayeGuncelle,
         masterDurum: masterDurum,
         masterHikayeIslem: masterHikayeIslem,
         masterUyeIslem: masterUyeIslem,
@@ -1708,7 +1791,7 @@
         masterKamikazeAra: masterKamikazeAra,
         masterKamikazeHikayeDetay: masterKamikazeHikayeDetay,
         masterOyIslem: masterOyIslem,
-        profilItiraflarim: profilItiraflarim,
+        profilHikayelerim: profilHikayelerim,
         yukleKulisListe: yukleKulisListe,
         yuklePodyumListe: yuklePodyumListe,
         podyumHibritCanlandir: podyumHibritCanlandir,

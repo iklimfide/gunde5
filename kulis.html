@@ -475,7 +475,7 @@
             white-space: nowrap;
         }
 
-        .itiraf-modal {
+        .hikaye-modal {
             position: fixed;
             inset: 0;
             z-index: 2000;
@@ -485,12 +485,12 @@
             pointer-events: none;
             transition: opacity 0.22s ease, visibility 0.22s ease;
         }
-        .itiraf-modal.acik {
+        .hikaye-modal.acik {
             opacity: 1;
             visibility: visible;
             pointer-events: auto;
         }
-        .itiraf-modal-panel {
+        .hikaye-modal-panel {
             position: absolute;
             left: 50%;
             bottom: 90px;
@@ -505,32 +505,32 @@
             transform: translateX(-50%) translateY(14px);
             transition: transform 0.22s ease;
         }
-        .itiraf-modal.acik .itiraf-modal-panel {
+        .hikaye-modal.acik .hikaye-modal-panel {
             transform: translateX(-50%) translateY(0);
         }
-        body.dark-mode .itiraf-modal-panel {
+        body.dark-mode .hikaye-modal-panel {
             background: #1c2128;
             border-color: #2f3336;
             box-shadow: 0 10px 36px rgba(0, 0, 0, 0.45);
         }
-        .itiraf-modal-ust {
+        .hikaye-modal-ust {
             display: block;
             position: relative;
             margin-bottom: 14px;
             padding: 0 36px 0 0;
             text-align: center;
         }
-        .itiraf-modal-baslik-wrap {
+        .hikaye-modal-baslik-wrap {
             text-align: center;
         }
-        .itiraf-modal-baslik {
+        .hikaye-modal-baslik {
             font-size: 17px;
             font-weight: 800;
             color: var(--text-main);
             letter-spacing: -0.3px;
             text-align: center;
         }
-        .itiraf-modal-ipucu {
+        .hikaye-modal-ipucu {
             margin: 10px 0 0;
             font-size: 12px;
             font-weight: 600;
@@ -538,9 +538,9 @@
             color: #b45309;
             text-align: center;
         }
-        body.dark-mode .itiraf-modal-ipucu { color: #fbbf24; }
-        .itiraf-modal-ipucu .saat-vurgu { color: inherit; font-weight: 800; }
-        .itiraf-modal-kapat {
+        body.dark-mode .hikaye-modal-ipucu { color: #fbbf24; }
+        .hikaye-modal-ipucu .saat-vurgu { color: inherit; font-weight: 800; }
+        .hikaye-modal-kapat {
             position: absolute;
             top: -4px;
             right: 0;
@@ -557,14 +557,14 @@
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
-        .itiraf-modal-kapat:active { transform: scale(0.94); }
-        body.dark-mode .itiraf-modal-kapat {
+        .hikaye-modal-kapat:active { transform: scale(0.94); }
+        body.dark-mode .hikaye-modal-kapat {
             background: #0f1419;
             border-color: #2f3336;
             color: var(--text-muted);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
         }
-        .itiraf-textarea {
+        .hikaye-textarea {
             display: block;
             width: 100%;
             min-height: 220px;
@@ -581,22 +581,22 @@
             outline: none;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
         }
-        .itiraf-textarea:focus {
+        .hikaye-textarea:focus {
             border-color: #1d9bf0;
             box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.22);
         }
-        body.dark-mode .itiraf-textarea {
+        body.dark-mode .hikaye-textarea {
             background: #0f1419;
             color: var(--text-main);
             border-color: #2f3336;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
         }
-        body.dark-mode .itiraf-textarea:focus {
+        body.dark-mode .hikaye-textarea:focus {
             border-color: #1d9bf0;
             box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.28);
         }
-        .itiraf-textarea::placeholder { color: #9ca3af; }
-        .itiraf-modal-alt {
+        .hikaye-textarea::placeholder { color: #9ca3af; }
+        .hikaye-modal-alt {
             margin-top: 14px;
             display: flex;
             align-items: center;
@@ -638,7 +638,7 @@
             color: #c4b5fd;
             box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3), 0 0 0 3px rgba(139, 92, 246, 0.18);
         }
-        .itiraf-gonder-btn {
+        .hikaye-gonder-btn {
             padding: 11px 26px;
             border: none;
             border-radius: 999px;
@@ -650,20 +650,20 @@
             box-shadow: 0 3px 14px rgba(29, 155, 240, 0.4);
             transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
         }
-        .itiraf-gonder-btn:active {
+        .hikaye-gonder-btn:active {
             transform: scale(0.97);
             background: #1a8cd8;
         }
-        .itiraf-gonder-btn:disabled {
+        .hikaye-gonder-btn:disabled {
             opacity: 0.55;
             cursor: not-allowed;
         }
-        body.dark-mode .itiraf-gonder-btn {
+        body.dark-mode .hikaye-gonder-btn {
             background: #1d9bf0;
             color: #ffffff;
             box-shadow: 0 3px 16px rgba(29, 155, 240, 0.45);
         }
-        body.dark-mode .itiraf-gonder-btn:active {
+        body.dark-mode .hikaye-gonder-btn:active {
             background: #1a8cd8;
         }
 
@@ -1130,7 +1130,7 @@
                 </button>
                 <div class="header-menu-panel" id="headerMenuPanel" hidden>
                     <nav class="header-menu-nav" aria-label="Site menüsü">
-                        <a href="/" class="header-menu-link">🏆 Podyum</a>
+                        <a href="/podyum" class="header-menu-link">🏆 Podyum</a>
                         <a href="/kulis" class="header-menu-link">🔥 Kulis</a>
                         <a href="/hakkinda" class="header-menu-link">ℹ️ Hakkında</a>
                         <a href="/iletisim" class="header-menu-link">✉️ İletişim</a>
@@ -1139,7 +1139,7 @@
                 </div>
             </div>
         </div>
-        <a href="/" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <a href="/podyum" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
         <div class="header-sag">
             <div class="header-auth-btns" id="headerAuthBtns">
                 <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
@@ -1157,7 +1157,7 @@
         <div class="info-banner">
             <h4>EFSANE OLMAYA</h4>
             <div class="countdown" id="countdown">00:00:00</div>
-            <p>Saat tam <strong class="saat-vurgu">13.12</strong>'de <strong class="saat-vurgu">GİYOTİN</strong> inecek ve efsaneler <a href="/" class="sayfa-link">podyuma</a> çıkacak.</p>
+            <p>Saat tam <strong class="saat-vurgu">13.12</strong>'de <strong class="saat-vurgu">GİYOTİN</strong> inecek ve efsaneler <a href="/podyum" class="sayfa-link">podyuma</a> çıkacak.</p>
             <p>Efsane olamayanlar sonsuza dek silinecek.</p>
         </div>
 
@@ -1173,7 +1173,7 @@
         <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn" aria-haspopup="dialog">
             <div class="icon">✍️</div><span>Hikaye Yaz</span>
         </button>
-        <a href="/" class="nav-item">
+        <a href="/podyum" class="nav-item">
             <div class="icon">🏆</div><span>Podyum</span>
         </a>
     </div>
@@ -1223,19 +1223,19 @@
         </div>
     </div>
 
-    <div class="itiraf-modal" id="itirafModal" role="dialog" aria-modal="true" aria-labelledby="itirafModalBaslik" aria-hidden="true">
-        <div class="itiraf-modal-panel">
-            <div class="itiraf-modal-ust">
-                <button type="button" class="itiraf-modal-kapat" id="itirafModalKapat" aria-label="Kapat">×</button>
-                <div class="itiraf-modal-baslik-wrap">
-                    <h2 class="itiraf-modal-baslik" id="itirafModalBaslik">Hikayeni Yaz</h2>
-                    <p class="itiraf-modal-ipucu">Unutma, Sadece en güzel 5 hikaye <strong class="saat-vurgu">13.12</strong>'de giyotine kurban gitmez,<br>EFSANE olur, podyuma çıkar.</p>
+    <div class="hikaye-modal" id="hikayeModal" role="dialog" aria-modal="true" aria-labelledby="hikayeModalBaslik" aria-hidden="true">
+        <div class="hikaye-modal-panel">
+            <div class="hikaye-modal-ust">
+                <button type="button" class="hikaye-modal-kapat" id="hikayeModalKapat" aria-label="Kapat">×</button>
+                <div class="hikaye-modal-baslik-wrap">
+                    <h2 class="hikaye-modal-baslik" id="hikayeModalBaslik">Hikayeni Yaz</h2>
+                    <p class="hikaye-modal-ipucu">Unutma, Sadece en güzel 5 hikaye <strong class="saat-vurgu">13.12</strong>'de giyotine kurban gitmez,<br>EFSANE olur, podyuma çıkar.</p>
                 </div>
             </div>
-            <textarea class="itiraf-textarea" id="itirafTextarea" placeholder="Tüm hikayeni buraya yaz…" rows="10"></textarea>
-            <div class="itiraf-modal-alt">
+            <textarea class="hikaye-textarea" id="hikayeTextarea" placeholder="Tüm hikayeni buraya yaz…" rows="10"></textarea>
+            <div class="hikaye-modal-alt">
                 <button type="button" class="gizli-uye-sec" id="gizliUyeSec" aria-pressed="false">🎭 Gizli Üye olarak yaz</button>
-                <button type="button" class="itiraf-gonder-btn" id="itirafGonderBtn">Gönder</button>
+                <button type="button" class="hikaye-gonder-btn" id="hikayeGonderBtn">Gönder</button>
             </div>
         </div>
     </div>
@@ -1251,7 +1251,7 @@
         }
 
         function openAuthModal(mode) {
-            Gunde5UI.kapatItirafModal();
+            Gunde5UI.kapatHikayeModal();
             doldurYilSecenekleri();
             var overlay = document.getElementById('authOverlay');
             overlay.style.display = 'flex';
@@ -1358,17 +1358,17 @@
             }
         }
 
-        function acItirafModal() {
-            if (!Gunde5UI.itirafUyeGerekli()) {
+        function acHikayeModal() {
+            if (!Gunde5UI.hikayeUyeGerekli()) {
                 return;
             }
             Gunde5UI.closeAuthModal();
-            var modal = document.getElementById('itirafModal');
+            var modal = document.getElementById('hikayeModal');
             modal.classList.add('acik');
             modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
             setTimeout(function () {
-                document.getElementById('itirafTextarea').focus();
+                document.getElementById('hikayeTextarea').focus();
             }, 220);
         }
 
@@ -1376,13 +1376,13 @@
             if (window.__g5KulisEtkinlik) return;
             window.__g5KulisEtkinlik = true;
             var navYaz = document.getElementById('navYazBtn');
-            var modalKapat = document.getElementById('itirafModalKapat');
+            var modalKapat = document.getElementById('hikayeModalKapat');
             var gizliSec = document.getElementById('gizliUyeSec');
-            var gonderBtn = document.getElementById('itirafGonderBtn');
-            if (navYaz) navYaz.addEventListener('click', acItirafModal);
+            var gonderBtn = document.getElementById('hikayeGonderBtn');
+            if (navYaz) navYaz.addEventListener('click', acHikayeModal);
             if (modalKapat) {
                 modalKapat.addEventListener('click', function () {
-                    if (Gunde5UI && Gunde5UI.kapatItirafModal) Gunde5UI.kapatItirafModal();
+                    if (Gunde5UI && Gunde5UI.kapatHikayeModal) Gunde5UI.kapatHikayeModal();
                 });
             }
             if (gizliSec) {
@@ -1392,35 +1392,35 @@
                     btn.setAttribute('aria-pressed', btn.classList.contains('aktif') ? 'true' : 'false');
                 });
             }
-            if (gonderBtn) gonderBtn.addEventListener('click', gonderItiraf);
+            if (gonderBtn) gonderBtn.addEventListener('click', gonderHikaye);
         }
 
-        window.acItirafModal = acItirafModal;
-        window.gonderItiraf = gonderItiraf;
+        window.acHikayeModal = acHikayeModal;
+        window.gonderHikaye = gonderHikaye;
 
         function kullaniciCinsiyeti() {
             var c = document.body.getAttribute('data-user-gender');
             return c === 'male' ? 'male' : 'female';
         }
 
-        function sifirlaItirafModal() {
-            document.getElementById('itirafTextarea').value = '';
+        function sifirlaHikayeModal() {
+            document.getElementById('hikayeTextarea').value = '';
             var gizli = document.getElementById('gizliUyeSec');
             gizli.classList.remove('aktif');
             gizli.setAttribute('aria-pressed', 'false');
         }
 
-        async function gonderItiraf() {
-            var metin = document.getElementById('itirafTextarea').value.replace(/^\s+|\s+$/g, '');
-            if (!metin) { document.getElementById('itirafTextarea').focus(); return; }
-            if (!Gunde5UI.itirafUyeGerekli()) { return; }
+        async function gonderHikaye() {
+            var metin = document.getElementById('hikayeTextarea').value.replace(/^\s+|\s+$/g, '');
+            if (!metin) { document.getElementById('hikayeTextarea').focus(); return; }
+            if (!Gunde5UI.hikayeUyeGerekli()) { return; }
             var gizli = document.getElementById('gizliUyeSec').classList.contains('aktif');
-            var btn = document.getElementById('itirafGonderBtn');
+            var btn = document.getElementById('hikayeGonderBtn');
             btn.disabled = true;
             try {
-                var row = await Gunde5DB.itirafGonder(metin, gizli);
-                sifirlaItirafModal();
-                Gunde5UI.kapatItirafModal();
+                var row = await Gunde5DB.hikayeGonder(metin, gizli);
+                sifirlaHikayeModal();
+                Gunde5UI.kapatHikayeModal();
                 try {
                     var kart = Gunde5UI.renderKulisCard(row);
                     var liste = document.getElementById('kulisListe');
@@ -1483,17 +1483,17 @@
                 if (el) el.innerHTML = Gunde5UI.bosListe(Gunde5DB.hataMesaji(err));
                 Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
             }).then(function () {
-                var raw = sessionStorage.getItem('gunde5_bekleyen_itiraf');
+                var raw = sessionStorage.getItem('gunde5_bekleyen_hikaye');
                 if (!raw) return;
                 try {
                     var data = JSON.parse(raw);
                     if (!data.metin) {
-                        sessionStorage.removeItem('gunde5_bekleyen_itiraf');
+                        sessionStorage.removeItem('gunde5_bekleyen_hikaye');
                         return;
                     }
                     if (!Gunde5DB.getGunde5User()) return;
-                    return Gunde5DB.itirafGonder(data.metin, !!data.gizli).then(function (row) {
-                        sessionStorage.removeItem('gunde5_bekleyen_itiraf');
+                    return Gunde5DB.hikayeGonder(data.metin, !!data.gizli).then(function (row) {
+                        sessionStorage.removeItem('gunde5_bekleyen_hikaye');
                         var kart = Gunde5UI.renderKulisCard(row);
                         var liste = document.getElementById('kulisListe');
                         if (liste) {
@@ -1513,7 +1513,7 @@
                         Gunde5UI.showToast('Hikaye kulise düştü!');
                     });
                 } catch (e) {
-                    sessionStorage.removeItem('gunde5_bekleyen_itiraf');
+                    sessionStorage.removeItem('gunde5_bekleyen_hikaye');
                 }
             }).catch(function (err) {
                 Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');

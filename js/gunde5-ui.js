@@ -146,7 +146,7 @@
     }
 
     var LINK_KULIS = '<a href="/kulis" class="sayfa-link">Kulis</a>';
-    var LINK_PODYUM = '<a href="/" class="sayfa-link">Podyum</a>';
+    var LINK_PODYUM = '<a href="/podyum" class="sayfa-link">Podyum</a>';
     var SAAT_1312 = '<strong class="saat-vurgu">13:12</strong>';
     var SAAT_1312_NOKTA = '<strong class="saat-vurgu">13.12</strong>';
 
@@ -188,7 +188,7 @@
             '<p class="kulis-bos-paragraf">Bugün saat ' + SAAT_1312 + ' oldu ve giyotin acımasızca indi. Dünün tüm hesabı kesildi; barajı geçemeyen her şey sonsuza dek silindi!</p>' +
             '<p class="kulis-bos-paragraf">' + htmlEsc(podyumGun) + ' gününün o en fiyakalı, en çok konuşulan şampiyonları artık ' + LINK_PODYUM + 'da yerini aldı.</p>' +
             '<p class="kulis-bos-paragraf kulis-bos-cta">' +
-            '👉 Günün şampiyonlarını görmek için hemen <a href="/" class="kulis-bos-link sayfa-link" data-kulis-podyum>Podyum\'a tıkla</a>!' +
+            '👉 Günün şampiyonlarını görmek için hemen <a href="/podyum" class="kulis-bos-link sayfa-link" data-kulis-podyum>Podyum\'a tıkla</a>!' +
             '</p>' +
             '<p class="kulis-bos-paragraf">"Yarın ' + SAAT_1312_NOKTA + '\'ye kadar olan büyük yarışta ben de olmalıyım diyorsan:</p>' +
             '<p class="kulis-bos-paragraf kulis-bos-cta">' +
@@ -501,7 +501,7 @@
         s.textContent =
             '.card-header{gap:12px}' +
             '.card-header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:4px}' +
-            '.kart-marka{font-size:11px;font-weight:800;letter-spacing:-0.02em;color:var(--text-muted);opacity:0.88;white-space:nowrap;user-select:none;line-height:1}' +
+            '.kart-marka{font-size:14px;font-weight:800;letter-spacing:-0.02em;color:var(--text-muted);opacity:0.88;white-space:nowrap;user-select:none;line-height:1}' +
             'body.dark-mode .kart-marka{opacity:0.72}' +
             '.view-counter{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;white-space:nowrap;font-size:11px;font-weight:700;color:var(--text-muted);padding:6px 11px;border-radius:14px;background:rgba(17,24,39,0.05);border:1px solid var(--border-color);line-height:1}' +
             'body.dark-mode .view-counter{background:rgba(255,255,255,0.06)}' +
@@ -1182,6 +1182,9 @@
         kullaniciMetaSatir: kullaniciMetaSatir,
         kullaniciMetaHtml: kullaniciMetaHtml,
         kartMetaDataAttr: kartMetaDataAttr,
+        cardMenuBtnHtml: cardMenuBtnHtml,
+        avatarKartUygula: avatarKartUygula,
+        injectSikayetStyles: injectSikayetStyles,
         uyeMi: uyeMi,
         gitProfilSayfasi: gitProfilSayfasi,
         itirafUyeGerekli: itirafUyeGerekli,

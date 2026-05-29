@@ -13,7 +13,7 @@ ITIRAF_INDEX = "/itiraf/index.html"
 ITIRAF_RE = re.compile(r"^/itiraf/(\d+)/?$")
 ROUTE_TO_HTML = {
     "/": "/index.html",
-    "/podyum": "/index.html",
+    "/podyum": "/podyum.html",
     "/kulis": "/kulis.html",
     "/profil": "/profil.html",
     "/hakkinda": "/hakkinda.html",
@@ -24,15 +24,11 @@ ROUTE_TO_HTML = {
     "/404": "/404.html",
 }
 HTML_TO_ROUTE = {
-    html: route for route, html in ROUTE_TO_HTML.items()
-    if route not in ("/podyum",)
+    html: route for route, html in ROUTE_TO_HTML.items() if route != "/"
 }
 
 
 def html_path_for_route(raw: str) -> str | None:
-    if raw in ("", "/"):
-        return ROUTE_TO_HTML["/"]
-
     route = ROUTE_TO_HTML.get(raw)
     if route:
         return route
@@ -71,8 +67,11 @@ class Gunde5Handler(SimpleHTTPRequestHandler):
         return "/" + local[:-5]
 
     def _redirect_target(self, raw: str, query: str) -> str | None:
-        if raw in ("/podyum", "/podyum/"):
+        if raw == "/index.html":
             return "/" + query
+
+        if raw in ("/podyum/",):
+            return "/podyum" + query
 
         clean_route = self._clean_route_for_html(raw)
         if clean_route:
@@ -168,7 +167,8 @@ def main() -> None:
         sys.exit(1)
     with httpd:
         print("gunde5 dev sunucu: http://localhost:%s/" % port)
-        print("  / ve /podyum                -> anasayfa")
+        print("  /                           -> index (landing)")
+        print("  /podyum                     -> podyum")
         print("  /kulis, /profil, /kvkk ...  -> clean route")
         print("  /itiraf/123                 -> yönlendirme (eski link)")
         print("Durdurmak: Ctrl+C  |  Baslat: start-dev.bat veya npm run dev")

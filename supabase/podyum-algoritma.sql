@@ -1,7 +1,7 @@
 -- [Elle] Podyum atama — otomatik 13:12 geçişi kaldırıldı (supabase/saat-1312-podyum.sql)
 -- Podyum algoritması (gizli): kulis → podyum top 5 (manuel SQL)
 -- Puan: P = up_votes - down_votes + (yorum_sayisi * 5)
--- Yorum sayısı: itiraf_cevaplar tablosunda itiraf_id eşleşen tüm satırlar (kök + yanıt) sayılır.
+-- Yorum sayısı: hikaye_cevaplar tablosunda hikaye_id eşleşen tüm satırlar (kök + yanıt) sayılır.
 --
 -- Not: Bu puan UI'da gösterilmez; yalnızca seçim için kullanılır.
 
@@ -13,14 +13,14 @@ with ranked as (
         row_number() over (
             order by (
                 (i.up_votes - i.down_votes) +
-                ((select count(*)::int from public.itiraf_cevaplar c where c.itiraf_id = i.id) * 5)
+                ((select count(*)::int from public.hikaye_cevaplar c where c.hikaye_id = i.id) * 5)
             ) desc,
             i.created_at desc
         ) as sira
-    from public.itiraflar i
+    from public.hikayeler i
     where i.status = 'kulis'
 )
-update public.itiraflar i
+update public.hikayeler i
 set
     status = 'podyum',
     podyum_sira = r.sira::smallint,

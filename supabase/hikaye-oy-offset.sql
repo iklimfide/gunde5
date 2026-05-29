@@ -2,13 +2,25 @@
 -- Gercek kullanici oylari geldiginde sayilar sifirlanmaz; trigger sadece fark kadar artirir/azaltir.
 -- SQL Editor'da bir kez Run.
 
-alter table public.itiraflar
+alter table public.hikayeler
+    drop constraint if exists hikayeler_status_check;
+
+alter table public.hikayeler
+    add constraint hikayeler_status_check
+    check (status in ('kulis', 'podyum', 'silindi'));
+
+update public.hikayeler
+set status = 'silindi'
+where silindi_at is not null
+  and status <> 'silindi';
+
+alter table public.hikayeler
     drop column if exists oy_offset_up,
     drop column if exists oy_offset_down;
 
-drop function if exists public.itiraf_oy_sayilarini_uygula(bigint);
+drop function if exists public.hikaye_oy_sayilarini_uygula(bigint);
 
-create or replace function public.itiraf_oy_sayaci()
+create or replace function public.hikaye_oy_sayaci()
 returns trigger
 language plpgsql
 security definer
@@ -16,15 +28,15 @@ set search_path = public
 as $$
 begin
     if tg_op = 'INSERT' then
-        update public.itiraflar
+        update public.hikayeler
         set
             up_votes = up_votes + case when new.oy = 1 then 1 else 0 end,
             down_votes = down_votes + case when new.oy = -1 then 1 else 0 end
-        where id = new.itiraf_id;
-        perform public.itiraf_puan_guncelle(new.itiraf_id);
+        where id = new.hikaye_id;
+        perform public.hikaye_puan_guncelle(new.hikaye_id);
     elsif tg_op = 'UPDATE' then
-        if new.itiraf_id = old.itiraf_id then
-            update public.itiraflar
+        if new.hikaye_id = old.hikaye_id then
+            update public.hikayeler
             set
                 up_votes = greatest(
                     0,
@@ -38,39 +50,39 @@ begin
                         + case when new.oy = -1 then 1 else 0 end
                         - case when old.oy = -1 then 1 else 0 end
                 )
-            where id = new.itiraf_id;
-            perform public.itiraf_puan_guncelle(new.itiraf_id);
+            where id = new.hikaye_id;
+            perform public.hikaye_puan_guncelle(new.hikaye_id);
         else
-            update public.itiraflar
+            update public.hikayeler
             set
                 up_votes = greatest(0, up_votes - case when old.oy = 1 then 1 else 0 end),
                 down_votes = greatest(0, down_votes - case when old.oy = -1 then 1 else 0 end)
-            where id = old.itiraf_id;
+            where id = old.hikaye_id;
 
-            update public.itiraflar
+            update public.hikayeler
             set
                 up_votes = up_votes + case when new.oy = 1 then 1 else 0 end,
                 down_votes = down_votes + case when new.oy = -1 then 1 else 0 end
-            where id = new.itiraf_id;
+            where id = new.hikaye_id;
 
-            perform public.itiraf_puan_guncelle(old.itiraf_id);
-            perform public.itiraf_puan_guncelle(new.itiraf_id);
+            perform public.hikaye_puan_guncelle(old.hikaye_id);
+            perform public.hikaye_puan_guncelle(new.hikaye_id);
         end if;
     else
-        update public.itiraflar
+        update public.hikayeler
         set
             up_votes = greatest(0, up_votes - case when old.oy = 1 then 1 else 0 end),
             down_votes = greatest(0, down_votes - case when old.oy = -1 then 1 else 0 end)
-        where id = old.itiraf_id;
-        perform public.itiraf_puan_guncelle(old.itiraf_id);
+        where id = old.hikaye_id;
+        perform public.hikaye_puan_guncelle(old.hikaye_id);
     end if;
     return coalesce(new, old);
 end;
 $$;
 
-revoke all on function public.itiraf_oy_sayaci() from public, anon, authenticated;
+revoke all on function public.hikaye_oy_sayaci() from public, anon, authenticated;
 
-create or replace function public.itiraf_oy_sayaclarini_yenile(p_ids bigint[] default null)
+create or replace function public.hikaye_oy_sayaclarini_yenile(p_ids bigint[] default null)
 returns void
 language plpgsql
 security definer
@@ -81,20 +93,20 @@ declare
 begin
     for v_id in
         select i.id
-        from public.itiraflar i
+        from public.hikayeler i
         where (p_ids is null or i.id = any (p_ids))
           and i.silindi_at is null
     loop
-        perform public.itiraf_puan_guncelle(v_id);
+        perform public.hikaye_puan_guncelle(v_id);
     end loop;
 end;
 $$;
 
-revoke all on function public.itiraf_oy_sayaclarini_yenile(bigint[]) from public, anon, authenticated;
-grant execute on function public.itiraf_oy_sayaclarini_yenile(bigint[]) to service_role;
+revoke all on function public.hikaye_oy_sayaclarini_yenile(bigint[]) from public, anon, authenticated;
+grant execute on function public.hikaye_oy_sayaclarini_yenile(bigint[]) to service_role;
 
 -- Mevcut kartlar: görünen sayaç aynen korunur.
-update public.itiraflar i
+update public.hikayeler i
 set
     up_votes = coalesce(i.up_votes, 0),
     down_votes = coalesce(i.down_votes, 0)
@@ -110,7 +122,7 @@ as $$
 declare
     v_id bigint;
     v_islem text;
-    v_row public.itiraflar%rowtype;
+    v_row public.hikayeler%rowtype;
     v_tam text;
     v_kisa text;
     v_up int;
@@ -127,13 +139,13 @@ begin
         return jsonb_build_object('ok', false, 'hata', 'yetkisiz');
     end if;
 
-    v_id := (p_body->>'itiraf_id')::bigint;
+    v_id := (p_body->>'hikaye_id')::bigint;
     v_islem := lower(trim(coalesce(p_body->>'islem', '')));
     if v_id is null or v_islem = '' then
-        return jsonb_build_object('ok', false, 'hata', 'itiraf_id ve islem gerekli');
+        return jsonb_build_object('ok', false, 'hata', 'hikaye_id ve islem gerekli');
     end if;
 
-    select * into v_row from public.itiraflar where id = v_id;
+    select * into v_row from public.hikayeler where id = v_id;
     if not found then
         return jsonb_build_object('ok', false, 'hata', 'hikaye bulunamadi');
     end if;
@@ -146,25 +158,25 @@ begin
             if v_age < 18 or v_age > 120 then
                 return jsonb_build_object('ok', false, 'hata', 'yas 18-120 arasi olmali');
             end if;
-            update public.itiraflar set age = v_age where id = v_id;
+            update public.hikayeler set age = v_age where id = v_id;
         end if;
         if p_body ? 'gender' then
             v_gender := lower(trim(coalesce(p_body->>'gender', '')));
             if v_gender not in ('male', 'female') then
                 return jsonb_build_object('ok', false, 'hata', 'gecersiz cinsiyet');
             end if;
-            update public.itiraflar set gender = v_gender where id = v_id;
+            update public.hikayeler set gender = v_gender where id = v_id;
         end if;
         if p_body ? 'yasadigi_yer' then
             v_yer := nullif(trim(coalesce(p_body->>'yasadigi_yer', '')), '');
-            update public.itiraflar set yasadigi_yer = v_yer where id = v_id;
+            update public.hikayeler set yasadigi_yer = v_yer where id = v_id;
             if v_yer is distinct from 'yurtdisi' then
-                update public.itiraflar set yurtdisi_sehir = null where id = v_id;
+                update public.hikayeler set yurtdisi_sehir = null where id = v_id;
             end if;
         end if;
         if p_body ? 'yurtdisi_sehir' then
             v_yurtdisi := nullif(left(trim(coalesce(p_body->>'yurtdisi_sehir', '')), 80), '');
-            update public.itiraflar set yurtdisi_sehir = v_yurtdisi where id = v_id;
+            update public.hikayeler set yurtdisi_sehir = v_yurtdisi where id = v_id;
         end if;
     elsif v_islem = 'guncelle' then
         v_tam := trim(coalesce(p_body->>'content_full', ''));
@@ -172,41 +184,53 @@ begin
             return jsonb_build_object('ok', false, 'hata', 'metin bos');
         end if;
         v_kisa := case when char_length(v_tam) <= 140 then v_tam else left(v_tam, 137) || '...' end;
-        update public.itiraflar
+        update public.hikayeler
         set content_full = v_tam, content_short = v_kisa
         where id = v_id;
     elsif v_islem = 'gizle' then
-        update public.itiraflar set is_gizli = true where id = v_id;
+        update public.hikayeler set is_gizli = true where id = v_id;
     elsif v_islem = 'goster' then
-        update public.itiraflar set is_gizli = false where id = v_id;
+        update public.hikayeler set is_gizli = false where id = v_id;
     elsif v_islem = 'sil' then
-        update public.itiraflar set silindi_at = now() where id = v_id;
+        update public.hikayeler
+        set silindi_at = now(),
+            status = 'silindi'
+        where id = v_id;
     elsif v_islem = 'geri_al' then
-        update public.itiraflar set silindi_at = null where id = v_id;
+        update public.hikayeler
+        set silindi_at = null,
+            status = 'kulis'
+        where id = v_id;
     elsif v_islem = 'oylar' then
         v_up := coalesce((p_body->>'up_votes')::int, v_row.up_votes);
         v_down := coalesce((p_body->>'down_votes')::int, v_row.down_votes);
         if v_up < 0 or v_down < 0 then
             return jsonb_build_object('ok', false, 'hata', 'oy sayisi negatif olamaz');
         end if;
-        update public.itiraflar
+        update public.hikayeler
         set up_votes = v_up, down_votes = v_down
         where id = v_id;
-        perform public.itiraf_puan_guncelle(v_id);
+        perform public.hikaye_puan_guncelle(v_id);
     elsif v_islem = 'status' then
         v_status := lower(trim(coalesce(p_body->>'status', '')));
-        if v_status not in ('kulis', 'podyum') then
-            return jsonb_build_object('ok', false, 'hata', 'status kulis veya podyum olmali');
+        if v_status not in ('kulis', 'podyum', 'silindi') then
+            return jsonb_build_object('ok', false, 'hata', 'status kulis, podyum veya silindi olmali');
         end if;
-        update public.itiraflar set status = v_status where id = v_id;
+        update public.hikayeler
+        set status = v_status,
+            silindi_at = case
+                when v_status = 'silindi' then coalesce(silindi_at, now())
+                else null
+            end
+        where id = v_id;
     else
         return jsonb_build_object('ok', false, 'hata', 'bilinmeyen islem');
     end if;
 
-    select * into v_row from public.itiraflar where id = v_id;
+    select * into v_row from public.hikayeler where id = v_id;
     return jsonb_build_object(
         'ok', true,
-        'itiraf', jsonb_build_object(
+        'hikaye', jsonb_build_object(
             'id', v_row.id,
             'status', v_row.status,
             'is_gizli', v_row.is_gizli,

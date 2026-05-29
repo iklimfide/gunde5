@@ -182,7 +182,7 @@
 
     function podyumBannerOnbellek() {
         var path = (w.location.pathname || '').toLowerCase();
-        if (path.indexOf('index') < 0 && path !== '/' && !path.endsWith('/')) return;
+        if (path.indexOf('podyum') < 0 && path !== '/' && !path.endsWith('/')) return;
         try {
             var raw = w.localStorage.getItem('g5_podyum_ls_v1');
             if (!raw) return;

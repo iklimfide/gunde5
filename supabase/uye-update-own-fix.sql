@@ -1,0 +1,2 @@
+-- Eski dosya: profil-uye-rpc.sql içinde birleştirildi.
+-- Yeni kurulumda yalnızca profil-uye-rpc.sql çalıştırın.

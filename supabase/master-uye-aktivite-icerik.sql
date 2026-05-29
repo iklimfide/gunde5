@@ -208,19 +208,19 @@ as $$
         ),
         'istatistik', jsonb_build_object(
             'hikaye', (
-                select count(*)::int from public.itiraflar i
+                select count(*)::int from public.hikayeler i
                 where i.user_id = p_u.id and i.silindi_at is null
             ),
             'kulis', (
-                select count(*)::int from public.itiraflar i
+                select count(*)::int from public.hikayeler i
                 where i.user_id = p_u.id and i.status = 'kulis' and i.silindi_at is null
             ),
             'podyum', (
-                select count(*)::int from public.itiraflar i
+                select count(*)::int from public.hikayeler i
                 where i.user_id = p_u.id and i.status = 'podyum' and i.silindi_at is null
             ),
             'yorum', (
-                select count(*)::int from public.itiraf_cevaplar c
+                select count(*)::int from public.hikaye_cevaplar c
                 where c.user_id = p_u.id
             )
         )
@@ -279,7 +279,7 @@ begin
             )
             from (
                 select i.*
-                from public.itiraflar i
+                from public.hikayeler i
                 where i.user_id = v_uid
                 order by i.created_at desc
                 limit v_h_lim
@@ -289,22 +289,22 @@ begin
             select jsonb_agg(
                 jsonb_build_object(
                     'id', c.id,
-                    'itiraf_id', c.itiraf_id,
+                    'hikaye_id', c.hikaye_id,
                     'parent_id', c.parent_id,
                     'content', c.content,
                     'created_at', c.created_at,
-                    'itiraf_status', (
-                        select i.status from public.itiraflar i where i.id = c.itiraf_id
+                    'hikaye_status', (
+                        select i.status from public.hikayeler i where i.id = c.hikaye_id
                     ),
-                    'itiraf_silindi', (
-                        select i.silindi_at is not null from public.itiraflar i where i.id = c.itiraf_id
+                    'hikaye_silindi', (
+                        select i.silindi_at is not null from public.hikayeler i where i.id = c.hikaye_id
                     )
                 )
                 order by c.created_at desc
             )
             from (
                 select c.*
-                from public.itiraf_cevaplar c
+                from public.hikaye_cevaplar c
                 where c.user_id = v_uid
                 order by c.created_at desc
                 limit v_y_lim
@@ -330,7 +330,7 @@ declare
     v_id bigint;
     v_islem text;
     v_metin text;
-    v_row public.itiraf_cevaplar%rowtype;
+    v_row public.hikaye_cevaplar%rowtype;
 begin
     if not public.master_email_eslesir() then
         return jsonb_build_object('ok', false, 'hata', 'yetkisiz');
@@ -342,7 +342,7 @@ begin
         return jsonb_build_object('ok', false, 'hata', 'cevap_id ve islem gerekli');
     end if;
 
-    select * into v_row from public.itiraf_cevaplar where id = v_id;
+    select * into v_row from public.hikaye_cevaplar where id = v_id;
     if not found then
         return jsonb_build_object('ok', false, 'hata', 'cevap bulunamadi');
     end if;
@@ -357,20 +357,20 @@ begin
         if char_length(v_metin) > 2000 then
             return jsonb_build_object('ok', false, 'hata', 'metin cok uzun');
         end if;
-        update public.itiraf_cevaplar set content = v_metin where id = v_id;
+        update public.hikaye_cevaplar set content = v_metin where id = v_id;
     elsif v_islem = 'sil' then
-        delete from public.itiraf_cevaplar where id = v_id;
+        delete from public.hikaye_cevaplar where id = v_id;
         return jsonb_build_object('ok', true, 'silindi', true);
     else
         return jsonb_build_object('ok', false, 'hata', 'gecersiz islem');
     end if;
 
-    select * into v_row from public.itiraf_cevaplar where id = v_id;
+    select * into v_row from public.hikaye_cevaplar where id = v_id;
     return jsonb_build_object(
         'ok', true,
         'cevap', jsonb_build_object(
             'id', v_row.id,
-            'itiraf_id', v_row.itiraf_id,
+            'hikaye_id', v_row.hikaye_id,
             'parent_id', v_row.parent_id,
             'content', v_row.content,
             'created_at', v_row.created_at

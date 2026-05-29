@@ -2,7 +2,7 @@
 -- Bot/seed: user_id NULL. content_short <= 140.
 -- Supabase SQL Editor'da bir kez çalıştır.
 
-insert into public.itiraflar (
+insert into public.hikayeler (
   user_id,
   username,
   age,
