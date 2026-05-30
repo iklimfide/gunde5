@@ -18,19 +18,17 @@ Kullanıcı bu tasarımı onayladı. **Başlık, layout, lazy-load akışı veya
   - Her eski gün: `EFSANELER` + `h2.podyum-sampiyonlar-baslik` (tarih; aynı stil)
 - Yükleme: `Gunde5PodyumLazy.init` → `podyumDonemleriListele` + `podyumDonemKartlari`
 
-## Veritabanı (değişmez iş kuralları)
+## Veritabanı
 
-- **Podyumdan veri silinmez / kulise inmez** (`podyum-koruma.sql` trigger).
-- Günlük 13:12 (`podyum_gunluk_gecis`): kulis’te **r en yüksek 5** → `status = 'podyum'`; kalan kulis soft-delete; mevcut podyuma dokunulmaz.
 - Gün etiketi: `podyum_donem` = `YYYY-MM-DD` (mevcut arşiv satırları).
+- Kulis sayfası ve otomatik 13:12 geçişi kaldırıldı (`kulis-podyum-kaldir.sql`).
 
 ## Dokunulurken dikkat (izin gerekir)
 
 - `podyum.html` podyum CSS/HTML yapısı
 - `js/gunde5-podyum-lazy.js`, `js/gunde5-db.js` (podyum* fonksiyonları), `js/gunde5-ui.js` (`renderPodyumCard`)
-- `supabase/saat-1312-podyum.sql`, `podyum-koruma.sql`
 
 ## İzin gerektirmeyen
 
 - Bug fix (çökme, `await` eksikliği, yanlış sıralama veri hatası) — davranışı bozmadan.
-- Kulis / profil / diğer sayfalar (podyum bölümüne dokunmadan).
+- Profil / diğer sayfalar (podyum bölümüne dokunmadan).

@@ -3,22 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KVKK Aydınlatma Metni ve Kullanıcı Sözleşmesi — gunde5.com</title>
+    <title>Metrikler — gunde5.com</title>
     <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <meta name="description" content="Gunde5.com KVKK aydınlatma metni ve kullanıcı sözleşmesi. Kişisel verilerin işlenmesi ve üyelik koşulları.">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://gunde5.com/kvkk">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="gunde5.com">
-    <meta property="og:locale" content="tr_TR">
-    <meta property="og:title" content="KVKK ve Kullanıcı Sözleşmesi — gunde5.com">
-    <meta property="og:description" content="KVKK aydınlatma metni ve kullanıcı sözleşmesi.">
-    <meta property="og:url" content="https://gunde5.com/kvkk">
-    <meta property="og:image" content="https://gunde5.com/apple-touch-icon.png">
-    <meta name="twitter:card" content="summary">
+    <meta name="description" content="Gunde5 site içi metrikleri (yönetici).">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#1d9bf0">
     <style>
         :root {
@@ -28,7 +19,6 @@
             --text-muted: #6b7280;
             --border-color: #e5e7eb;
             --header-bg: #ffffff;
-            --link-color: #2563eb;
             --female-color: #db2777;
             --female-bg: #fff1f2;
             --female-border: #fecdd3;
@@ -43,7 +33,6 @@
             --text-muted: #9ca3af;
             --border-color: rgba(255,255,255,0.10);
             --header-bg: #161a1e;
-            --link-color: #60a5fa;
             --female-color: #f43f5e;
             --female-bg: #201319;
             --female-border: #4c1d24;
@@ -62,7 +51,6 @@
             background: var(--bg-main);
             color: var(--text-main);
             padding-bottom: 92px;
-            line-height: 1.6;
             transition: background-color 0.2s, color 0.2s;
         }
         header {
@@ -318,6 +306,11 @@
         }
         body.dark-mode .auth-input,
         body.dark-mode .auth-select { background: var(--bg-main); }
+        .auth-input:focus,
+        .auth-select:focus {
+            border-color: var(--auth-accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
         .auth-cins-satir { display: flex; gap: 12px; margin-bottom: 20px; }
         .auth-cins-btn {
             flex: 1;
@@ -417,79 +410,216 @@
         }
         .gunde5-toast--hata { background: #991b1b; }
         .container {
-            max-width: 680px;
+            max-width: 720px;
             margin: 0 auto;
             padding: 18px 16px 28px;
         }
         .page-title {
             font-size: 22px;
-            margin: 10px 0 8px;
+            margin: 10px 0 12px;
             letter-spacing: -0.02em;
             text-align: center;
         }
-        .guncelleme {
-            text-align: center;
-            font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 600;
-            margin: 0 0 20px;
-        }
-        .toc {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 14px 16px;
-            margin-bottom: 20px;
-        }
-        .toc h2 {
-            font-size: 14px;
-            margin: 0 0 10px;
-        }
-        .toc ul {
-            margin: 0;
-            padding-left: 18px;
-            font-size: 15px;
-            font-weight: 600;
-        }
-        .toc a {
-            color: var(--link-color);
-            text-decoration: none;
-        }
-        .toc a:hover { text-decoration: underline; }
-        .legal-section {
+        .card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 18px 16px;
-            margin-bottom: 16px;
+            padding: 16px 14px;
+            margin: 12px 0;
         }
-        .legal-section h2 {
-            font-size: 18px;
-            margin: 0 0 14px;
-            letter-spacing: -0.02em;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .legal-section h3 {
+        .card h2 {
             font-size: 15px;
-            margin: 18px 0 8px;
+            margin: 0 0 8px;
         }
-        .legal-section p,
-        .legal-section li {
-            font-size: 16px;
-            color: var(--text-muted);
-            font-weight: 500;
+        .card p {
             margin: 0 0 10px;
-        }
-        .legal-section ul,
-        .legal-section ol {
-            margin: 0 0 12px;
-            padding-left: 20px;
-        }
-        .legal-section li { margin-bottom: 6px; }
-        .legal-section a {
-            color: var(--link-color);
+            color: var(--text-muted);
+            line-height: 1.55;
+            font-size: 13.5px;
             font-weight: 600;
+        }
+        .card p:last-child { margin-bottom: 0; }
+        .intro {
+            margin: 0 0 16px;
+            color: var(--text-main);
+            line-height: 1.6;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .intro a {
+            color: inherit;
+            text-decoration: underline;
+            text-decoration-thickness: 1.5px;
+            text-underline-offset: 2px;
+        }
+        .accordion {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .accordion-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .accordion-item[open] {
+            border-color: rgba(37, 99, 235, 0.25);
+        }
+        body.dark-mode .accordion-item[open] {
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+        .accordion-item summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 14px 14px 14px 16px;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            user-select: none;
+        }
+        .accordion-item summary::-webkit-details-marker { display: none; }
+        .accordion-item summary::after {
+            content: '+';
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--text-muted);
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1;
+            transition: transform 0.2s ease;
+        }
+        body.dark-mode .accordion-item summary::after {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .accordion-item[open] summary::after {
+            content: '−';
+            transform: rotate(180deg);
+        }
+        .accordion-body {
+            padding: 0 16px 14px;
+            color: var(--text-muted);
+            line-height: 1.55;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .accordion-body p { margin: 0; }
+        .accordion-body a {
+            color: inherit;
+            text-decoration: underline;
+            text-decoration-thickness: 1.5px;
+            text-underline-offset: 2px;
+            font-weight: 700;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            min-height: 64px;
+            padding: 0 2px 8px;
+            background: var(--header-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 2px;
+            z-index: 1000;
+            box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.03);
+        }
+        .nav-item {
+            flex: 1 1 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 6px 2px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            color: #9ca3af;
+            cursor: pointer;
+            text-decoration: none;
+            line-height: 1.05;
+        }
+        .nav-item > span {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .nav-item.active { color: var(--text-main); }
+        .nav-item .icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+            flex-shrink: 0;
+        }
+        .nav-item--btn {
+            border: none;
+            background: transparent;
+            font: inherit;
+            width: auto;
+            color: inherit;
+        }
+        .nav-item--fab {
+            flex: 0 0 auto;
+            width: clamp(72px, 22vw, 96px);
+            min-height: 68px;
+            margin-bottom: 14px;
+            padding: 10px 6px 12px;
+            justify-content: center;
+            align-self: flex-end;
+            border-radius: 18px;
+            background: linear-gradient(
+                165deg,
+                rgba(255, 255, 255, 0.97) 0%,
+                rgba(248, 250, 252, 0.99) 50%,
+                rgba(241, 245, 249, 0.96) 100%
+            );
+            border: 1px solid rgba(15, 23, 42, 0.07);
+            box-shadow:
+                0 10px 28px rgba(15, 23, 42, 0.08),
+                0 2px 10px rgba(29, 155, 240, 0.14);
+            color: var(--text-main);
+            transform: translateY(-8px);
+        }
+        body.dark-mode .nav-item--fab {
+            background: linear-gradient(
+                165deg,
+                rgba(34, 44, 58, 0.98) 0%,
+                rgba(18, 24, 32, 0.99) 100%
+            );
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow:
+                0 12px 32px rgba(0, 0, 0, 0.45),
+                0 2px 12px rgba(29, 155, 240, 0.2);
+        }
+        .nav-item--fab .icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        .nav-item--fab > span {
+            font-size: 9.5px;
+            font-weight: 900;
+            letter-spacing: -0.22px;
+            white-space: nowrap;
+        }
+        .mini-link {
+            color: inherit;
+            text-decoration: underline;
+            text-decoration-thickness: 1.5px;
+            text-underline-offset: 2px;
         }
         .saat-vurgu {
             font-weight: 900;
@@ -497,34 +627,218 @@
             font-variant-numeric: tabular-nums;
         }
         body.dark-mode .saat-vurgu { color: #fbbf24; }
-        .bottom-nav {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1100;
+        .istat-filtre {
             display: flex;
-            justify-content: space-around;
-            align-items: flex-end;
-            padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-            background: var(--header-bg);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            margin: 0 0 16px;
         }
-        .nav-item {
-            flex: 1;
-            max-width: 72px;
+        .istat-filtre--haric {
+            margin-top: -8px;
+            margin-bottom: 14px;
+        }
+        .istat-filtre-etiket {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-right: 2px;
+        }
+        .istat-filtre-not {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .istat-gun-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .istat-gun-btn--aktif {
+            background: #1d9bf0;
+            border-color: #1d9bf0;
+            color: #ffffff;
+        }
+        .istat-yenile-btn {
+            border: 1px dashed var(--border-color);
+            background: transparent;
+            color: var(--text-muted);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .istat-yukleniyor {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 24px 0;
+        }
+        .istat-yetkisiz {
+            text-align: center;
+            padding: 32px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+        .istat-yetkisiz-metin {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .istat-giris-btn {
+            border: none;
+            background: #1d9bf0;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .istat-donem-notu {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin: 0 0 14px;
+        }
+        .istat-bolum { margin-bottom: 22px; }
+        .istat-bolum-baslik {
+            font-size: 14px;
+            font-weight: 900;
+            margin: 0 0 10px;
+            letter-spacing: -0.02em;
+        }
+        .istat-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .istat-kpi {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            text-decoration: none;
+            gap: 4px;
+        }
+        .istat-kpi-etiket {
+            font-size: 11px;
+            font-weight: 700;
             color: var(--text-muted);
+        }
+        .istat-kpi-deger {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+        }
+        .istat-kpi-alt {
             font-size: 10px;
             font-weight: 700;
-            padding: 4px 2px;
+            color: var(--text-muted);
+            line-height: 1.35;
         }
-        .nav-item .icon { font-size: 20px; margin-bottom: 2px; }
-        .nav-item.active { color: var(--link-color); }
+        .istat-bolum-not {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin: -4px 0 10px;
+            line-height: 1.45;
+        }
+        .istat-bolum--hero {
+            background: linear-gradient(165deg, rgba(29, 155, 240, 0.08), rgba(29, 155, 240, 0.02));
+            border: 1px solid rgba(29, 155, 240, 0.18);
+            border-radius: 16px;
+            padding: 14px 12px 12px;
+        }
+        body.dark-mode .istat-bolum--hero {
+            background: linear-gradient(165deg, rgba(29, 155, 240, 0.14), rgba(29, 155, 240, 0.04));
+            border-color: rgba(96, 165, 250, 0.22);
+        }
+        .istat-kpi-grid--hero {
+            grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+        }
+        .istat-kpi-grid--hero .istat-kpi-deger {
+            font-size: 18px;
+        }
+        .istat-detay {
+            margin: 18px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            background: var(--bg-card);
+            overflow: hidden;
+        }
+        .istat-detay summary {
+            cursor: pointer;
+            padding: 12px 14px;
+            font-size: 13px;
+            font-weight: 800;
+            list-style: none;
+        }
+        .istat-detay summary::-webkit-details-marker { display: none; }
+        .istat-detay[open] summary {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .istat-detay > .istat-kpi-grid,
+        .istat-detay > .istat-bolum {
+            padding: 0 12px 12px;
+        }
+        .istat-detay .istat-bolum-baslik {
+            margin-top: 12px;
+        }
+        .istat-tablo-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-card);
+        }
+        .istat-tablo {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .istat-tablo th,
+        .istat-tablo td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+        .istat-tablo th {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.03);
+        }
+        body.dark-mode .istat-tablo th { background: rgba(255, 255, 255, 0.04); }
+        .istat-tablo tr:last-child td { border-bottom: none; }
+        .istat-bos, .istat-hata {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding: 8px 0;
+        }
+        .istat-hata { color: #b91c1c; }
+        body.dark-mode .istat-hata { color: #f87171; }
+        .istat-capraz-link, .intro a {
+            color: #1d9bf0;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .istat-capraz-link:hover, .intro a:hover { text-decoration: underline; }
     </style>
     <script src="js/gunde5-shell.js"></script>
     <script defer src="js/gunde5-perf.js"></script>
@@ -535,6 +849,7 @@
     <script src="js/gunde5-db.js"></script>
     <script src="js/gunde5-paylas.js"></script>
     <script src="js/gunde5-bildirim.js"></script>
+    <script src="js/gunde5-metrikler.js"></script>
 </head>
 <body>
     <header>
@@ -568,116 +883,30 @@
     </header>
 
     <div class="container">
-        <h1 class="page-title">KVKK Aydınlatma Metni ve Kullanıcı Sözleşmesi</h1>
-        <p class="guncelleme">Son güncelleme: 20 Mayıs 2026</p>
+        <h1 class="page-title">📈 Metrikler</h1>
+        <p class="intro">Sitede ne yaptılar — okuma, oy, paylaşım ve içerik performansı. Trafik kaynağı için <a href="/istatistikler">İstatistikler</a> sayfasına bakın.</p>
 
-        <nav class="toc" aria-label="İçindekiler">
-            <h2>İçindekiler</h2>
-            <ul>
-                <li><a href="#aydinlatma">KVKK Aydınlatma Metni</a></li>
-                <li><a href="#sozlesme">Kullanıcı Sözleşmesi</a></li>
-            </ul>
-        </nav>
+        <div id="metrikYetkisiz" class="istat-yetkisiz" hidden>
+            <p class="istat-yetkisiz-metin"></p>
+            <button type="button" class="istat-giris-btn" id="metrikGirisBtn" hidden>Giriş yap</button>
+        </div>
 
-        <section class="legal-section" id="aydinlatma">
-            <h2>KVKK Aydınlatma Metni</h2>
-            <p>6698 sayılı Kişisel Verilerin Korunması Kanunu (“KVKK”) kapsamında, gunde5.com (“Site”) üzerinden kişisel verilerinizin işlenmesine ilişkin bilgilendirme metnidir.</p>
+        <div id="metrikFiltre" class="istat-filtre" hidden>
+            <button type="button" class="istat-gun-btn" data-metrik-gun="7" aria-pressed="false">7 gün</button>
+            <button type="button" class="istat-gun-btn istat-gun-btn--aktif" data-metrik-gun="30" aria-pressed="true">30 gün</button>
+            <button type="button" class="istat-gun-btn" data-metrik-gun="90" aria-pressed="false">90 gün</button>
+            <button type="button" class="istat-gun-btn" data-metrik-gun="365" aria-pressed="false">365 gün</button>
+            <button type="button" class="istat-yenile-btn" id="metrikYenile">Yenile</button>
+        </div>
+        <div id="metrikHaricFiltre" class="istat-filtre istat-filtre--haric" hidden>
+            <span class="istat-filtre-etiket">Hariç tut:</span>
+            <button type="button" class="istat-gun-btn istat-gun-btn--aktif" data-metrik-haric="master" aria-pressed="true">Master</button>
+            <button type="button" class="istat-gun-btn" data-metrik-haric="uyeler" aria-pressed="false">Tüm üyeler</button>
+            <button type="button" class="istat-gun-btn" data-metrik-haric="yok" aria-pressed="false">Filtre yok</button>
+        </div>
 
-            <h3>1. Veri Sorumlusu</h3>
-            <p>Veri sorumlusu: <strong>Arif G.</strong><br>
-            İletişim: <a href="mailto:arif@gunde5.com">arif@gunde5.com</a><br>
-            Site eğlence ve mizah amaçlıdır; ticari faaliyet yürütülmemektedir.</p>
-
-            <h3>2. İşlenen Kişisel Veriler</h3>
-            <p>Siteyi kullanım şeklinize göre aşağıdaki veriler işlenebilir:</p>
-            <ul>
-                <li><strong>Kimlik ve hesap bilgileri:</strong> kullanıcı adı (rumuz), e-posta adresi, şifre (Supabase altyapısında hash’lenmiş olarak), cinsiyet seçimi, doğum yılı.</li>
-                <li><strong>Profil bilgileri (isteğe bağlı):</strong> profil fotoğrafı, yaşadığı yer, yurt dışı şehir, meslek, medeni durum.</li>
-                <li><strong>İçerik ve etkileşim verileri:</strong> yazdığınız hikayeler, verdiğiniz oylar, yorumlar ve yanıtlar, şikayet bildirimleri, “Gizli Üye” tercihi.</li>
-                <li><strong>İşlem güvenliği ve teknik veriler:</strong> oturum bilgileri, tarayıcı/cihaz türü, IP adresi, sayfa görüntülenme sayaçları, yerel depolama (localStorage) ve çerez benzeri teknolojilerle tutulan tercihler (ör. karanlık mod, kaydedilen hikayeler, anonim izleyici anahtarı).</li>
-            </ul>
-            <p>Siteyi üye olmadan da gezebilir; hikayeleri okuyabilirsiniz. Oy vermek, yorum yazmak ve hikaye göndermek için üyelik gerekir.</p>
-
-            <h3>3. Kişisel Verilerin İşlenme Amaçları</h3>
-            <ul>
-                <li>Üyelik oluşturma, kimlik doğrulama ve hesap yönetimi</li>
-                <li>Hikaye paylaşımı, oylama, yorum ve <a href="/">Anasayfa</a> / <a href="/podyum">Podyum</a> akışının işletilmesi</li>
-                <li>Topluluk güvenliği, şikayetlerin incelenmesi ve kötüye kullanımın önlenmesi</li>
-                <li>Site performansının ve kullanıcı deneyiminin iyileştirilmesi</li>
-                <li>Yasal yükümlülüklerin yerine getirilmesi</li>
-            </ul>
-
-            <h3>4. Hukuki Sebepler</h3>
-            <p>Kişisel verileriniz KVKK’nın 5. maddesindeki;</p>
-            <ul>
-                <li>açık rızanız (kayıt sırasında onayladığınız metinler),</li>
-                <li>sözleşmenin kurulması veya ifası (Kullanıcı Sözleşmesi kapsamında hizmet sunumu),</li>
-                <li>veri sorumlusunun meşru menfaati (güvenlik, kötüye kullanımın önlenmesi, teknik işletim)</li>
-            </ul>
-            <p>hukuki sebeplerine dayanılarak işlenir.</p>
-
-            <h3>5. Kişisel Verilerin Aktarılması</h3>
-            <p>Site altyapısı Supabase (kimlik doğrulama, veritabanı ve dosya depolama) üzerinde çalışır. Verileriniz, hizmetin sunulması için gerekli ölçüde yurt içi ve/veya yurt dışındaki sunuculara aktarılabilir. Aktarım, hizmet sağlayıcının teknik ve sözleşmesel güvenlik önlemleri çerçevesinde gerçekleşir.</p>
-            <p>Kişisel verileriniz reklam amacıyla üçüncü kişilere satılmaz veya kiralanmaz.</p>
-
-            <h3>6. Saklama Süreleri</h3>
-            <ul>
-                <li><strong>Hesap verileri:</strong> Hesabınız açık kaldığı sürece; silme talebinizden sonra makul süre içinde silinir veya anonimleştirilir.</li>
-                <li><strong>Anasayfa hikayeleri:</strong> Yayınlandığı sürece sitede görüntülenebilir.</li>
-                <li><strong>Podyum hikayeleri:</strong> Arşive alınır ve Site’de kalıcı olarak görüntülenebilir.</li>
-                <li><strong>Şikayet kayıtları:</strong> İnceleme ve hukuki yükümlülükler için gerekli süre boyunca tutulur.</li>
-                <li><strong>Teknik loglar:</strong> Altyapı sağlayıcısının varsayılan saklama politikalarına tabidir.</li>
-            </ul>
-
-            <h3>7. “Gizli Üye” Seçeneği</h3>
-            <p>Hikaye yazarken “Gizli Üye” seçerseniz, o hikayede rumuzunuz “Gizli Üye” olarak görünür; profil bilgileriniz (yaş, şehir vb.) o içerikte gösterilmez. Buna karşın hesabınıza bağlı veriler veri sorumlusu tarafından yine de işlenir ve saklanır.</p>
-
-            <h3>8. İlgili Kişi Hakları (KVKK md. 11)</h3>
-            <p>KVKK kapsamında; kişisel verilerinizin işlenip işlenmediğini öğrenme, bilgi talep etme, amacına uygun kullanılıp kullanılmadığını öğrenme, aktarıldığı üçüncü kişileri bilme, eksik veya yanlış işlenmişse düzeltilmesini isteme, silinmesini veya yok edilmesini isteme, otomatik sistemler vasıtasıyla analiz edilmesi suretiyle aleyhinize bir sonucun ortaya çıkmasına itiraz etme ve kanuna aykırı işlenmesi halinde zararın giderilmesini talep etme haklarına sahipsiniz.</p>
-            <p>Taleplerinizi <a href="mailto:arif@gunde5.com">arif@gunde5.com</a> adresine iletebilirsiniz. Başvurularınız, niteliğine göre en geç 30 gün içinde sonuçlandırılır. Ayrıca Kişisel Verileri Koruma Kurulu’na şikâyet hakkınız saklıdır.</p>
-        </section>
-
-        <section class="legal-section" id="sozlesme">
-            <h2>Kullanıcı Sözleşmesi</h2>
-            <p>Bu sözleşme, gunde5.com’a üye olan veya Site’yi kullanan kişi (“Kullanıcı”) ile Site işleteni Arif G. (“İşletici”) arasında akdedilmiştir. Site’ye kayıt olarak veya kullanmaya devam ederek bu sözleşmeyi kabul etmiş sayılırsınız.</p>
-
-            <h3>1. Hizmetin Kapsamı</h3>
-            <p>gunde5.com; anasayfada paylaşılan hikayelerin oylanması, yorumlanması ve seçilen içeriklerin <a href="/podyum">Podyum</a> arşivinde tutulması amacıyla sunulan, eğlence ve mizah odaklı bir topluluk platformudur. Hizmet “olduğu gibi” sunulur; ticari bir taahhüt içermez.</p>
-
-            <h3>2. Üyelik Koşulları</h3>
-            <ul>
-                <li>Site’ye yalnızca 18 yaşını doldurmuş kişiler kayıt olabilir.</li>
-                <li>Kayıt bilgilerinizin doğru ve güncel olmasından siz sorumlusunuz.</li>
-                <li>Hesabınızın güvenliği (şifre vb.) size aittir; hesabınız üzerinden yapılan işlemlerden siz sorumlu sayılırsınız.</li>
-                <li>Her kullanıcı yalnızca bir hesap açmalıdır; sahte veya başkasına ait kimlikle kayıt yasaktır.</li>
-            </ul>
-
-            <h3>3. Kullanıcı İçerikleri ve Sorumluluk</h3>
-            <ul>
-                <li>Yazdığınız hikayeler, yorumlar ve verdiğiniz oylar herkese açık alanlarda görüntülenebilir.</li>
-                <li>Paylaştığınız içerikten yalnızca siz sorumlusunuz. Yasa dışı, hakaret içeren, nefret söylemi barındıran, kişisel verileri izinsiz ifşa eden, telif hakkını ihlal eden veya üçüncü kişilerin haklarına zarar veren içerik paylaşamazsınız.</li>
-                <li>İşletici, şikayet üzerine veya kendi takdirinde uygunsuz içerikleri kaldırma, hesabı askıya alma veya sonlandırma hakkını saklı tutar.</li>
-                <li>Podyum’a alınan hikayeler kalıcı arşivde kalır; diğer içerikler moderasyon veya teknik nedenlerle kaldırılabilir.</li>
-            </ul>
-
-            <h3>4. Gizlilik</h3>
-            <p>Kişisel verilerinizin işlenmesine ilişkin ayrıntılar yukarıdaki KVKK Aydınlatma Metni’nde yer almaktadır. Kayıt sırasında bu metni okuduğunuzu ve onayladığınızı beyan edersiniz.</p>
-
-            <h3>5. Fikri Mülkiyet</h3>
-            <p>Site tasarımı, markası ve yazılım altyapısı İşletici’ye aittir. Kullanıcı içeriklerinin fikri hakları içerik sahibine aittir; ancak içeriği Site’ye yükleyerek, hizmetin sunulması için gerekli süre ve kapsamda (görüntüleme, arşivleme, paylaşım linki oluşturma vb.) İşletici’ye basit kullanım hakkı vermiş olursunuz.</p>
-
-            <h3>6. Hizmetin Değiştirilmesi ve Sonlandırılması</h3>
-            <p>İşletici, Site’yi veya özelliklerini önceden bildirimde bulunmaksızın değiştirebilir, geçici olarak durdurabilir veya tamamen sonlandırabilir. Kullanıcı, hesabını dilediği zaman kapattırabilir; bunun için <a href="mailto:arif@gunde5.com">arif@gunde5.com</a> adresine yazabilir.</p>
-
-            <h3>7. Sorumluluğun Sınırlandırılması</h3>
-            <p>Site eğlence amaçlıdır. Kullanıcıların paylaştığı içerikler nedeniyle doğabilecek uyuşmazlıklarda birincil sorumluluk içerik sahibine aittir. İşletici, teknik arızalar, veri kaybı veya üçüncü taraf hizmet kesintilerinden doğan dolaylı zararlardan sorumlu tutulamaz.</p>
-
-            <h3>8. Uygulanacak Hukuk ve Uyuşmazlık</h3>
-            <p>Bu sözleşme Türkiye Cumhuriyeti kanunlarına tabidir. Uyuşmazlıklarda İşletici’nin yerleşim yerindeki mahkemeler ve icra daireleri yetkilidir.</p>
-
-            <h3>9. İletişim</h3>
-            <p>Sorularınız ve talepleriniz için: <a href="mailto:arif@gunde5.com">arif@gunde5.com</a></p>
-        </section>
+        <p id="metrikYukleniyor" class="istat-yukleniyor" hidden>Yükleniyor…</p>
+        <div id="metrikIcerik" hidden></div>
     </div>
 
     <div id="authOverlay" class="auth-overlay" aria-hidden="true">
@@ -729,9 +958,9 @@
         <a href="/" class="nav-item">
             <div class="icon">🏠</div><span>Anasayfa</span>
         </a>
-        <a href="/" class="nav-item">
-            <div class="icon">✍️</div><span>Yaz</span>
-        </a>
+        <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn" aria-haspopup="dialog">
+            <div class="icon">✍️</div><span>Hikaye Yaz</span>
+        </button>
         <a href="/podyum" class="nav-item">
             <div class="icon">🏆</div><span>Podyum</span>
         </a>
@@ -808,6 +1037,7 @@
                 Gunde5UI.oturumModallariKapat();
                 guncelleHeaderOturum();
                 Gunde5UI.showToast('Hoş geldin, ' + (u && u.username ? u.username : '') + '!');
+                if (window.Gunde5Istatistik && Gunde5Istatistik.init) Gunde5Istatistik.init(true);
             } catch (err) {
                 Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
             }
@@ -823,14 +1053,16 @@
                 Gunde5UI.oturumModallariKapat();
                 guncelleHeaderOturum();
                 Gunde5UI.showToast('Tekrar hoş geldin!');
+                if (window.Gunde5Istatistik && Gunde5Istatistik.init) Gunde5Istatistik.init(true);
             } catch (err) {
                 Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
             }
         }
 
-        Gunde5DB.init().then(function () {
-            guncelleHeaderOturum();
+        document.getElementById('navYazBtn').addEventListener('click', function () {
+            window.location.href = '/';
         });
     </script>
 </body>
 </html>
+

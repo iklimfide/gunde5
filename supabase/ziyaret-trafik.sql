@@ -34,9 +34,18 @@ create index if not exists site_ziyaretler_referrer_idx
 
 alter table public.site_ziyaretler enable row level security;
 
--- Yalnızca ziyaret_kaydet (SECURITY DEFINER) insert eder; REST ile doğrudan tablo yok
+-- Yalnızca ziyaret_kaydet (SECURITY INVOKER + RLS) insert eder; REST ile doğrudan tablo yok
 revoke all on public.site_ziyaretler from anon, authenticated;
-grant select on public.site_ziyaretler to authenticated;
+grant select, insert on public.site_ziyaretler to anon, authenticated;
+
+drop policy if exists site_ziyaretler_insert_ziyaret on public.site_ziyaretler;
+create policy site_ziyaretler_insert_ziyaret on public.site_ziyaretler
+    for insert to anon, authenticated
+    with check (
+        length(trim(oturum_key)) >= 8
+        and length(trim(sayfa)) > 0
+        and length(trim(yol)) > 0
+    );
 
 -- Master: ham kayıt + ileride istatistik sayfası
 drop policy if exists site_ziyaretler_select_master on public.site_ziyaretler;
@@ -44,15 +53,38 @@ create policy site_ziyaretler_select_master on public.site_ziyaretler
     for select to authenticated
     using (public.master_email_eslesir());
 
+-- Dedup kontrolü (anon SELECT yok → private DEFINER yardımcı)
+create schema if not exists private;
+revoke all on schema private from public;
+grant usage on schema private to postgres, service_role, anon, authenticated;
+
+create or replace function private.gunde5_ziyaret_atlandi_mi(p_key text, p_yol text)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+    select exists (
+        select 1
+        from public.site_ziyaretler z
+        where z.oturum_key = p_key
+          and z.yol = p_yol
+          and z.created_at > now() - interval '5 minutes'
+    );
+$$;
+
+revoke all on function private.gunde5_ziyaret_atlandi_mi(text, text) from public;
+grant execute on function private.gunde5_ziyaret_atlandi_mi(text, text) to anon, authenticated;
+
 -- ---------------------------------------------------------------------------
--- Kayıt (anon + giriş yapmış)
--- p_body: { sayfa, yol, referrer?, utm_source?, utm_medium?, utm_campaign?,
---           utm_term?, utm_content?, cihaz?, dil?, oturum_key? }
+-- Kayıt (anon + giriş yapmış) — SECURITY INVOKER + RLS (fix-4 ile uyumlu)
+-- p_body: { sayfa, yol, referrer?, utm_source?, ... oturum_key? }
 -- ---------------------------------------------------------------------------
 create or replace function public.ziyaret_kaydet(p_body jsonb)
 returns jsonb
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare
@@ -74,13 +106,7 @@ begin
 
     v_ref := nullif(left(trim(coalesce(p_body->>'referrer', '')), 500), '');
 
-    -- Aynı oturum + aynı sayfa/yol: 5 dk içinde tekrar kayıt yok (yenileme spam)
-    if exists (
-        select 1 from public.site_ziyaretler z
-        where z.oturum_key = v_key
-          and z.yol = v_yol
-          and z.created_at > now() - interval '5 minutes'
-    ) then
+    if private.gunde5_ziyaret_atlandi_mi(v_key, v_yol) then
         return jsonb_build_object('ok', true, 'atlandi', true);
     end if;
 
@@ -208,13 +234,13 @@ begin
         ), '[]'::jsonb),
         'site', jsonb_build_object(
             'uyeler', (select count(*)::int from public.uye),
-            'kulis', (select count(*)::int from public.hikayeler i where i.status = 'kulis' and i.silindi_at is null),
-            'podyum', (select count(*)::int from public.hikayeler i where i.status = 'podyum' and i.silindi_at is null),
-            'gizli_hikaye', (select count(*)::int from public.hikayeler i where i.is_gizli = true and i.silindi_at is null),
-            'silinen', (select count(*)::int from public.hikayeler i where i.silindi_at is not null),
-            'cevaplar', (select count(*)::int from public.hikaye_cevaplar),
-            'oylar', (select count(*)::int from public.hikaye_oylar),
-            'sikayetler', (select count(*)::int from public.hikaye_sikayetler)
+            'kulis', (select count(*)::int from public.itiraflar i where i.status = 'kulis' and i.silindi_at is null),
+            'podyum', (select count(*)::int from public.itiraflar i where i.status = 'podyum' and i.silindi_at is null),
+            'gizli_hikaye', (select count(*)::int from public.itiraflar i where i.is_gizli = true and i.silindi_at is null),
+            'silinen', (select count(*)::int from public.itiraflar i where i.silindi_at is not null),
+            'cevaplar', (select count(*)::int from public.itiraf_cevaplar),
+            'oylar', (select count(*)::int from public.itiraf_oylar),
+            'sikayetler', (select count(*)::int from public.itiraf_sikayetler)
         ),
         'son_kayitlar', coalesce((
             select jsonb_agg(jsonb_build_object(

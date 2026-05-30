@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="js/gunde5-shell.js"></script>
     <script defer src="js/gunde5-perf.js"></script>
-    <title>Giyotin çoktan inmiş — gunde5.com</title>
+    <title>Sayfa bulunamadı — gunde5.com</title>
     <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -255,27 +255,27 @@
 </head>
 <body>
     <header>
-        <a href="/kulis">gunde<span>5</span>.com</a>
+        <a href="/">gunde<span>5</span>.com</a>
         <button class="theme-toggle" type="button" onclick="toggleTheme()">🌓 Mod</button>
     </header>
 
     <main class="container">
         <div class="not-found-ikon" aria-hidden="true">⚔️</div>
         <p class="not-found-kod">404</p>
-        <h1>Giyotin çoktan inmiş</h1>
+        <h1>Sayfa bulunamadı</h1>
         <p class="not-found-metin">
-            Üzgünüz ama <strong class="saat-vurgu">13.12</strong>'de giyotin çoktan inmiş ve aradığınız hikayeyi sonsuza dek silip atmış.
-            Yenilerini kaçırmamak için oyla, yorum yaz ve <a href="/podyum">Podyum</a>a çıkmasını sağla.
+            Aradığınız hikaye veya sayfa yok. Anasayfada yeni hikayelere göz atabilir veya
+            <a href="/podyum">Podyum</a> arşivine bakabilirsin.
         </p>
         <div class="not-found-aksiyonlar">
-            <a href="/kulis" class="not-found-btn not-found-btn--birincil">Kulis sayfasına git ve oylamaya katıl</a>
-            <a href="/podyum" class="not-found-btn not-found-btn--ikincil">Geçmişin şampiyonlarını gör</a>
+            <a href="/" class="not-found-btn not-found-btn--birincil">Anasayfaya dön</a>
+            <a href="/podyum" class="not-found-btn not-found-btn--ikincil">Podyum arşivi</a>
         </div>
     </main>
 
     <div class="bottom-nav" role="navigation" aria-label="Ana menü">
-        <a href="/kulis" class="nav-item">
-            <div class="icon">🔥</div><span>Kulis</span>
+        <a href="/" class="nav-item">
+            <div class="icon">🏠</div><span>Anasayfa</span>
         </a>
         <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn">
             <div class="icon">✍️</div><span>Hikaye Yaz</span>
@@ -287,7 +287,7 @@
 
     <script>
         document.getElementById('navYazBtn').addEventListener('click', function () {
-            window.location.href = '/kulis';
+            window.location.href = '/';
         });
     </script>
 </body>

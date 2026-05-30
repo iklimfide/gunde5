@@ -161,20 +161,51 @@
     function menuIstatistikGuncelle() {
         if (!masterMi) {
             menuIstatistikKaldir();
+            menuMetrikKaldir();
             return;
         }
         var link = document.getElementById('headerMenuIstatistik');
+        if (!link) {
+            var nav = document.querySelector('.header-menu-nav');
+            if (!nav) return;
+            link = document.createElement('a');
+            link.href = '/istatistikler';
+            link.className = 'header-menu-link header-menu-link--master';
+            link.id = 'headerMenuIstatistik';
+            link.textContent = '📊 İstatistikler';
+            var kvkk = nav.querySelector('a[href="/kvkk"]');
+            if (kvkk) nav.insertBefore(link, kvkk);
+            else nav.appendChild(link);
+        }
+        menuMetrikGuncelle();
+    }
+
+    function menuMetrikKaldir() {
+        var link = document.getElementById('headerMenuMetrik');
+        if (link && link.parentNode) link.parentNode.removeChild(link);
+    }
+
+    function menuMetrikGuncelle() {
+        if (!masterMi) {
+            menuMetrikKaldir();
+            return;
+        }
+        var link = document.getElementById('headerMenuMetrik');
         if (link) return;
         var nav = document.querySelector('.header-menu-nav');
         if (!nav) return;
         link = document.createElement('a');
-        link.href = '/istatistikler';
+        link.href = '/metrikler';
         link.className = 'header-menu-link header-menu-link--master';
-        link.id = 'headerMenuIstatistik';
-        link.textContent = '📊 İstatistikler';
-        var kvkk = nav.querySelector('a[href="/kvkk"]');
-        if (kvkk) nav.insertBefore(link, kvkk);
-        else nav.appendChild(link);
+        link.id = 'headerMenuMetrik';
+        link.textContent = '📈 Metrikler';
+        var istat = document.getElementById('headerMenuIstatistik');
+        if (istat) nav.insertBefore(link, istat.nextSibling);
+        else {
+            var kvkk = nav.querySelector('a[href="/kvkk"]');
+            if (kvkk) nav.insertBefore(link, kvkk);
+            else nav.appendChild(link);
+        }
     }
 
     function menuUyelerKaldir() {
@@ -710,7 +741,7 @@
         gozlemci = new MutationObserver(function () {
             if (modAktifMi()) kartlariBagla();
         });
-        ['podyumListe', 'kulisListe'].forEach(function (id) {
+        ['podyumListe'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) gozlemci.observe(el, { childList: true, subtree: true });
         });

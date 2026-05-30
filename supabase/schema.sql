@@ -32,6 +32,7 @@ create table if not exists public.hikayeler (
     avatar_url text,
     content_short varchar(140) not null,
     content_full text not null,
+    baslik varchar(120),
     up_votes int not null default 0,
     down_votes int not null default 0,
     -- Gizli algoritma alanları (UI'da gösterilmez)

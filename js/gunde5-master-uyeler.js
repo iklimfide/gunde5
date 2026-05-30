@@ -327,7 +327,7 @@
             } else {
                 html += '<button type="button" class="uyeler-btn uyeler-btn--tehlike" data-h-islem="sil">Sil</button>';
             }
-            var link = h.status === 'podyum' ? '/podyum?itiraf=' + h.id : '/kulis?itiraf=' + h.id;
+            var link = h.status === 'podyum' ? '/podyum?itiraf=' + h.id : '/?itiraf=' + h.id;
             html +=
                 '<a class="uyeler-icerik-link" href="' + esc(link) + '" target="_blank" rel="noopener">Sayfada aç</a>' +
                 '</div></article>';
@@ -344,7 +344,7 @@
             var tur = c.parent_id ? 'Yanıt' : 'Cevap';
             var link = c.itiraf_status === 'podyum'
                 ? '/podyum?itiraf=' + c.itiraf_id
-                : '/kulis?itiraf=' + c.itiraf_id;
+                : '/?itiraf=' + c.itiraf_id;
             html +=
                 '<article class="uyeler-icerik-kart" data-cevap-id="' + esc(c.id) + '">' +
                 '<div class="uyeler-icerik-ust">' +

@@ -84,7 +84,7 @@
                     git404(id);
                     return;
                 }
-                var sayfa = row.status === 'podyum' ? '/?itiraf=' : '/kulis?itiraf=';
+                var sayfa = row.status === 'podyum' ? '/podyum?itiraf=' : '/?itiraf=';
                 location.replace(kok(sayfa) + encodeURIComponent(id));
             }).catch(function () {
                 git404(id);

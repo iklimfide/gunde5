@@ -96,8 +96,28 @@
     etiketMapOlustur(MESLEK_SECENEKLERI, meslekEtiketMap);
     etiketMapOlustur(MEDENI_SECENEKLERI, medeniEtiketMap);
 
+    function basHarfBuyukTr(s) {
+        var ham = String(s || '').trim();
+        if (!ham) return '';
+        try {
+            return ham.charAt(0).toLocaleUpperCase('tr-TR') + ham.slice(1).toLocaleLowerCase('tr-TR');
+        } catch (eBas) {
+            var ilk = ham.charAt(0).toUpperCase();
+            if (ilk === 'I') ilk = 'İ';
+            return ilk + ham.slice(1).toLowerCase();
+        }
+    }
+
     function yerEtiketi(value) {
-        return yerEtiketMap[value] || value || '';
+        if (!value) return '';
+        if (yerEtiketMap[value]) return yerEtiketMap[value];
+        var ham = String(value).trim();
+        if (!ham) return '';
+        if (ham === 'yurtdisi') return 'Yurtdışı';
+        if (ham.indexOf('_') >= 0) {
+            return ham.split('_').filter(Boolean).map(basHarfBuyukTr).join(' ');
+        }
+        return basHarfBuyukTr(ham);
     }
 
     function meslekEtiketi(value) {
@@ -111,7 +131,7 @@
     function yasadigiYerGosterim(u) {
         if (!u || !u.yasadigiYer) return '';
         if (u.yasadigiYer === 'yurtdisi') {
-            var sehir = u.yurtdisiSehir ? String(u.yurtdisiSehir).trim() : '';
+            var sehir = u.yurtdisiSehir ? basHarfBuyukTr(String(u.yurtdisiSehir)) : '';
             return sehir ? 'Yurtdışı · ' + sehir : 'Yurtdışı';
         }
         return yerEtiketi(u.yasadigiYer);
@@ -121,12 +141,12 @@
         if (!row) return '';
         if (row.yasadigi_yer) {
             if (row.yasadigi_yer === 'yurtdisi') {
-                var sehir = row.yurtdisi_sehir ? String(row.yurtdisi_sehir).trim() : '';
+                var sehir = row.yurtdisi_sehir ? basHarfBuyukTr(String(row.yurtdisi_sehir)) : '';
                 return sehir ? 'Yurtdışı · ' + sehir : 'Yurtdışı';
             }
             return yerEtiketi(row.yasadigi_yer);
         }
-        if (row.city) return String(row.city).trim();
+        if (row.city) return yerEtiketi(String(row.city).trim());
         return '';
     }
 
@@ -203,6 +223,7 @@
         meslekEtiketi: meslekEtiketi,
         medeniEtiketi: medeniEtiketi,
         yasadigiYerGosterim: yasadigiYerGosterim,
+        yasadigiYerSatirdan: yasadigiYerSatirdan,
         kartMetaSatir: kartMetaSatir,
         selectDoldur: selectDoldur
     };

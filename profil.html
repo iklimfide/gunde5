@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -869,7 +869,6 @@
                 <div class="header-menu-panel" id="headerMenuPanel" hidden>
                     <nav class="header-menu-nav" aria-label="Site menüsü">
                         <a href="/podyum" class="header-menu-link">🏆 Podyum</a>
-                        <a href="/kulis" class="header-menu-link">🔥 Kulis</a>
                         <a href="/hakkinda" class="header-menu-link">ℹ️ Hakkında</a>
                         <a href="/iletisim" class="header-menu-link">✉️ İletişim</a>
                         <a href="/kvkk" class="header-menu-link">📋 KVKK</a>
@@ -896,8 +895,8 @@
     </div>
 
     <div class="bottom-nav" role="navigation" aria-label="Ana menü">
-        <a href="/kulis" class="nav-item">
-            <div class="icon">🔥</div><span>Kulis</span>
+        <a href="/" class="nav-item">
+            <div class="icon">🏠</div><span>Anasayfa</span>
         </a>
         <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn">
             <div class="icon">✍️</div><span>Hikaye Yaz</span>
@@ -941,7 +940,7 @@
                     <div class="auth-brand-text">gunde<span>5</span>.com</div>
                 </div>
                 <h2 class="auth-modal-baslik">Üye Girişi</h2>
-                <p class="auth-modal-alt-baslik">E-posta ve şifrenle kulise dön.</p>
+                <p class="auth-modal-alt-baslik">E-posta ve şifrenle giriş yap.</p>
                 <label class="auth-etiket" for="loginEmail">E-Posta</label>
                 <input class="auth-input" type="email" id="loginEmail" maxlength="80" placeholder="mail@adresin.com" autocomplete="email">
                 <label class="auth-etiket" for="loginPassword">Şifre</label>
@@ -1026,7 +1025,7 @@
             }
 
             if (itiraflar.length === 0) {
-                listeHtml = '<div class="profil-bos">Henüz hikaye yazmadın.<br><a href="/kulis">Kulis</a>\'ten ilk hikayeni gönder.</div>';
+                listeHtml = '<div class="profil-bos">Henüz hikaye yazmadın.<br><a href="/podyum">Podyum</a>\'dan ilk hikayeni gönder.</div>';
             } else {
                 for (i = 0; i < itiraflar.length; i++) {
                     var it = itiraflar[i];
@@ -1035,8 +1034,8 @@
                     var durumSinif = it.status === 'podyum' ? 'durum-podyum' : 'durum-kulis';
                     var durumHref = (window.Gunde5Paylas && Gunde5Paylas.itirafIcLink)
                         ? Gunde5Paylas.itirafIcLink(it.id, it.status)
-                        : (it.status === 'podyum' ? '/podyum?itiraf=' : '/kulis?itiraf=') + encodeURIComponent(String(it.id));
-                    var durumMetin = it.status === 'podyum' ? 'Podyum' : 'Kulis';
+                        : (it.status === 'podyum' ? '/podyum?itiraf=' : '/?itiraf=') + encodeURIComponent(String(it.id));
+                    var durumMetin = it.status === 'podyum' ? 'Podyum' : 'Index';
                     var tarih = '';
                     if (it.created_at) {
                         try {
@@ -1102,7 +1101,7 @@
                 '</div>' +
                 '</div>' +
                 '<div class="profil-istat">' +
-                '<div class="profil-istat-kutu"><strong>' + kulisSay + '</strong><span><a href="/kulis">Kulis</a></span></div>' +
+                '<div class="profil-istat-kutu"><strong>' + kulisSay + '</strong><span><a href="/">Index</a></span></div>' +
                 '<div class="profil-istat-kutu"><strong>' + podyumSay + '</strong><span><a href="/podyum">Podyum</a></span></div>' +
                 '<div class="profil-istat-kutu"><strong>' + itiraflar.length + '</strong><span>Toplam</span></div>' +
                 '</div>' +
@@ -1326,7 +1325,7 @@
 
             await Gunde5DB.cikisYap();
             document.body.removeAttribute('data-user-gender');
-            window.location.href = '/kulis';
+            window.location.href = '/';
         }
 
         function doldurYilSecenekleri() {
@@ -1432,7 +1431,7 @@
                 openAuthModal('register');
                 return;
             }
-            window.location.href = '/kulis';
+            window.location.href = '/';
         });
 
         Gunde5DB.init().then(function () {

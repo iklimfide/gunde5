@@ -25,6 +25,45 @@
         return global.Gunde5DB;
     }
 
+    /** Index etkileşim olayları — Gunde5Analytics.track veya doğrudan RPC yedek */
+    function analyticsIndex(govde) {
+        var A = global.Gunde5Analytics;
+        var gov = Object.assign({ sayfa: 'index' }, govde || {});
+        if (A && typeof A.track === 'function') {
+            A.track(gov);
+            return;
+        }
+        var D = db();
+        if (!D || !D.analyticsEventKaydet || !D.isConfigured || !D.isConfigured()) return;
+        var sid = A && A.sessionIdAl ? A.sessionIdAl() : null;
+        var vid = A && A.visitorIdAl ? A.visitorIdAl() : null;
+        if (!sid || !vid) return;
+        D.analyticsEventKaydet(Object.assign({ session_id: sid, visitor_id: vid }, gov)).catch(function () { /* */ });
+    }
+
+    function analyticsVote(id, tip) {
+        var storyId = parseInt(id, 10);
+        if (!storyId) return;
+        analyticsIndex({
+            event: 'story_vote',
+            story_id: storyId,
+            vote_type: tip === 'up' ? 'like' : 'dislike'
+        });
+    }
+
+    function analyticsShare(id) {
+        var storyId = parseInt(id, 10);
+        if (!storyId) return;
+        analyticsIndex({ event: 'story_share', story_id: storyId });
+    }
+
+    function analyticsLoadMore(loadedCount) {
+        analyticsIndex({
+            event: 'load_more_click',
+            loaded_count: loadedCount || SAYFA
+        });
+    }
+
     function hataMesaji(err) {
         var D = db();
         return D && D.hataMesaji ? D.hataMesaji(err) : (err && err.message ? err.message : String(err));
@@ -58,9 +97,12 @@
         if (row.age) {
             p.push(row.age + ' Yaş');
         }
-        var yer = row.yasadigi_yer || row.city;
+        var P = global.Gunde5Profil;
+        var yer = P && P.yasadigiYerSatirdan
+            ? P.yasadigiYerSatirdan(row)
+            : (row.yasadigi_yer || row.city);
         if (yer) {
-            p.push(String(yer).trim());
+            p.push(yer);
         }
         return p.join(' • ');
     }
@@ -74,17 +116,31 @@
     }
 
     function oyDurumu(id) {
-        try {
-            return global.localStorage.getItem('g5_index_voted_' + id);
-        } catch (e) {
-            return null;
-        }
+        var D = db();
+        return D && D.oyDurumuOku ? D.oyDurumuOku(id) : null;
     }
 
     function oyKaydet(id, tip) {
-        try {
-            global.localStorage.setItem('g5_index_voted_' + id, tip);
-        } catch (e) { /* sessiz */ }
+        var D = db();
+        if (D && D.oyDurumuKaydet) {
+            D.oyDurumuKaydet(id, tip === 'up' ? 1 : -1);
+        }
+    }
+
+    async function kartOyDurumlariniSenkron(rows) {
+        var D = db();
+        var UI = global.Gunde5UI;
+        if (!D || !D.oyDurumlariSenkron || !rows || !rows.length) return;
+        var ids = rows.map(function (r) { return r.id; });
+        var durum = await D.oyDurumlariSenkron(ids);
+        ids.forEach(function (id) {
+            var tip = durum[id];
+            if (!tip) return;
+            var card = document.getElementById('h-' + id);
+            if (UI && UI.kartOyDurumuRenklendir) {
+                UI.kartOyDurumuRenklendir(card, tip);
+            }
+        });
     }
 
     function zatenOyladinMi(mesaj) {
@@ -229,17 +285,17 @@
         state.yuklenenIdler = {};
         var el = listeEl();
         if (el) el.innerHTML = '';
-        kartlariEkle(cached.rows, true);
+        return kartlariEkle(cached.rows, true);
     }
 
-    function ilkSayfayiYenidenCiz(rows) {
+    async function ilkSayfayiYenidenCiz(rows) {
         var el = listeEl();
         if (!el) return;
         el.innerHTML = '';
         state.yuklenenIdler = {};
         state.offset = rows.length;
         state.bitti = rows.length < SAYFA;
-        kartlariEkle(rows, true);
+        await kartlariEkle(rows, true);
         cacheYaz(rows, state.offset, state.bitti);
     }
 
@@ -251,6 +307,7 @@
         var dislike = dislikeSayisi(row);
         var voted = oyDurumu(id);
         var meta = metaSatir(row);
+        var baslik = row.baslik ? String(row.baslik).replace(/^\s+|\s+$/g, '') : '';
 
         var art = document.createElement('article');
         art.className = 'story-card card ' + cins + (ilkKart ? ' focused' : '');
@@ -272,15 +329,15 @@
                     '<span class="kart-marka" aria-hidden="true">gunde<span class="brand-five">5</span>.com</span>' +
                 '</div>' +
             '</div>' +
-            '<div class="card-body"><span class="short-text">' + esc(icerikMetni(row)) + '</span></div>' +
+            '<div class="card-body">' +
+                (baslik ? '<span class="kart-baslik">' + esc(baslik) + '</span>' : '') +
+                '<span class="short-text">' + esc(icerikMetni(row)) + '</span></div>' +
             '<div class="card-footer story-actions">' +
                 '<div class="vote-box">' +
                     '<button type="button" class="vote-btn' + (voted === 'up' ? ' applauded' : '') +
-                    '" data-vote="up" data-id="' + id + '">👏 Alkışla <span class="count">' + like + '</span></button>' +
+                    '" data-vote="up" data-id="' + id + '" aria-label="Beğendim">❤️ Beğendim <span class="count">' + like + '</span></button>' +
                     '<button type="button" class="vote-btn' + (voted === 'down' ? ' disliked' : '') +
-                    '" data-vote="down" data-id="' + id + '" aria-label="Beğenme">👎' +
-                    (dislike ? ' <span class="count-down">' + dislike + '</span>' : '') +
-                    '</button>' +
+                    '" data-vote="down" data-id="' + id + '" aria-label="Beğenmedim">👎 Beğenmedim <span class="count-down">' + dislike + '</span></button>' +
                 '</div>' +
                 '<button type="button" class="share-btn" data-share="' + id + '">🔗 Paylaş</button>' +
             '</div>';
@@ -307,7 +364,7 @@
         });
     }
 
-    function kartlariEkle(rows, ilkPart) {
+    async function kartlariEkle(rows, ilkPart) {
         var el = listeEl();
         if (!el || !rows.length) return;
 
@@ -330,6 +387,10 @@
         if (!eklendi) return;
 
         el.appendChild(frag);
+        await kartOyDurumlariniSenkron(rows);
+
+        var A = global.Gunde5Analytics;
+        if (A && A.kartlariIzle) A.kartlariIzle(el);
 
         if (rows.length >= SAYFA && !state.bitti) {
             var btnWrap = document.createElement('div');
@@ -371,6 +432,10 @@
             if (wrap) wrap.remove();
         }
 
+        if (btn) {
+            analyticsLoadMore(state.offset + SAYFA);
+        }
+
         state.yukleniyor = true;
         var ilkPart = state.offset === 0;
 
@@ -406,7 +471,7 @@
                 }
             }
 
-            kartlariEkle(rows, ilkPart);
+            await kartlariEkle(rows, ilkPart);
 
             if (ilkPart && rows.length && onbellekKullanilabilirMi()) {
                 cacheYaz(rows, state.offset, state.bitti);
@@ -464,7 +529,7 @@
 
             if (kartSayisi <= SAYFA) {
                 if (!idListesiAyni(domIdler, yeniIdler)) {
-                    ilkSayfayiYenidenCiz(rows);
+                    await ilkSayfayiYenidenCiz(rows);
                 } else {
                     var i;
                     for (i = 0; i < rows.length; i++) {
@@ -489,14 +554,16 @@
 
     function kartOySayilariniGuncelle(card, row) {
         if (!card || !row) return;
-        kartOyGuncelle(
-            card,
-            {
-                up_votes: likeSayisi(row),
-                down_votes: dislikeSayisi(row)
-            },
-            oyDurumu(String(row.id))
-        );
+        var upBtn = card.querySelector('[data-vote="up"]');
+        var downBtn = card.querySelector('[data-vote="down"]');
+        if (upBtn) {
+            var upSpan = upBtn.querySelector('.count');
+            if (upSpan) upSpan.textContent = String(likeSayisi(row));
+        }
+        if (downBtn) {
+            var downSpan = downBtn.querySelector('.count-down');
+            if (downSpan) downSpan.textContent = String(dislikeSayisi(row));
+        }
     }
 
     function kartOyGuncelle(card, sonuc, tip) {
@@ -510,67 +577,82 @@
             }
         }
         if (downBtn) {
-            var downVal = sonuc.down_votes != null ? sonuc.down_votes : 0;
             var downSpan = downBtn.querySelector('.count-down');
-            if (downVal > 0) {
-                if (!downSpan) {
-                    downSpan = document.createElement('span');
-                    downSpan.className = 'count-down';
-                    downBtn.appendChild(document.createTextNode(' '));
-                    downBtn.appendChild(downSpan);
-                }
-                downSpan.textContent = String(downVal);
-            } else if (downSpan) {
-                downSpan.remove();
+            if (downSpan && sonuc.down_votes != null) {
+                downSpan.textContent = String(sonuc.down_votes);
             }
         }
-        oyButonRenklendir(card, tip);
+        if (tip) oyButonRenklendir(card, tip);
     }
 
     function oyButonRenklendir(card, tip) {
+        var UI = global.Gunde5UI;
+        if (UI && UI.kartOyDurumuRenklendir) {
+            UI.kartOyDurumuRenklendir(card, tip);
+            return;
+        }
         if (!card || !tip) return;
         var upBtn = card.querySelector('[data-vote="up"]');
         var downBtn = card.querySelector('[data-vote="down"]');
-        if (upBtn) {
-            upBtn.classList.toggle('applauded', tip === 'up');
-        }
-        if (downBtn) {
-            downBtn.classList.toggle('disliked', tip === 'down');
-        }
+        if (upBtn) upBtn.classList.toggle('applauded', tip === 'up');
+        if (downBtn) downBtn.classList.toggle('disliked', tip === 'down');
     }
 
     async function oyTikla(btn) {
         var id = btn.getAttribute('data-id');
         var tip = btn.getAttribute('data-vote');
-        if (!id || !tip || oyDurumu(id)) {
+        if (!id || !tip) return;
+
+        var D = db();
+        var card = document.getElementById('h-' + id);
+
+        if (oyDurumu(id)) {
+            oyButonRenklendir(card, oyDurumu(id));
             showToast(MSJ_ZATEN_OYLADIN);
             return;
         }
 
-        var D = db();
+        if (D && D.oyDurumuSunucudan) {
+            var sunucuOy = await D.oyDurumuSunucudan(id);
+            if (sunucuOy) {
+                oyButonRenklendir(card, sunucuOy);
+                showToast(MSJ_ZATEN_OYLADIN);
+                return;
+            }
+        }
+
         if (!D || !D.oyVer) {
             showToast('Oy servisi yüklenemedi.');
             return;
         }
 
-        var card = document.getElementById('h-' + id);
         oyButonRenklendir(card, tip);
         btn.disabled = true;
 
+        analyticsVote(id, tip);
+
         try {
             var sonuc = await D.oyVer(id, tip === 'up' ? 1 : -1);
-            kartOyGuncelle(card, sonuc, tip);
-            oyKaydet(id, tip);
-            if (tip === 'up' && typeof global.confetti === 'function') {
+            var gercekTip = sonuc.oy === 1 ? 'up' : (sonuc.oy === -1 ? 'down' : tip);
+            kartOyGuncelle(card, sonuc, gercekTip);
+            oyKaydet(id, gercekTip);
+            if (sonuc.zaten_oyladin) {
+                showToast(MSJ_ZATEN_OYLADIN);
+            } else if (tip === 'up' && typeof global.confetti === 'function') {
                 global.confetti({ particleCount: 50, spread: 60, origin: { y: 0.85 } });
             }
         } catch (err) {
             var mesaj = hataMesaji(err);
             if (zatenOyladinMi(mesaj)) {
-                oyKaydet(id, tip);
-                oyButonRenklendir(card, tip);
+                var gercek = D.oyDurumuSunucudan
+                    ? await D.oyDurumuSunucudan(id)
+                    : null;
+                oyButonRenklendir(card, gercek || tip);
+                showToast(MSJ_ZATEN_OYLADIN);
+            } else {
+                oyButonRenklendir(card, null);
+                showToast(mesaj);
             }
-            showToast(mesaj);
         } finally {
             btn.disabled = false;
         }
@@ -643,7 +725,8 @@
                 paylasPanoyaYaz(aktif.paket, 'Link kopyalandı — Instagram\'da yapıştırabilirsin')
                     .catch(function () {
                         showToast(aktif.paket);
-                    });
+                    })
+                    .finally(paylasSheetKapat);
             });
             elCopy.addEventListener('click', function () {
                 var aktif = paylasPaketOlustur(paylasAktifId);
@@ -651,7 +734,11 @@
                 paylasPanoyaYaz(aktif.paket, 'Metin ve link kopyalandı')
                     .catch(function () {
                         showToast(aktif.paket);
-                    });
+                    })
+                    .finally(paylasSheetKapat);
+            });
+            [elX, elWa, elTg, elFb].forEach(function (el) {
+                if (el) el.addEventListener('click', paylasSheetKapat);
             });
         }
 
@@ -662,6 +749,7 @@
     }
 
     function paylasTikla(id) {
+        analyticsShare(id);
         paylasSheetAc(id);
     }
 
@@ -761,7 +849,7 @@
 
         var cached = onbellekKullanilabilirMi() ? cacheOku() : null;
         if (cached && cached.rows.length) {
-            onbellektenGoster(cached);
+            await onbellektenGoster(cached);
             arkaplanIlkSayfaYenile().then(function () {
                 return hedefKartaKaydirOtomatik(0);
             });

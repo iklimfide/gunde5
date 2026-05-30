@@ -422,6 +422,16 @@
             text-align: justify;
             text-justify: inter-word;
         }
+        .card .kart-baslik {
+            display: block;
+            font-size: 17px;
+            font-weight: 800;
+            line-height: 1.35;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+        .card.female .kart-baslik { color: var(--female-color); }
+        .card.male .kart-baslik { color: var(--male-color); }
         body.dark-mode .card-body { color: #e7e9ea; }
         /* uzun-metin aç/kapa: js/gunde5-kart-cevap.js */
         .kart-daralt-satir { width: 100%; text-align: center; margin-top: 10px; }
@@ -672,7 +682,7 @@
             white-space: nowrap;
         }
 
-        .itiraf-modal {
+        .hikaye-modal {
             position: fixed;
             inset: 0;
             z-index: 2000;
@@ -682,12 +692,12 @@
             pointer-events: none;
             transition: opacity 0.22s ease, visibility 0.22s ease;
         }
-        .itiraf-modal.acik {
+        .hikaye-modal.acik {
             opacity: 1;
             visibility: visible;
             pointer-events: auto;
         }
-        .itiraf-modal-panel {
+        .hikaye-modal-panel {
             position: absolute;
             left: 50%;
             bottom: 90px;
@@ -702,32 +712,32 @@
             transform: translateX(-50%) translateY(14px);
             transition: transform 0.22s ease;
         }
-        .itiraf-modal.acik .itiraf-modal-panel {
+        .hikaye-modal.acik .hikaye-modal-panel {
             transform: translateX(-50%) translateY(0);
         }
-        body.dark-mode .itiraf-modal-panel {
+        body.dark-mode .hikaye-modal-panel {
             background: #1c2128;
             border-color: #2f3336;
             box-shadow: 0 10px 36px rgba(0, 0, 0, 0.45);
         }
-        .itiraf-modal-ust {
+        .hikaye-modal-ust {
             display: block;
             position: relative;
             margin-bottom: 14px;
             padding: 0 36px 0 0;
             text-align: center;
         }
-        .itiraf-modal-baslik-wrap {
+        .hikaye-modal-baslik-wrap {
             text-align: center;
         }
-        .itiraf-modal-baslik {
+        .hikaye-modal-baslik {
             font-size: 17px;
             font-weight: 800;
             color: var(--text-main);
             letter-spacing: -0.3px;
             text-align: center;
         }
-        .itiraf-modal-ipucu {
+        .hikaye-modal-ipucu {
             margin: 10px 0 0;
             font-size: 12px;
             font-weight: 600;
@@ -735,9 +745,9 @@
             color: #b45309;
             text-align: center;
         }
-        body.dark-mode .itiraf-modal-ipucu { color: #fbbf24; }
-        .itiraf-modal-ipucu .saat-vurgu { color: inherit; font-weight: 800; }
-        .itiraf-modal-kapat {
+        body.dark-mode .hikaye-modal-ipucu { color: #fbbf24; }
+        .hikaye-modal-ipucu .saat-vurgu { color: inherit; font-weight: 800; }
+        .hikaye-modal-kapat {
             position: absolute;
             top: -4px;
             right: 0;
@@ -754,14 +764,14 @@
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
-        .itiraf-modal-kapat:active { transform: scale(0.94); }
-        body.dark-mode .itiraf-modal-kapat {
+        .hikaye-modal-kapat:active { transform: scale(0.94); }
+        body.dark-mode .hikaye-modal-kapat {
             background: #0f1419;
             border-color: #2f3336;
             color: var(--text-muted);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
         }
-        .itiraf-textarea {
+        .hikaye-textarea {
             display: block;
             width: 100%;
             min-height: 220px;
@@ -778,22 +788,101 @@
             outline: none;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
         }
-        .itiraf-textarea:focus {
+        .hikaye-textarea:focus {
             border-color: #1d9bf0;
             box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.22);
         }
-        body.dark-mode .itiraf-textarea {
+        body.dark-mode .hikaye-textarea {
             background: #0f1419;
             color: var(--text-main);
             border-color: #2f3336;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
         }
-        body.dark-mode .itiraf-textarea:focus {
+        body.dark-mode .hikaye-textarea:focus {
             border-color: #1d9bf0;
             box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.28);
         }
-        .itiraf-textarea::placeholder { color: #9ca3af; }
-        .itiraf-modal-alt {
+        .hikaye-textarea::placeholder { color: #9ca3af; }
+        .hikaye-baslik-input {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            background: #ffffff;
+            color: #111827;
+            font-size: 16px;
+            line-height: 1.35;
+            font-weight: 700;
+            outline: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+        .hikaye-baslik-input:focus {
+            border-color: #1d9bf0;
+            box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.22);
+        }
+        body.dark-mode .hikaye-baslik-input {
+            background: #0f1419;
+            color: var(--text-main);
+            border-color: #2f3336;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+        }
+        body.dark-mode .hikaye-baslik-input:focus {
+            border-color: #1d9bf0;
+            box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.28);
+        }
+        .hikaye-baslik-input::placeholder { color: #9ca3af; font-weight: 500; }
+        .hikaye-master-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .hikaye-master-alan label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            letter-spacing: 0.02em;
+        }
+        .hikaye-master-alan input,
+        .hikaye-master-alan select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #111827;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .hikaye-master-alan input:focus,
+        .hikaye-master-alan select:focus {
+            border-color: #1d9bf0;
+            box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.22);
+        }
+        body.dark-mode .hikaye-master-alan input,
+        body.dark-mode .hikaye-master-alan select {
+            background: #0f1419;
+            color: var(--text-main);
+            border-color: #2f3336;
+        }
+        .hikaye-master-yurtdisi--gizli { display: none; }
+        .hikaye-master-form .hikaye-textarea {
+            min-height: 160px;
+        }
+        .hikaye-master-ipucu {
+            margin: 0;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        .hikaye-modal-alt {
             margin-top: 14px;
             display: flex;
             align-items: center;
@@ -835,7 +924,7 @@
             color: #c4b5fd;
             box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3), 0 0 0 3px rgba(139, 92, 246, 0.18);
         }
-        .itiraf-gonder-btn {
+        .hikaye-gonder-btn {
             padding: 11px 26px;
             border: none;
             border-radius: 999px;
@@ -847,22 +936,23 @@
             box-shadow: 0 3px 14px rgba(29, 155, 240, 0.4);
             transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
         }
-        .itiraf-gonder-btn:active {
+        .hikaye-gonder-btn:active {
             transform: scale(0.97);
             background: #1a8cd8;
         }
-        .itiraf-gonder-btn:disabled {
+        .hikaye-gonder-btn:disabled {
             opacity: 0.55;
             cursor: not-allowed;
         }
-        body.dark-mode .itiraf-gonder-btn {
+        body.dark-mode .hikaye-gonder-btn {
             background: #1d9bf0;
             color: #ffffff;
             box-shadow: 0 3px 16px rgba(29, 155, 240, 0.45);
         }
-        body.dark-mode .itiraf-gonder-btn:active {
+        body.dark-mode .hikaye-gonder-btn:active {
             background: #1a8cd8;
         }
+
 
         .header-sol {
             position: absolute;
@@ -1244,7 +1334,7 @@
                 <div class="header-menu-panel" id="headerMenuPanel" hidden>
                     <nav class="header-menu-nav" aria-label="Site menüsü">
                         <a href="/podyum" class="header-menu-link">🏆 Podyum</a>
-                        <a href="/kulis" class="header-menu-link">🔥 Kulis</a>
+                        <a href="/" class="header-menu-link">🏠 Anasayfa</a>
                         <a href="/hakkinda" class="header-menu-link">ℹ️ Hakkında</a>
                         <a href="/iletisim" class="header-menu-link">✉️ İletişim</a>
                         <a href="/kvkk" class="header-menu-link">📋 KVKK</a>
@@ -1268,10 +1358,8 @@
         <h1 class="seo-sr-only">gunde5.com — Günün en iyi 5 hikayesi podyumu</h1>
 
         <div class="info-banner">
-            <h4>EFSANE OLMAYA</h4>
-            <div class="countdown" id="timer">00:00:00</div>
-            <p>Saat tam <strong class="saat-vurgu">13.12</strong>'de <strong class="saat-vurgu">GİYOTİN</strong> inecek ve efsaneler podyuma çıkacak.</p>
-            <p>Efsane olamayanlar sonsuza dek silinecek.</p>
+            <h4>EFSANELER</h4>
+            <p>Günün en çok konuşulan hikayeleri burada — arşiv kalıcı.</p>
         </div>
 
         <section class="podyum-sampiyonlar" id="podyumSampiyonlar" hidden aria-labelledby="podyumTopEtiket podyumDonemBaslik">
@@ -1288,8 +1376,8 @@
     </div>
 
     <div class="bottom-nav" role="navigation" aria-label="Ana menü">
-        <a href="/kulis" class="nav-item">
-            <div class="icon">🔥</div><span>Kulis</span>
+        <a href="/" class="nav-item">
+            <div class="icon">🏠</div><span>Anasayfa</span>
         </a>
         <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn" aria-haspopup="dialog">
             <div class="icon">✍️</div><span>Hikaye Yaz</span>
@@ -1333,7 +1421,7 @@
                     <div class="auth-brand-text">gunde<span>5</span>.com</div>
                 </div>
                 <h2 class="auth-modal-baslik">Üye Girişi</h2>
-                <p class="auth-modal-alt-baslik">E-posta ve şifrenle kulise dön.</p>
+                <p class="auth-modal-alt-baslik">E-posta ve şifrenle giriş yap.</p>
                 <label class="auth-etiket" for="loginEmail">E-Posta</label>
                 <input class="auth-input" type="email" id="loginEmail" maxlength="80" placeholder="mail@adresin.com" autocomplete="email">
                 <label class="auth-etiket" for="loginPassword">Şifre</label>
@@ -1344,22 +1432,65 @@
         </div>
     </div>
 
-    <div class="itiraf-modal" id="itirafModal" role="dialog" aria-modal="true" aria-labelledby="itirafModalBaslik" aria-hidden="true">
-        <div class="itiraf-modal-panel">
-            <div class="itiraf-modal-ust">
-                <button type="button" class="itiraf-modal-kapat" id="itirafModalKapat" aria-label="Kapat">×</button>
-                <div class="itiraf-modal-baslik-wrap">
-                    <h2 class="itiraf-modal-baslik" id="itirafModalBaslik">Hikayeni Yaz</h2>
-                    <p class="itiraf-modal-ipucu">Unutma, Sadece en güzel 5 hikaye <strong class="saat-vurgu">13.12</strong>'de giyotine kurban gitmez,<br>EFSANE olur, podyuma çıkar.</p>
+    <div class="hikaye-modal" id="hikayeModal" role="dialog" aria-modal="true" aria-labelledby="hikayeModalBaslik" aria-hidden="true">
+        <div class="hikaye-modal-panel">
+            <div class="hikaye-modal-ust">
+                <button type="button" class="hikaye-modal-kapat" id="hikayeModalKapat" aria-label="Kapat">×</button>
+                <div class="hikaye-modal-baslik-wrap">
+                    <h2 class="hikaye-modal-baslik" id="hikayeModalBaslik">Hikayeni Yaz</h2>
+                    <p class="hikaye-modal-ipucu">Hikayen anasayfada yayınlanır; en beğenilenler podyum arşivine alınır.</p>
                 </div>
             </div>
-            <textarea class="itiraf-textarea" id="itirafTextarea" placeholder="Tüm hikayeni buraya yaz…" rows="10"></textarea>
-            <div class="itiraf-modal-alt">
-                <button type="button" class="gizli-uye-sec" id="gizliUyeSec" aria-pressed="false">🎭 Gizli Üye olarak yaz</button>
-                <button type="button" class="itiraf-gonder-btn" id="itirafGonderBtn">Gönder</button>
+            <div id="hikayeUyeIcerik">
+                <input type="text" class="hikaye-baslik-input" id="hikayeBaslik" maxlength="120" autocomplete="off" placeholder="Başlık (isteğe bağlı)…">
+                <textarea class="hikaye-textarea" id="hikayeTextarea" placeholder="Tüm hikayeni buraya yaz…" rows="10"></textarea>
+                <div class="hikaye-modal-alt">
+                    <button type="button" class="gizli-uye-sec" id="gizliUyeSec" aria-pressed="false">🎭 Gizli Üye olarak yaz</button>
+                    <button type="button" class="hikaye-gonder-btn" id="hikayeGonderBtn">Gönder</button>
+                </div>
+            </div>
+            <div id="hikayeMasterIcerik" class="hikaye-master-form" hidden>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayeRumuz">Rumuz</label>
+                    <input type="text" id="masterHikayeRumuz" maxlength="50" autocomplete="off" placeholder="Örn. KaktüsAvcısı">
+                </div>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayeYas">Yaş</label>
+                    <input type="number" id="masterHikayeYas" min="18" max="120" inputmode="numeric" placeholder="18–120">
+                </div>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayeCinsiyet">Cinsiyet</label>
+                    <select id="masterHikayeCinsiyet">
+                        <option value="female">Kadın</option>
+                        <option value="male">Erkek</option>
+                    </select>
+                </div>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayeIl">Yaşadığı il</label>
+                    <select id="masterHikayeIl"></select>
+                </div>
+                <div class="hikaye-master-alan hikaye-master-yurtdisi" id="masterHikayeYurtdisiWrap" hidden>
+                    <label for="masterHikayeYurtdisi">Yurtdışı şehir</label>
+                    <input type="text" id="masterHikayeYurtdisi" maxlength="80" autocomplete="off" placeholder="Örn. Berlin">
+                </div>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayePlan">Yayınlanma zamanı planla</label>
+                    <input type="datetime-local" id="masterHikayePlan">
+                    <p class="hikaye-master-ipucu">Boş bırakırsan hemen yayınlanır. Gelecek tarih seçersen anasayfada o saate kadar görünmez.</p>
+                </div>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayeBaslik">Başlık (isteğe bağlı)</label>
+                    <input type="text" id="masterHikayeBaslik" maxlength="120" autocomplete="off" placeholder="Örn. Kaktüs felaketi">
+                </div>
+                <div class="hikaye-master-alan">
+                    <label for="masterHikayeMetin">Hikaye</label>
+                    <textarea class="hikaye-textarea" id="masterHikayeMetin" placeholder="Tüm hikayeyi buraya yaz…" rows="8"></textarea>
+                </div>
+                <div class="hikaye-modal-alt" style="margin-top:0">
+                    <button type="button" class="hikaye-gonder-btn" id="hikayeMasterGonderBtn">Gönder</button>
+                </div>
             </div>
         </div>
-    </div>
 
     <script defer src="js/gunde5-paylas.js"></script>
     <script defer src="js/gunde5-bildirim.js"></script>
@@ -1467,17 +1598,69 @@
             }
         }
 
-        function acItirafModal() {
-            if (!Gunde5UI.itirafUyeGerekli()) {
+        var hikayeModalMasterMi = false;
+
+        function doldurMasterIlSecenekleri() {
+            var sel = document.getElementById('masterHikayeIl');
+            if (!sel || sel.options.length > 1) return;
+            var P = window.Gunde5Profil;
+            var html = '<option value="">— Seç —</option>';
+            if (P && P.YER_SECENEKLERI) {
+                P.YER_SECENEKLERI.forEach(function (s) {
+                    if (!s.value) return;
+                    html += '<option value="' + s.value.replace(/"/g, '&quot;') + '">' +
+                        String(s.label).replace(/</g, '&lt;') + '</option>';
+                });
+            }
+            sel.innerHTML = html;
+        }
+
+        function masterYurtdisiGoster() {
+            var il = document.getElementById('masterHikayeIl');
+            var wrap = document.getElementById('masterHikayeYurtdisiWrap');
+            if (!il || !wrap) return;
+            var yurtdisi = il.value === 'yurtdisi';
+            wrap.hidden = !yurtdisi;
+        }
+
+        function hikayeModalModuAyarla(master) {
+            hikayeModalMasterMi = !!master;
+            var uye = document.getElementById('hikayeUyeIcerik');
+            var mst = document.getElementById('hikayeMasterIcerik');
+            var baslik = document.getElementById('hikayeModalBaslik');
+            var ipucu = document.querySelector('.hikaye-modal-ipucu');
+            if (uye) uye.hidden = master;
+            if (mst) mst.hidden = !master;
+            if (baslik) {
+                baslik.textContent = master ? 'Hikaye ekle' : 'Hikayeni Yaz';
+            }
+            if (ipucu) ipucu.style.display = master ? 'none' : '';
+            if (master) {
+                doldurMasterIlSecenekleri();
+                masterYurtdisiGoster();
+            }
+        }
+
+        async function acHikayeModal() {
+            if (!Gunde5UI.hikayeUyeGerekli()) {
                 return;
             }
             Gunde5UI.closeAuthModal();
-            var modal = document.getElementById('itirafModal');
+            var master = false;
+            try {
+                var d = await Gunde5DB.masterDurum();
+                master = !!(d && d.master);
+            } catch (eMaster) { /* ignore */ }
+            hikayeModalModuAyarla(master);
+            var modal = document.getElementById('hikayeModal');
             modal.classList.add('acik');
             modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
             setTimeout(function () {
-                document.getElementById('itirafTextarea').focus();
+                var el = master
+                    ? document.getElementById('masterHikayeRumuz')
+                    : document.getElementById('hikayeBaslik');
+                if (el) el.focus();
             }, 220);
         }
 
@@ -1485,13 +1668,13 @@
             if (window.__g5PodyumEtkinlik) return;
             window.__g5PodyumEtkinlik = true;
             var navYaz = document.getElementById('navYazBtn');
-            var modalKapat = document.getElementById('itirafModalKapat');
+            var modalKapat = document.getElementById('hikayeModalKapat');
             var gizliSec = document.getElementById('gizliUyeSec');
-            var gonderBtn = document.getElementById('itirafGonderBtn');
-            if (navYaz) navYaz.addEventListener('click', acItirafModal);
+            var gonderBtn = document.getElementById('hikayeGonderBtn');
+            if (navYaz) navYaz.addEventListener('click', acHikayeModal);
             if (modalKapat) {
                 modalKapat.addEventListener('click', function () {
-                    if (Gunde5UI && Gunde5UI.kapatItirafModal) Gunde5UI.kapatItirafModal();
+                    if (Gunde5UI && Gunde5UI.kapatHikayeModal) Gunde5UI.kapatHikayeModal();
                 });
             }
             if (gizliSec) {
@@ -1501,43 +1684,137 @@
                     btn.setAttribute('aria-pressed', btn.classList.contains('aktif') ? 'true' : 'false');
                 });
             }
-            if (gonderBtn) gonderBtn.addEventListener('click', gonderItiraf);
+            if (gonderBtn) gonderBtn.addEventListener('click', gonderHikaye);
+            var masterIl = document.getElementById('masterHikayeIl');
+            if (masterIl) masterIl.addEventListener('change', masterYurtdisiGoster);
+            var masterGonder = document.getElementById('hikayeMasterGonderBtn');
+            if (masterGonder) masterGonder.addEventListener('click', gonderHikaye);
         }
 
-        window.acItirafModal = acItirafModal;
-        window.gonderItiraf = gonderItiraf;
+        window.acHikayeModal = acHikayeModal;
+        window.gonderHikaye = gonderHikaye;
 
         function kullaniciCinsiyeti() {
             var c = document.body.getAttribute('data-user-gender');
             return c === 'male' ? 'male' : 'female';
         }
 
-        function sifirlaItirafModal() {
-            document.getElementById('itirafTextarea').value = '';
+        function sifirlaHikayeModal() {
+            var baslik = document.getElementById('hikayeBaslik');
+            if (baslik) baslik.value = '';
+            var ta = document.getElementById('hikayeTextarea');
+            if (ta) ta.value = '';
             var gizli = document.getElementById('gizliUyeSec');
-            gizli.classList.remove('aktif');
-            gizli.setAttribute('aria-pressed', 'false');
+            if (gizli) {
+                gizli.classList.remove('aktif');
+                gizli.setAttribute('aria-pressed', 'false');
+            }
+            var rumuz = document.getElementById('masterHikayeRumuz');
+            var yas = document.getElementById('masterHikayeYas');
+            var cins = document.getElementById('masterHikayeCinsiyet');
+            var il = document.getElementById('masterHikayeIl');
+            var yurtdisi = document.getElementById('masterHikayeYurtdisi');
+            var plan = document.getElementById('masterHikayePlan');
+            var masterBaslik = document.getElementById('masterHikayeBaslik');
+            var metin = document.getElementById('masterHikayeMetin');
+            if (rumuz) rumuz.value = '';
+            if (yas) yas.value = '';
+            if (cins) cins.value = 'female';
+            if (il) il.value = '';
+            if (yurtdisi) yurtdisi.value = '';
+            if (plan) plan.value = '';
+            if (masterBaslik) masterBaslik.value = '';
+            if (metin) metin.value = '';
+            masterYurtdisiGoster();
         }
 
-        async function gonderItiraf() {
-            if (!Gunde5UI.itirafUyeGerekli()) {
-                return;
-            }
-            var metin = document.getElementById('itirafTextarea').value.replace(/^\s+|\s+$/g, '');
-            if (!metin) {
-                document.getElementById('itirafTextarea').focus();
-                return;
-            }
-            var gizli = document.getElementById('gizliUyeSec').classList.contains('aktif');
-            sessionStorage.setItem('gunde5_bekleyen_itiraf', JSON.stringify({
-                metin: metin,
-                gizli: gizli,
-                gender: kullaniciCinsiyeti()
-            }));
-            sifirlaItirafModal();
-            Gunde5UI.kapatItirafModal();
-            window.location.href = '/kulis';
+        function planliTarihIso() {
+            var inp = document.getElementById('masterHikayePlan');
+            if (!inp || !inp.value) return null;
+            var d = new Date(inp.value);
+            if (isNaN(d.getTime())) return null;
+            return d.toISOString();
         }
+
+        async function gonderMasterHikaye() {
+            var rumuz = (document.getElementById('masterHikayeRumuz').value || '').replace(/^\s+|\s+$/g, '');
+            var yas = parseInt(document.getElementById('masterHikayeYas').value, 10);
+            var cinsiyet = document.getElementById('masterHikayeCinsiyet').value;
+            var yer = document.getElementById('masterHikayeIl').value;
+            var yurtdisi = document.getElementById('masterHikayeYurtdisi').value.replace(/^\s+|\s+$/g, '');
+            var baslik = (document.getElementById('masterHikayeBaslik').value || '').replace(/^\s+|\s+$/g, '');
+            var metin = (document.getElementById('masterHikayeMetin').value || '').replace(/^\s+|\s+$/g, '');
+            if (!rumuz) {
+                document.getElementById('masterHikayeRumuz').focus();
+                return;
+            }
+            if (!yas || yas < 18 || yas > 120) {
+                document.getElementById('masterHikayeYas').focus();
+                Gunde5UI.showToast('Yaş 18–120 arasında olmalı.', 'hata');
+                return;
+            }
+            if (!metin) {
+                document.getElementById('masterHikayeMetin').focus();
+                return;
+            }
+            var btn = document.getElementById('hikayeMasterGonderBtn');
+            if (btn) btn.disabled = true;
+            try {
+                var body = {
+                    username: rumuz,
+                    age: yas,
+                    gender: cinsiyet,
+                    yasadigi_yer: yer || null,
+                    yurtdisi_sehir: yer === 'yurtdisi' ? (yurtdisi || null) : null,
+                    content_full: metin
+                };
+                if (baslik) body.baslik = baslik;
+                var planIso = planliTarihIso();
+                if (planIso) body.created_at = planIso;
+                var sonuc = await Gunde5DB.masterHikayeEkle(body);
+                if (!sonuc || !sonuc.ok) {
+                    throw new Error((sonuc && sonuc.hata) || 'Kayıt başarısız');
+                }
+                var row = sonuc.hikaye;
+                sifirlaHikayeModal();
+                Gunde5UI.kapatHikayeModal();
+                var planInp = document.getElementById('masterHikayePlan');
+                if (planInp && planInp.value && planIso && new Date(planIso).getTime() > Date.now()) {
+                    Gunde5UI.showToast('Hikaye planlandı — anasayfada yayın saatinde görünür.');
+                } else {
+                    Gunde5UI.showToast('Hikaye yayında!');
+                    window.location.href = '/';
+                }
+            } catch (err) {
+                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+            }
+            if (btn) btn.disabled = false;
+        }
+
+        async function gonderHikaye() {
+            if (!Gunde5UI.hikayeUyeGerekli()) { return; }
+            if (hikayeModalMasterMi) {
+                await gonderMasterHikaye();
+                return;
+            }
+            var baslik = (document.getElementById('hikayeBaslik').value || '').replace(/^\s+|\s+$/g, '');
+            var metin = document.getElementById('hikayeTextarea').value.replace(/^\s+|\s+$/g, '');
+            if (!metin) { document.getElementById('hikayeTextarea').focus(); return; }
+            var gizli = document.getElementById('gizliUyeSec').classList.contains('aktif');
+            var btn = document.getElementById('hikayeGonderBtn');
+            btn.disabled = true;
+            try {
+                var row = await Gunde5DB.hikayeGonder(metin, gizli, baslik || null);
+                sifirlaHikayeModal();
+                Gunde5UI.kapatHikayeModal();
+                Gunde5UI.showToast('Hikaye yayında!');
+                window.location.href = '/';
+            } catch (err) { Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata'); }
+            btn.disabled = false;
+        }
+
+        window.acItirafModal = acHikayeModal;
+        window.gonderItiraf = gonderHikaye;
 
         function expandCard(cardId) {
             if (Gunde5KartCevap) Gunde5KartCevap.toggle(cardId, false);
@@ -1547,19 +1824,40 @@
             if (!Gunde5UI.uyeGirisUyarisi('Oy vermek için üye girişi yapmanız gerekiyor.')) {
                 return;
             }
+            var card = document.querySelector('.card[data-id="' + cardId + '"]');
+            var tip = score === 1 ? 'up' : 'down';
+            if (Gunde5DB.oyDurumuOku && Gunde5DB.oyDurumuOku(cardId)) {
+                if (card) Gunde5UI.kartOyDurumuRenklendir(card, Gunde5DB.oyDurumuOku(cardId));
+                Gunde5UI.showToast('Bu hikayeyi zaten oylamıştın, sonrakine geç dostum', 'hata');
+                return;
+            }
             try {
                 var sonuc = await Gunde5DB.oyVer(cardId, score);
-                var card = document.querySelector('.card[data-id="' + cardId + '"]');
-                if (card && sonuc) Gunde5UI.kartOyArayuzunuGuncelle(card, sonuc);
+                if (card && sonuc) {
+                    Gunde5UI.kartOyArayuzunuGuncelle(card, sonuc);
+                    if (Gunde5DB.oyDurumuKaydet) Gunde5DB.oyDurumuKaydet(cardId, sonuc.oy != null ? sonuc.oy : score);
+                    if (sonuc.zaten_oyladin) {
+                        Gunde5UI.showToast('Bu hikayeyi zaten oylamıştın, sonrakine geç dostum', 'hata');
+                    }
+                }
             } catch (err) {
-                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+                var mesaj = Gunde5DB.hataMesaji(err);
+                if (mesaj && /zaten oylad|zaten_oylad/i.test(mesaj)) {
+                    var gercek = Gunde5DB.oyDurumuSunucudan
+                        ? await Gunde5DB.oyDurumuSunucudan(cardId)
+                        : null;
+                    if (card) Gunde5UI.kartOyDurumuRenklendir(card, gercek || tip);
+                    Gunde5UI.showToast('Bu hikayeyi zaten oylamıştın, sonrakine geç dostum', 'hata');
+                } else {
+                    if (card) Gunde5UI.kartOyDurumuRenklendir(card, null);
+                    Gunde5UI.showToast(mesaj, 'hata');
+                }
             }
         }
 
         function baslatPodyumSayfa() {
             if (!window.Gunde5UI || !window.Gunde5DB) return;
             sayfaEtkinlikleriBagla();
-            Gunde5UI.baslatGeriSayim('timer');
             var podyumHazir = (Gunde5PodyumLazy && Gunde5PodyumLazy.init)
                 ? Gunde5PodyumLazy.init('podyumListe')
                 : Gunde5DB.yuklePodyumListe('podyumListe');

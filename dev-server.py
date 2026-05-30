@@ -14,12 +14,13 @@ ITIRAF_RE = re.compile(r"^/itiraf/(\d+)/?$")
 ROUTE_TO_HTML = {
     "/": "/index.html",
     "/podyum": "/podyum.html",
-    "/kulis": "/kulis.html",
+    "/kulis": "/index.html",
     "/profil": "/profil.html",
     "/hakkinda": "/hakkinda.html",
     "/iletisim": "/iletisim.html",
     "/kvkk": "/kvkk.html",
     "/istatistikler": "/istatistikler.html",
+    "/metrikler": "/metrikler.html",
     "/uyeler": "/uyeler.html",
     "/404": "/404.html",
 }
@@ -169,7 +170,7 @@ def main() -> None:
         print("gunde5 dev sunucu: http://localhost:%s/" % port)
         print("  /                           -> index (landing)")
         print("  /podyum                     -> podyum")
-        print("  /kulis, /profil, /kvkk ...  -> clean route")
+        print("  /, /podyum, /profil, /kvkk ...  -> clean route")
         print("  /itiraf/123                 -> yönlendirme (eski link)")
         print("Durdurmak: Ctrl+C  |  Baslat: start-dev.bat veya npm run dev")
         try:

@@ -138,12 +138,22 @@
             if (yetkiMsg.indexOf('master_kamikaze_') >= 0 || yetkiMsg.indexOf('master_oy_islem') >= 0) {
                 return 'Kamikaze için veritabanı izni eksik. Supabase SQL Editor\'da supabase/master-kamikaze-panel.sql dosyasını çalıştırın, sonra sayfayı yenileyin.';
             }
+            if (yetkiMsg.indexOf('master_hikaye_ekle') >= 0) {
+                return 'Master hikaye ekleme izni eksik. Supabase SQL Editor\'da supabase/itiraf-hikaye-yaz-kurulum.sql dosyasını bir kez çalıştırın, sonra sayfayı yenileyin.';
+            }
             if (yetkiMsg.indexOf('master_hikaye_islem') >= 0 || yetkiMsg.indexOf('master_cevap_islem') >= 0 ||
-                yetkiMsg.indexOf('itiraflar') >= 0 || yetkiMsg.indexOf('hikayeler') >= 0 ||
                 yetkiMsg.indexOf('itiraf_cevaplar') >= 0 || yetkiMsg.indexOf('hikaye_cevaplar') >= 0 ||
                 yetkiMsg.indexOf('itiraf_oylar') >= 0 || yetkiMsg.indexOf('hikaye_oylar') >= 0 ||
                 yetkiMsg.indexOf('hikaye_puan_guncelle') >= 0) {
                 return 'Master işlemi için veritabanı izni eksik. İlgili SQL kurulum dosyasını tekrar çalıştırıp sayfayı yenileyin.';
+            }
+            if (yetkiMsg.indexOf('itiraflar') >= 0 || yetkiMsg.indexOf('hikayeler') >= 0) {
+                return 'Hikaye gönderilemedi (veritabanı izni). Supabase SQL Editor\'da supabase/itiraf-hikaye-yaz-kurulum.sql dosyasını bir kez çalıştırın, sonra sayfayı yenileyin.';
+            }
+            if (yetkiMsg.indexOf('master_ziyaret_istatistik') >= 0 ||
+                yetkiMsg.indexOf('analytics_kayit_dahil') >= 0 ||
+                yetkiMsg.indexOf('site_analytics_') >= 0) {
+                return 'İstatistik izni eksik. Supabase SQL Editor\'da supabase/index-analytics.sql dosyasını bir kez çalıştırın, sonra sayfayı yenileyin.';
             }
             return 'Veritabanı izni eksik (42501). İlgili SQL kurulum dosyasını tekrar çalıştırıp sayfayı yenileyin.';
         }
@@ -157,6 +167,9 @@
         }
         if (msg.indexOf('avatar_url') >= 0 && (msg.indexOf('column') >= 0 || err.code === 'PGRST204')) {
             return 'Veritabanında avatar_url sütunu yok. Supabase SQL Editor\'da supabase/hikaye-avatar.sql dosyasını çalıştırın.';
+        }
+        if (msg.indexOf('baslik') >= 0 && (msg.indexOf('column') >= 0 || err.code === 'PGRST204')) {
+            return 'Başlık sütunu yok. Supabase SQL Editor\'da supabase/itiraf-hikaye-yaz-kurulum.sql dosyasını bir kez çalıştırın.';
         }
         if (msg.indexOf('bildirimler') >= 0 && (msg.indexOf('relation') >= 0 || err.code === 'PGRST205')) {
             return 'Bildirim tablosu yok. Supabase SQL Editor\'da supabase/bildirimler.sql dosyasını çalıştırın.';
@@ -175,6 +188,10 @@
         if (msg.indexOf('master_hikaye_islem') >= 0 && msg.indexOf('meta') >= 0 &&
             (msg.indexOf('bilinmeyen') >= 0 || msg.indexOf('gecersiz') >= 0)) {
             return 'Kart meta düzenleme için supabase/master-hikaye-kart-meta.sql dosyasını çalıştırın.';
+        }
+        if (msg.indexOf('master_hikaye_ekle') >= 0 &&
+            (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
+            return 'Master hikaye ekleme kurulmamış. Supabase SQL Editor\'da supabase/itiraf-hikaye-yaz-kurulum.sql dosyasını bir kez çalıştırın.';
         }
         if (msg.indexOf('master_') >= 0 && (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
             return 'Master yönetim yok. Supabase SQL Editor\'da supabase/master-admin.sql dosyasını çalıştırın.';
@@ -404,12 +421,12 @@
         return rows;
     }
 
-    var KULIS_SAYFA_BOYUT = 12;
+
     var INDEX_SAYFA_BOYUT = 5;
 
     /** Index — yalnızca kartta kullanılan sütunlar (ek sorgu / profil birleştirme yok). */
     var INDEX_ITIRAF_SELECT =
-        'id,username,age,gender,city,yasadigi_yer,content_short,content_full,up_votes,down_votes';
+        'id,baslik,username,age,gender,city,yasadigi_yer,content_short,content_full,up_votes,down_votes';
 
     /** Gelecek tarihli kayıtlar (planlı yayın) anasayfada görünmez. */
     function indexYayindaFiltre(q) {
@@ -423,9 +440,7 @@
         var lim = limit || INDEX_SAYFA_BOYUT;
         var off = offset || 0;
         var s = sort || 'yeni';
-        var q = indexYayindaFiltre(
-            sb.from('itiraflar').select(INDEX_ITIRAF_SELECT).is('silindi_at', null)
-        );
+        var q = indexYayindaFiltre(sb.from('itiraflar').select(INDEX_ITIRAF_SELECT));
 
         if (s === 'eski') {
             q = q.order('created_at', { ascending: true });
@@ -440,7 +455,7 @@
         return res.data || [];
     }
 
-    /** Ortaya karışık: silinmemiş tüm hikayeler (sayfalı çekim). */
+    /** Ortaya karışık: yayında tüm hikayeler (sayfalı çekim). */
     async function indexItirafHavuzGetir() {
         var sb = getClient();
         if (!sb) return [];
@@ -452,7 +467,6 @@
                 sb
                     .from('itiraflar')
                     .select(INDEX_ITIRAF_SELECT)
-                    .is('silindi_at', null)
                     .order('created_at', { ascending: false })
             ).range(off, off + batch - 1);
             if (res.error) throw res.error;
@@ -477,8 +491,7 @@
             sb
                 .from('itiraflar')
                 .select(INDEX_ITIRAF_SELECT)
-                .is('silindi_at', null)
-                .or('username.ilike.' + p + ',content_full.ilike.' + p + ',content_short.ilike.' + p)
+                .or('username.ilike.' + p + ',baslik.ilike.' + p + ',content_full.ilike.' + p + ',content_short.ilike.' + p)
         )
             .order('created_at', { ascending: false })
             .range(off, off + lim - 1);
@@ -486,33 +499,6 @@
         return res.data || [];
     }
 
-    async function kulisListeleSayfa(offset, limit) {
-        var sb = getClient();
-        if (!sb) return [];
-        var lim = limit || KULIS_SAYFA_BOYUT;
-        var off = offset || 0;
-        var res = await sb
-            .from('itiraflar')
-            .select('*')
-            .eq('status', 'kulis')
-            .is('silindi_at', null)
-            .order('created_at', { ascending: false })
-            .range(off, off + lim - 1);
-        if (res.error) throw res.error;
-        return hikayeSatirlariProfilZenginlestir(res.data || []);
-    }
-
-    async function kulisSayfaHazirla(offset, limit) {
-        var rows = await kulisListeleSayfa(offset, limit);
-        if (!rows.length) return rows;
-        var ids = rows.map(function (r) { return r.id; });
-        var sayilar = await kokCevapSayilari(ids);
-        return satirlaraCevapSayisiEkle(rows, sayilar);
-    }
-
-    async function kulisListele() {
-        return kulisListeleSayfa(0, 80);
-    }
 
     function hikayeAraSonucParse(sonuc) {
         if (!sonuc) return [];
@@ -767,6 +753,10 @@
         if (b.username != null) {
             b.username = String(b.username).replace(/^\s+|\s+$/g, '');
         }
+        if (b.baslik != null) {
+            b.baslik = String(b.baslik).replace(/^\s+|\s+$/g, '');
+            if (!b.baslik) delete b.baslik;
+        }
         return masterRpc('master_hikaye_ekle', b);
     }
 
@@ -939,7 +929,7 @@
         return res.data || [];
     }
 
-    async function hikayeGonder(metin, gizli) {
+    async function hikayeGonder(metin, gizli, baslik) {
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
 
@@ -952,6 +942,9 @@
         if (u.durum === 'askida') {
             throw new Error(uyeDurumMesaji('askida'));
         }
+
+        var baslikMetin = String(baslik || '').replace(/^\s+|\s+$/g, '');
+        if (baslikMetin.length > 120) throw new Error('Başlık en fazla 120 karakter olabilir.');
 
         var tam = metinPerdele(String(metin).replace(/^\s+|\s+$/g, ''));
         if (!tam) throw new Error('Metin boş olamaz.');
@@ -970,6 +963,7 @@
             status: 'kulis',
             is_gizli: gizliMi
         };
+        if (baslikMetin) kayit.baslik = baslikMetin;
 
         var res = await sb.from('itiraflar').insert(kayit).select().single();
 
@@ -1010,7 +1004,7 @@
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
         var nid = parseInt(id, 10);
         if (!nid) throw new Error('Geçersiz hikaye.');
-        var res = await sb.from('itiraflar').select('*').eq('id', nid).is('silindi_at', null).maybeSingle();
+        var res = await sb.from('itiraflar').select('*').eq('id', nid).maybeSingle();
         if (res.error) throw res.error;
         if (!res.data) return null;
         return (await hikayeSatirlariProfilZenginlestir([res.data]))[0];
@@ -1169,14 +1163,9 @@
         if (!icerik) throw new Error('Metin boş olamaz.');
         if (icerik.length > 2000) throw new Error('En fazla 2000 karakter yazabilirsin.');
 
-        var hikayeRes = await sb
-            .from('itiraflar')
-            .select('id, user_id')
-            .eq('id', nid)
-            .is('silindi_at', null)
-            .maybeSingle();
+        var hikayeRes = await sb.from('itiraflar').select('id, user_id').eq('id', nid).maybeSingle();
         if (hikayeRes.error) throw hikayeRes.error;
-        if (!hikayeRes.data) throw new Error('Hikaye bulunamadı veya süresi dolmuş.');
+        if (!hikayeRes.data) throw new Error('Hikaye bulunamadı.');
 
         var parentId = null;
         if (parentCevapId) {
@@ -1223,7 +1212,10 @@
         if (!satir) {
             throw new Error('Oy yanıtı okunamadı');
         }
-        return Object.assign({}, satir, { oy: oy });
+        return Object.assign({}, satir, {
+            oy: satir.oy != null ? satir.oy : oy,
+            zaten_oyladin: !!satir.zaten_oyladin
+        });
     }
 
     async function oyVerRpcDene(id, oy) {
@@ -1269,6 +1261,86 @@
         return oyVerRpcDene(id, oy);
     }
 
+    var OY_DURUM_PREFIX = 'g5_voted_';
+
+    function oyTipiNormalize(oy) {
+        if (oy === 1 || oy === 'up') return 'up';
+        if (oy === -1 || oy === 'down') return 'down';
+        return null;
+    }
+
+    function oyDurumuOku(id) {
+        var sid = String(id);
+        try {
+            var v = global.localStorage.getItem(OY_DURUM_PREFIX + sid);
+            if (v === 'up' || v === 'down') return v;
+            var eski = global.localStorage.getItem('g5_index_voted_' + sid);
+            if (eski === 'up' || eski === 'down') {
+                oyDurumuKaydet(sid, eski);
+                return eski;
+            }
+        } catch (e) { /* sessiz */ }
+        return null;
+    }
+
+    function oyDurumuKaydet(id, oy) {
+        var tip = oyTipiNormalize(oy);
+        if (!tip) return;
+        try {
+            global.localStorage.setItem(OY_DURUM_PREFIX + String(id), tip);
+        } catch (e) { /* sessiz */ }
+    }
+
+    async function oyDurumuSunucudan(id) {
+        var sb = getClient();
+        if (!sb) return null;
+        var nid = parseInt(id, 10);
+        if (!nid) return null;
+
+        var res = await sb.rpc('itiraf_oy_durum', {
+            p_itiraf_id: nid,
+            p_viewer_key: getViewerKey()
+        });
+        if (res.error) return oyDurumuOku(nid);
+
+        var ham = res.data;
+        if (typeof ham === 'string') {
+            try {
+                ham = JSON.parse(ham);
+            } catch (eParse) {
+                ham = null;
+            }
+        }
+        var oy = ham && ham.oy != null ? parseInt(ham.oy, 10) : null;
+        if (oy === 1 || oy === -1) {
+            oyDurumuKaydet(nid, oy);
+            return oy === 1 ? 'up' : 'down';
+        }
+        return null;
+    }
+
+    async function oyDurumlariSenkron(ids) {
+        var out = {};
+        var bekleyen = [];
+        var i;
+        var hamIds = ids || [];
+        for (i = 0; i < hamIds.length; i++) {
+            var nid = parseInt(hamIds[i], 10);
+            if (!nid) continue;
+            var yerel = oyDurumuOku(nid);
+            if (yerel) {
+                out[nid] = yerel;
+            } else {
+                bekleyen.push(nid);
+            }
+        }
+        await Promise.all(bekleyen.map(async function (nid) {
+            var tip = await oyDurumuSunucudan(nid);
+            if (tip) out[nid] = tip;
+        }));
+        return out;
+    }
+
     function getViewerKey() {
         var u = getGunde5User();
         if (u && u.id) return 'u:' + u.id;
@@ -1288,6 +1360,18 @@
         }
     }
 
+    async function analyticsEventKaydet(body) {
+        var sb = getClient();
+        if (!sb) return null;
+        try {
+            var res = await sb.rpc('analytics_event_kaydet', { p_body: body || {} });
+            if (res.error) return null;
+            return res.data;
+        } catch (e) {
+            return null;
+        }
+    }
+
     async function ziyaretKaydet(body) {
         var sb = getClient();
         if (!sb) return null;
@@ -1300,12 +1384,31 @@
         }
     }
 
-    async function masterZiyaretIstatistik(gun) {
+    async function masterTrafikIstatistik(gun, haric) {
         var sb = getClient();
         if (!sb) return { ok: false };
-        var res = await sb.rpc('master_ziyaret_istatistik', { p_gun: gun || 30 });
+        var res = await sb.rpc('master_trafik_istatistik', {
+            p_gun: gun || 30,
+            p_haric: haric || 'master'
+        });
         if (res.error) throw res.error;
         return res.data || { ok: false };
+    }
+
+    async function masterMetrikIstatistik(gun, haric) {
+        var sb = getClient();
+        if (!sb) return { ok: false };
+        var res = await sb.rpc('master_metrik_istatistik', {
+            p_gun: gun || 30,
+            p_haric: haric || 'master'
+        });
+        if (res.error) throw res.error;
+        return res.data || { ok: false };
+    }
+
+    /** @deprecated master_trafik_istatistik + master_metrik_istatistik kullanın */
+    async function masterZiyaretIstatistik(gun, haric) {
+        return masterTrafikIstatistik(gun, haric);
     }
 
     async function goruntulenmeKaydet(hikayeId) {
@@ -1420,32 +1523,6 @@
         bildirimRtKanal = null;
     }
 
-    async function yukleKulisListe(konteynerId) {
-        if (global.Gunde5LazyListe && global.Gunde5LazyListe.initKulis) {
-            return global.Gunde5LazyListe.initKulis(konteynerId);
-        }
-        var el = document.getElementById(konteynerId);
-        if (!el) return;
-        if (!isConfigured()) {
-            el.innerHTML = Gunde5UI.bosListe('Supabase bağlantısı kurulmadı. js/gunde5-config.js dosyasını doldurun.');
-            return;
-        }
-        el.innerHTML = '<p class="liste-bos">Yükleniyor…</p>';
-        try {
-            var rows = await kulisListele();
-            el.innerHTML = '';
-            var i;
-            for (i = 0; i < rows.length; i++) {
-                el.appendChild(Gunde5UI.renderKulisCard(rows[i]));
-            }
-            if (Gunde5UI.kulisBarajGuncelle) Gunde5UI.kulisBarajGuncelle(el);
-            if (global.Gunde5KartCevap) global.Gunde5KartCevap.initSayfa();
-        } catch (err) {
-            el.innerHTML = Gunde5UI.bosListe(hataMesaji(err));
-            Gunde5UI.showToast(hataMesaji(err), 'hata');
-        }
-    }
-
     var PODYUM_BANNER_UST_ETIKET = 'EFSANELER';
 
     function podyumDonemTarihSatir(kaynak) {
@@ -1482,6 +1559,7 @@
             i: r.is_gizli ? 1 : 0,
             cf: r.content_full || null,
             cs: r.content_short || null,
+            bt: r.baslik || null,
             up: r.up_votes != null ? r.up_votes : 0,
             dn: r.down_votes != null ? r.down_votes : 0,
             c: r.cevap_sayisi != null ? r.cevap_sayisi : 0,
@@ -1510,6 +1588,7 @@
             is_gizli: !!p.i,
             content_full: p.cf,
             content_short: p.cs,
+            baslik: p.bt || null,
             up_votes: p.up,
             down_votes: p.dn,
             cevap_sayisi: p.c,
@@ -1785,6 +1864,16 @@
             for (i = 0; i < rows.length; i++) {
                 el.appendChild(Gunde5UI.renderPodyumCard(rows[i]));
             }
+            if (global.Gunde5DB.oyDurumlariSenkron && global.Gunde5UI.kartOyDurumuRenklendir) {
+                global.Gunde5DB.oyDurumlariSenkron(rows.map(function (r) { return r.id; })).then(function (durum) {
+                    rows.forEach(function (r) {
+                        var tip = durum[r.id];
+                        if (!tip) return;
+                        var card = el.querySelector('.card[data-id="' + r.id + '"]');
+                        if (card) global.Gunde5UI.kartOyDurumuRenklendir(card, tip);
+                    });
+                }).catch(function () { /* sessiz */ });
+            }
             if (global.Gunde5KartCevap) global.Gunde5KartCevap.initSayfa();
             podyumHibritCanlandir(el, rows, true);
         } catch (err) {
@@ -1810,8 +1899,15 @@
         cikisYap: cikisYap,
         hikayeGonder: hikayeGonder,
         oyVer: oyVer,
+        oyDurumuOku: oyDurumuOku,
+        oyDurumuKaydet: oyDurumuKaydet,
+        oyDurumuSunucudan: oyDurumuSunucudan,
+        oyDurumlariSenkron: oyDurumlariSenkron,
         goruntulenmeKaydet: goruntulenmeKaydet,
         ziyaretKaydet: ziyaretKaydet,
+        analyticsEventKaydet: analyticsEventKaydet,
+        masterTrafikIstatistik: masterTrafikIstatistik,
+        masterMetrikIstatistik: masterMetrikIstatistik,
         masterZiyaretIstatistik: masterZiyaretIstatistik,
         getViewerKey: getViewerKey,
         sikayetGonder: sikayetGonder,
@@ -1833,13 +1929,9 @@
         cevapGonder: cevapGonder,
         CEVAP_SAYFA: CEVAP_SAYFA,
         YORUM_SAYFA: YORUM_SAYFA,
-        KULIS_SAYFA_BOYUT: KULIS_SAYFA_BOYUT,
         INDEX_SAYFA_BOYUT: INDEX_SAYFA_BOYUT,
         indexHikayeListeleSayfa: indexHikayeListeleSayfa,
-        kulisListele: kulisListele,
         hikayeAra: hikayeAra,
-        kulisListeleSayfa: kulisListeleSayfa,
-        kulisSayfaHazirla: kulisSayfaHazirla,
         podyumBaslikGetir: podyumBaslikGetir,
         podyumDonemleriListele: podyumDonemleriListele,
         podyumDonemKartlari: podyumDonemKartlari,
@@ -1867,7 +1959,6 @@
         masterKamikazeHikayeDetay: masterKamikazeHikayeDetay,
         masterOyIslem: masterOyIslem,
         profilHikayelerim: profilHikayelerim,
-        yukleKulisListe: yukleKulisListe,
         yuklePodyumListe: yuklePodyumListe,
         podyumHibritCanlandir: podyumHibritCanlandir,
         podyumRealtimeKapat: podyumRealtimeKapat,

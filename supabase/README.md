@@ -26,15 +26,26 @@ Bunlardan biri (proje kökünde):
 
 PowerShell’de `cd D:\gunde5 && npm run dev` çalışmazsa: `Set-Location D:\gunde5; npm run dev`
 
-Hikaye iç linki: `http://localhost:8080/podyum?itiraf=7` (podyum), `http://localhost:8080/kulis?itiraf=7` (kulis).
+Hikaye iç linki: `http://localhost:8080/podyum?itiraf=7` (podyum), `http://localhost:8080/?itiraf=7` (anasayfa).
 
 ## Ziyaret / trafik kaynağı
 
 1. `master-admin.sql` veya `security-advisor-definer-fix.sql` çalışmış olmalı (`master_email_eslesir`).
 2. SQL Editor → **`ziyaret-trafik.sql`** (tablo + `ziyaret_kaydet` + `master_ziyaret_istatistik`).
-3. Sayfalar `gunde5-ziyaret.js` ile referrer / UTM / yol kaydeder (anonim `oturum_key`; girişte `user_id` dolar).
+3. SQL Editor → **`index-analytics.sql`** (oturum/olay tabloları + `analytics_event_kaydet` + genişletilmiş `master_ziyaret_istatistik` — index okuma/etkileşim metrikleri; **varsayılan master hariç** filtre).
+4. Sayfalar `gunde5-ziyaret.js` ile referrer / UTM / yol kaydeder (anonim `oturum_key`; girişte `user_id` dolar).
+5. Anasayfa `gunde5-analytics.js` ile Daha Fazla Oku, oy, paylaşım, heartbeat ve hikâye görüntülenmesi ölçer (`visitor_id` + `session_id`).
 
-İleride istatistik menüsü: `Gunde5DB.masterZiyaretIstatistik(30)`.
+İstatistik sayfası timeout alıyorsa bir kez **`master-trafik-istatistik.sql`** + **`master-metrik-istatistik.sql`** Run edin (ayrı RPC’ler).
+
+Metrikler özeti sıfır, “en çok görülen” dolu ise: **`analytics-event-session-fix.sql`** → **`master-metrik-istatistik.sql`** (olay tablosundan özet). `event_type` hatası aldıysanız güncel `master-metrik-istatistik.sql` dosyasını tekrar Run edin.
+
+Olay türlerini doğrulamak için: **`analytics-diagnostics.sql`** (`story_vote` / `story_share` / `load_more_click` satırları görünmeli).
+
+- **`/istatistikler`** — trafik (`site_ziyaretler`, referrer, UTM)
+- **`/metrikler`** — site içi davranış (`site_analytics_*`, oy, paylaşım)
+
+İstatistik sayfası: `Gunde5DB.masterZiyaretIstatistik(7|30|90|365)`.
 
 ## Hikaye toplu ekleme (3 bot hikaye)
 
@@ -49,13 +60,21 @@ node scripts/hikaye-ekle.mjs
 
 Yeni txt dosyaları için: `python scripts/hikaye-txt-to-sql.py dosya.txt -o supabase/seed-yeni.sql`
 
-## Arama (kulis + podyum)
+## Arama (podyum)
 
 SQL Editor → `itiraf-ara.sql` (rumuz, hikaye metni, cevap/yorum). Sayaç kutusunun altındaki arama kutusu yazdıkça sonuçları listeler.
 
 ## Profil kaydet (profil.html)
 
 **`profil-uye-rpc.sql`** — SQL Editor'da bir kez Run (zorunlu). Kulis/podyum master işlemleri farklı RPC kullanır; profil kaydı bu dosya olmadan çalışmaz.
+
+## Hikaye yaz (üye + master)
+
+Canlı şema **`itiraflar`** ise SQL Editor'da bir kez:
+
+**`itiraf-hikaye-yaz-kurulum.sql`** — başlık sütunu (`baslik`, isteğe bağlı), RLS izinleri, master bot/planlı hikaye RPC
+
+Önce **`master-admin.sql`** (veya `security-advisor-definer-fix.sql`) çalışmış olmalı (`master_email_eslesir`).
 
 ## Master manuel oy + gerçek oylar
 
@@ -69,11 +88,9 @@ Master moderasyonda **Oylar** ile yazdığınız sayılar `itiraflar` tablosuna 
 - Hikaye linki: `https://gunde5.com/h/{id}` — Vercel **`api/itiraf-share`** (meta) + **`api/og`** (görsel). Eski `/itiraf/{id}` → `/h/{id}` yönlendirilir.
 - Vercel proje ayarlarında ortam değişkenleri: `GUNDE5_SUPABASE_URL`, `GUNDE5_SUPABASE_ANON_KEY` (anon, yalnızca okuma).
 
-## Her gün 13:12 — Kulis → Podyum
+## Kulis / otomatik podyum geçişi kaldırıldı
 
-1. `itiraf-puan.sql` — `r` puan sütunu
-2. `saat-1312-podyum.sql` — cron: **r top 5** → podyum; kuliste kalanlar `silindi_at` (mevcut podyuma dokunmaz)
-3. `podyum-koruma.sql` — podyum silinmez / kulise inmez
+Canlı DB’de bir kez **`kulis-podyum-kaldir.sql`** çalıştırın (13:12 cron + podyum koruma trigger’ları siler).
 
 ## Podyum (diğer)
 - `itiraf-istatistik-rpc.sql` — kart sayıları (yorum / oy senkronu).
@@ -103,5 +120,6 @@ Canlı Supabase’de sırayla:
 1. **`security-advisor-fix.sql`** (search_path, görüntülenme, trigger revoke)
 2. **`security-advisor-definer-fix.sql`** — DEFINER + EXECUTE uyarıları (arama INVOKER, master INVOKER+RLS, trigger/kamikaze revoke)
 3. **`security-advisor-definer-fix-2.sql`** — `ziyaret_kaydet`, `master_uye_guncelle`, `master_uye_islem` → INVOKER; `auth.users` / dedup → `private` şema (PostgREST dışı). **`master-uyeler-yonetim.sql` öncesi veya sonrası** bir kez çalıştırın.
+4. **`security-advisor-definer-fix-4a.sql`** → **`4b.sql`** → **`4c.sql`** — analytics + oy + istatistik RPC’leri (`SECURITY INVOKER`). **Üçünü ayrı ayrı Run edin** (tek dosyada timeout olur). **`index-analytics.sql` sonrası**.
 
 Dashboard → Security Advisor → **Rerun**. Kamikaze paneli kullanılmıyorsa **`kamikaze-drop.sql`** (RPC temizliği; aksi halde kamikaze yalnızca `service_role` ile çalışır).

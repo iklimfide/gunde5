@@ -1,5 +1,5 @@
 /**
- * gunde5 — Kulis / Podyum: rumuz + hikaye + yorum arama (sayaç kutusunun altında)
+ * gunde5 — Podyum: rumuz + hikaye + yorum arama (sayaç kutusunun altında)
  */
 (function (global) {
     'use strict';
@@ -17,14 +17,7 @@
 
     function sayfaYapilandir() {
         var path = (global.location.pathname || '').toLowerCase();
-        if (path.indexOf('kulis') >= 0) {
-            return {
-                status: 'kulis',
-                listeId: 'kulisListe',
-                render: function (row) { return UI.renderKulisCard(row); }
-            };
-        }
-        if (path.indexOf('podyum') >= 0 || path === '/' || path.endsWith('/')) {
+        if (path.indexOf('podyum') >= 0) {
             return {
                 status: 'podyum',
                 listeId: 'podyumListe',
@@ -56,8 +49,6 @@
             '.gunde5-arama-durum{margin:2px 0 0;font-size:11px;font-weight:600;color:var(--text-muted,#6b7280);min-height:0;line-height:1.3}' +
             '.gunde5-arama-durum:empty{display:none;margin:0;padding:0}' +
             '.gunde5-arama-durum--hata{color:#dc2626}' +
-            '.gunde5-arama + #kulisListe{margin-top:0;padding-top:0}' +
-            '.gunde5-arama + #kulisListe > .card:first-child,.gunde5-arama + #kulisListe > .liste-bos{margin-top:0}' +
             '.gunde5-arama + .podyum-sampiyonlar{margin:0 0 12px}' +
             '.gunde5-arama + .podyum-sampiyonlar .podyum-sampiyonlar-liste{padding-top:10px;padding-bottom:4px}';
         document.head.appendChild(s);
@@ -78,14 +69,6 @@
         aramaAktif = false;
         durumYaz('');
         if (!cfg || !DB) return;
-        if (cfg.status === 'kulis') {
-            if (global.Gunde5LazyListe && global.Gunde5LazyListe.initKulis) {
-                global.Gunde5LazyListe.initKulis(cfg.listeId);
-            } else if (DB.yukleKulisListe) {
-                DB.yukleKulisListe(cfg.listeId);
-            }
-            return;
-        }
         if (DB.podyumRealtimeKapat) DB.podyumRealtimeKapat();
         var samp = document.getElementById('podyumSampiyonlar');
         if (samp) samp.hidden = false;
@@ -136,9 +119,6 @@
         }
         if (cfg.status === 'podyum' && DB.podyumHibritCanlandir) {
             DB.podyumHibritCanlandir(liste, rows, true);
-        }
-        if (cfg.status === 'kulis' && UI.kulisBarajGuncelle) {
-            UI.kulisBarajGuncelle(liste);
         }
         if (global.Gunde5Master && global.Gunde5Master.kartlariBagla) {
             global.Gunde5Master.kartlariBagla();
@@ -224,7 +204,7 @@
         wrap.innerHTML =
             '<label class="gunde5-arama-kutu" for="gunde5AramaInput">' +
             '<input type="search" class="gunde5-arama-input" id="gunde5AramaInput" ' +
-            'placeholder="Ara" autocomplete="off" enterkeyhint="search">' +
+            'placeholder="Hikaye veya itiraf ara" autocomplete="off" enterkeyhint="search">' +
             '<span class="gunde5-arama-ikon" aria-hidden="true">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" role="img">' +
             '<circle cx="10.5" cy="10.5" r="6.75"/>' +

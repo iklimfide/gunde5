@@ -679,7 +679,6 @@
                 <div class="header-menu-panel" id="headerMenuPanel" hidden>
                     <nav class="header-menu-nav" aria-label="Site menüsü">
                         <a href="/podyum" class="header-menu-link">🏆 Podyum</a>
-                        <a href="/kulis" class="header-menu-link">🔥 Kulis</a>
                         <a href="/hakkinda" class="header-menu-link">ℹ️ Hakkında</a>
                         <a href="/iletisim" class="header-menu-link">✉️ İletişim</a>
                         <a href="/kvkk" class="header-menu-link">📋 KVKK</a>
@@ -708,35 +707,14 @@
             <details class="accordion-item accordion-item--site">
                 <summary>gunde5.com nedir?</summary>
                 <div class="accordion-body">
-                    <p>gunde5.com <a href="/kulis">Kulis</a> sayfasında kısa ve uzun perde arkası insan hikayeleri paylaşılır; beğeni, beğenmeme ve yorumlarla hikayeler puanlanır. Her gün en güçlü 5 hikaye <a href="/podyum">Podyum</a>’a çıkar. İlk 5’e giremeyen hikayeler de sonsuza kadar silinir. Site tamamen eğlence ve mizah odaklıdır.</p>
+                    <p>gunde5.com <a href="/">anasayfada</a> kısa ve uzun perde arkası insan hikayeleri yayınlanır; beğeni, beğenmeme ve yorumlarla etkileşim kurulur. Seçilen hikayeler <a href="/podyum">Podyum</a> arşivinde kalıcı olarak durur. Site tamamen eğlence ve mizah odaklıdır.</p>
                 </div>
             </details>
 
             <details class="accordion-item accordion-item--podyum">
                 <summary>Podyum nasıl çalışır?</summary>
                 <div class="accordion-body">
-                    <p>Her gün saat <strong class="saat-vurgu">13:12</strong>’de Giyotin iner ve <a href="/kulis">Kulis</a>’te giyotinin seçtiği 5 hikaye otomatik olarak <a href="/podyum">Podyum</a>’a çıkar ve gunde5.com arşivine girerek silinmez, kalıcı olur.</p>
-                </div>
-            </details>
-
-            <details class="accordion-item accordion-item--giyotin">
-                <summary>Giyotin nedir?</summary>
-                <div class="accordion-body">
-                    <p>İlk 5'e girenlerin kralı, giremeyenlerin celladıdır.</p>
-                </div>
-            </details>
-
-            <details class="accordion-item accordion-item--saat">
-                <summary>Neden 13.12?</summary>
-                <div class="accordion-body">
-                    <p>Giyotinin canı öyle istemiş.</p>
-                </div>
-            </details>
-
-            <details class="accordion-item accordion-item--kulis">
-                <summary>Kulis’te kalan hikayelere ne olur?</summary>
-                <div class="accordion-body">
-                    <p>Giyotin her gün saat <strong class="saat-vurgu">13.12</strong>'de ilk 5 hikaye günün şampiyonları olarak <a href="/podyum">Podyum</a>a çıkarır. Geri kalanları tarihin çöplüğüne gönderir ve <a href="/kulis">Kulis</a> her gün saat <strong class="saat-vurgu">13.12</strong>'de sıfırlanır.</p>
+                    <p><a href="/podyum">Podyum</a>, günün en çok konuşulan hikayelerinin kalıcı arşividir. Anasayfadaki tüm hikayeler okunabilir; podyuma alınanlar burada tarih ve sıra ile listelenir.</p>
                 </div>
             </details>
 
@@ -798,7 +776,7 @@
                     <div class="auth-brand-text">gunde<span>5</span>.com</div>
                 </div>
                 <h2 class="auth-modal-baslik">Üye Girişi</h2>
-                <p class="auth-modal-alt-baslik">E-posta ve şifrenle kulise dön.</p>
+                <p class="auth-modal-alt-baslik">E-posta ve şifrenle giriş yap.</p>
                 <label class="auth-etiket" for="loginEmail">E-Posta</label>
                 <input class="auth-input" type="email" id="loginEmail" maxlength="80" placeholder="mail@adresin.com" autocomplete="email">
                 <label class="auth-etiket" for="loginPassword">Şifre</label>
@@ -810,8 +788,8 @@
     </div>
 
     <div class="bottom-nav" role="navigation" aria-label="Ana menü">
-        <a href="/kulis" class="nav-item">
-            <div class="icon">🔥</div><span>Kulis</span>
+        <a href="/" class="nav-item">
+            <div class="icon">🏠</div><span>Anasayfa</span>
         </a>
         <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn" aria-haspopup="dialog">
             <div class="icon">✍️</div><span>Hikaye Yaz</span>
@@ -915,7 +893,7 @@
         }
 
         document.getElementById('navYazBtn').addEventListener('click', function () {
-            window.location.href = '/kulis';
+            window.location.href = '/';
         });
 
         Gunde5DB.init().then(function () {

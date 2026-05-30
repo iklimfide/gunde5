@@ -1,0 +1,15 @@
+-- Security Advisor — analytics + oy + ziyaret DEFINER uyarıları (lint 0011, 0028, 0029)
+--
+-- TEK SEFERDE RUN ETMEYIN — Supabase SQL Editor statement timeout verir.
+-- Asagidaki 3 dosyayi SIRAYLA calistirin (her biri ayri Run):
+--
+--   1. security-advisor-definer-fix-4a.sql  (yardimcilar + ziyaret + analytics)
+--   2. security-advisor-definer-fix-4b.sql  (oy RLS + itiraf_oy_ver / oy_ver / itiraf_oy_durum)
+--   3. security-advisor-definer-fix-4c.sql  (master_ziyaret_istatistik INVOKER)
+--
+-- 4c de timeout verirse: index-analytics.sql icindeki master_ziyaret_istatistik
+-- blogunu (331-705) ayri Run edin, sonra:
+--   drop function if exists public.master_user_uuid();
+--   drop function if exists public.analytics_kayit_dahil(uuid, text, text);
+--
+-- Dashboard -> Security Advisor -> Rerun

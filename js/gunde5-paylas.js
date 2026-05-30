@@ -1,4 +1,4 @@
-/* gunde5 — hikaye iç linki: /podyum?itiraf=id veya /kulis?itiraf=id */
+/* gunde5 — hikaye iç linki: /podyum?itiraf=id veya /?itiraf=id */
 (function (global) {
     'use strict';
 
@@ -54,9 +54,10 @@
         var sid = encodeURIComponent(String(id));
         var dosya = global.location.protocol === 'file:';
         if (status === 'podyum') {
-            return (dosya ? '' : '/podyum') + '?itiraf=' + sid;
+            return (dosya ? 'podyum.html' : '/podyum') + '?itiraf=' + sid;
         }
-        return (dosya ? '' : '/kulis') + '?itiraf=' + sid;
+        var kok = dosya ? 'index.html' : '/';
+        return kok + (kok.indexOf('?') >= 0 ? '&' : '?') + 'itiraf=' + sid;
     }
 
     function itirafIcLinkTam(id, status) {
@@ -68,9 +69,9 @@
     }
 
     function itirafSayfayaGit(id, status) {
-        var st = status === 'podyum' ? 'podyum' : 'kulis';
+        var st = status === 'podyum' ? 'podyum' : 'index';
         itirafHedefIdKaydet(id);
-        global.location.href = itirafIcLinkTam(id, st);
+        global.location.href = itirafIcLinkTam(id, st === 'podyum' ? 'podyum' : null);
     }
 
     function yonlendirItiraf404(itirafId) {
@@ -128,35 +129,26 @@
         var sayilar = await DB.kokCevapSayilari([row.id]);
         row.cevap_sayisi = sayilar[String(row.id)] != null ? sayilar[String(row.id)] : 0;
 
-        var kart = sayfa === 'podyum'
-            ? UI.renderPodyumCard(row, row.podyum_sira != null ? Math.max(0, parseInt(row.podyum_sira, 10) - 1) : null)
-            : UI.renderKulisCard(row);
+        var kart = UI.renderPodyumCard(row, row.podyum_sira != null ? Math.max(0, parseInt(row.podyum_sira, 10) - 1) : null);
         kart.classList.add('card--paylas-hedef');
-        if (sayfa === 'kulis') {
-            var giyotin = document.getElementById('kulisGiyotinBaraj');
-            if (giyotin) giyotin.remove();
-        } else if (
+        if (
             liste.firstChild &&
             liste.firstChild.classList &&
             liste.firstChild.classList.contains('liste-bos')
         ) {
             liste.innerHTML = '';
         }
-        var ilk = liste.firstChild;
-        if (ilk && ilk.id === 'kulisLazySentinel') {
-            liste.insertBefore(kart, ilk);
-        } else {
-            liste.insertBefore(kart, liste.firstChild);
-        }
+        liste.insertBefore(kart, liste.firstChild);
         if (global.Gunde5KartCevap && global.Gunde5KartCevap.baglaKart) {
             global.Gunde5KartCevap.baglaKart(kart);
         } else if (global.Gunde5KartCevap) {
             global.Gunde5KartCevap.initSayfa();
         }
-        if (sayfa === 'kulis' && UI.kulisBarajGuncelle) {
-            UI.kulisBarajGuncelle(liste);
-        }
         return kart;
+    }
+
+    function hedefSayfaBelirle(row) {
+        return row.status === 'podyum' ? 'podyum' : 'index';
     }
 
     async function paylasLinkiKontrolEt(sayfa) {
@@ -175,7 +167,7 @@
             return false;
         }
 
-        var hedefSayfa = row.status === 'podyum' ? 'podyum' : 'kulis';
+        var hedefSayfa = hedefSayfaBelirle(row);
         if (hedefSayfa !== sayfa) {
             global.location.replace(itirafIcLinkTam(id, row.status));
             return false;
@@ -202,14 +194,15 @@
             return;
         }
 
-        var hedefSayfa = row.status === 'podyum' ? 'podyum' : 'kulis';
+        var hedefSayfa = hedefSayfaBelirle(row);
         if (hedefSayfa !== sayfa) {
             global.location.replace(itirafIcLinkTam(id, row.status));
             return;
         }
 
-        var listeId = sayfa === 'podyum' ? 'podyumListe' : 'kulisListe';
-        await kartEkleVeyaBul(row, sayfa, listeId);
+        if (sayfa !== 'podyum') return;
+
+        await kartEkleVeyaBul(row, sayfa, 'podyumListe');
         if (global.Gunde5SEO && Gunde5SEO.itirafUygula) {
             Gunde5SEO.itirafUygula(row, sayfa);
         }

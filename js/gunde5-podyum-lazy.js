@@ -212,6 +212,17 @@
                 global.Gunde5Goruntulenme.bagla(kart);
             }
         }
+
+        if (DB.oyDurumlariSenkron && UI.kartOyDurumuRenklendir && eklenecek.length) {
+            DB.oyDurumlariSenkron(eklenecek.map(function (r) { return r.id; })).then(function (durum) {
+                eklenecek.forEach(function (r) {
+                    var tip = durum[r.id];
+                    if (!tip || !liste) return;
+                    var card = liste.querySelector('.card[data-id="' + r.id + '"]');
+                    if (card) UI.kartOyDurumuRenklendir(card, tip);
+                });
+            }).catch(function () { /* sessiz */ });
+        }
     }
 
     function realtimeYenile(arkaPlanSorgu) {

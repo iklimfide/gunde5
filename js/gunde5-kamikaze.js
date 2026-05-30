@@ -1868,7 +1868,7 @@
         if (giris) {
             giris.addEventListener('click', function () {
                 if (typeof global.openAuthModal === 'function') global.openAuthModal('login');
-                else global.location.href = '/kulis';
+                else global.location.href = '/';
             });
         }
 

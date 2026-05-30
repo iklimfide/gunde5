@@ -97,7 +97,7 @@
     function itirafUygula(row, sayfa) {
         if (!row) return;
         var rumuz = row.username || row.rumuz || 'Anonim';
-        var yer = sayfa === 'podyum' ? 'Podyum' : 'Kulis';
+        var yer = sayfa === 'podyum' ? 'Podyum' : 'Anasayfa';
         var aciklama = metinKisalt(row.content_short || row.content, 160) || DEFAULT_DESC;
         var baslik = rumuz + ' — ' + yer + ' | ' + SITE_NAME;
         var url = global.location.href.split('#')[0];
@@ -125,11 +125,11 @@
                       ogType: 'website'
                   }
                 : {
-                      title: 'gunde5.com — Kulis Arenası | Hikaye yaz, oyla',
+                      title: 'gunde5.com | Günün 5 Harbi Hikayesi',
                       description:
-                          'Perde arkası hikayelerini yaz, beğeni ve yorumlarla yarış. Her gün 13:12’de TOP 5 Podyum’a çıkar.',
-                      canonical: SITE_ORIGIN + '/kulis',
-                      ogUrl: SITE_ORIGIN + '/kulis',
+                          'Her gün halkın içinden komik ve eğlenceli gerçek hikayeler — reklamsız, ücretsiz.',
+                      canonical: SITE_ORIGIN + '/',
+                      ogUrl: SITE_ORIGIN + '/',
                       ogType: 'website'
                   };
         apply(varsayilan);

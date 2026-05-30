@@ -410,7 +410,7 @@
         }
         .gunde5-toast--hata { background: #991b1b; }
         .container {
-            max-width: 680px;
+            max-width: 720px;
             margin: 0 auto;
             padding: 18px 16px 28px;
         }
@@ -635,6 +635,20 @@
             justify-content: center;
             margin: 0 0 16px;
         }
+        .istat-filtre--haric {
+            margin-top: -8px;
+            margin-bottom: 14px;
+        }
+        .istat-filtre-etiket {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-right: 2px;
+        }
+        .istat-filtre-not {
+            font-weight: 700;
+            color: var(--text-main);
+        }
         .istat-gun-btn {
             border: 1px solid var(--border-color);
             background: var(--bg-card);
@@ -730,6 +744,60 @@
             letter-spacing: -0.03em;
             font-variant-numeric: tabular-nums;
         }
+        .istat-kpi-alt {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+        .istat-bolum-not {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin: -4px 0 10px;
+            line-height: 1.45;
+        }
+        .istat-bolum--hero {
+            background: linear-gradient(165deg, rgba(29, 155, 240, 0.08), rgba(29, 155, 240, 0.02));
+            border: 1px solid rgba(29, 155, 240, 0.18);
+            border-radius: 16px;
+            padding: 14px 12px 12px;
+        }
+        body.dark-mode .istat-bolum--hero {
+            background: linear-gradient(165deg, rgba(29, 155, 240, 0.14), rgba(29, 155, 240, 0.04));
+            border-color: rgba(96, 165, 250, 0.22);
+        }
+        .istat-kpi-grid--hero {
+            grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+        }
+        .istat-kpi-grid--hero .istat-kpi-deger {
+            font-size: 18px;
+        }
+        .istat-detay {
+            margin: 18px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            background: var(--bg-card);
+            overflow: hidden;
+        }
+        .istat-detay summary {
+            cursor: pointer;
+            padding: 12px 14px;
+            font-size: 13px;
+            font-weight: 800;
+            list-style: none;
+        }
+        .istat-detay summary::-webkit-details-marker { display: none; }
+        .istat-detay[open] summary {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .istat-detay > .istat-kpi-grid,
+        .istat-detay > .istat-bolum {
+            padding: 0 12px 12px;
+        }
+        .istat-detay .istat-bolum-baslik {
+            margin-top: 12px;
+        }
         .istat-tablo-wrap {
             overflow-x: auto;
             border: 1px solid var(--border-color);
@@ -765,6 +833,12 @@
         }
         .istat-hata { color: #b91c1c; }
         body.dark-mode .istat-hata { color: #f87171; }
+        .istat-capraz-link, .intro a {
+            color: #1d9bf0;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .istat-capraz-link:hover, .intro a:hover { text-decoration: underline; }
     </style>
     <script src="js/gunde5-shell.js"></script>
     <script defer src="js/gunde5-perf.js"></script>
@@ -789,7 +863,6 @@
                 <div class="header-menu-panel" id="headerMenuPanel" hidden>
                     <nav class="header-menu-nav" aria-label="Site menüsü">
                         <a href="/podyum" class="header-menu-link">🏆 Podyum</a>
-                        <a href="/kulis" class="header-menu-link">🔥 Kulis</a>
                         <a href="/hakkinda" class="header-menu-link">ℹ️ Hakkında</a>
                         <a href="/iletisim" class="header-menu-link">✉️ İletişim</a>
                         <a href="/kvkk" class="header-menu-link">📋 KVKK</a>
@@ -811,7 +884,7 @@
 
     <div class="container">
         <h1 class="page-title">📊 İstatistikler</h1>
-        <p class="intro">Site trafiği ve özet sayılar — yalnızca yönetici hesabı.</p>
+        <p class="intro">Kim geldi, nereden geldi — sayfa ziyaretleri ve trafik kaynakları. Site içi davranış için <a href="/metrikler">Metrikler</a> sayfasına bakın.</p>
 
         <div id="istatistikYetkisiz" class="istat-yetkisiz" hidden>
             <p class="istat-yetkisiz-metin"></p>
@@ -824,6 +897,12 @@
             <button type="button" class="istat-gun-btn" data-istat-gun="90" aria-pressed="false">90 gün</button>
             <button type="button" class="istat-gun-btn" data-istat-gun="365" aria-pressed="false">365 gün</button>
             <button type="button" class="istat-yenile-btn" id="istatistikYenile">Yenile</button>
+        </div>
+        <div id="istatistikHaricFiltre" class="istat-filtre istat-filtre--haric" hidden>
+            <span class="istat-filtre-etiket">Hariç tut:</span>
+            <button type="button" class="istat-gun-btn istat-gun-btn--aktif" data-istat-haric="master" aria-pressed="true">Master</button>
+            <button type="button" class="istat-gun-btn" data-istat-haric="uyeler" aria-pressed="false">Tüm üyeler</button>
+            <button type="button" class="istat-gun-btn" data-istat-haric="yok" aria-pressed="false">Filtre yok</button>
         </div>
 
         <p id="istatistikYukleniyor" class="istat-yukleniyor" hidden>Yükleniyor…</p>
@@ -864,7 +943,7 @@
                     <div class="auth-brand-text">gunde<span>5</span>.com</div>
                 </div>
                 <h2 class="auth-modal-baslik">Üye Girişi</h2>
-                <p class="auth-modal-alt-baslik">E-posta ve şifrenle kulise dön.</p>
+                <p class="auth-modal-alt-baslik">E-posta ve şifrenle giriş yap.</p>
                 <label class="auth-etiket" for="loginEmail">E-Posta</label>
                 <input class="auth-input" type="email" id="loginEmail" maxlength="80" placeholder="mail@adresin.com" autocomplete="email">
                 <label class="auth-etiket" for="loginPassword">Şifre</label>
@@ -876,8 +955,8 @@
     </div>
 
     <div class="bottom-nav" role="navigation" aria-label="Ana menü">
-        <a href="/kulis" class="nav-item">
-            <div class="icon">🔥</div><span>Kulis</span>
+        <a href="/" class="nav-item">
+            <div class="icon">🏠</div><span>Anasayfa</span>
         </a>
         <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn" aria-haspopup="dialog">
             <div class="icon">✍️</div><span>Hikaye Yaz</span>
@@ -981,7 +1060,7 @@
         }
 
         document.getElementById('navYazBtn').addEventListener('click', function () {
-            window.location.href = '/kulis';
+            window.location.href = '/';
         });
     </script>
 </body>

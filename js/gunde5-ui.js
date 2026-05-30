@@ -145,14 +145,12 @@
         return '<p class="liste-bos">' + html + '</p>';
     }
 
-    var LINK_KULIS = '<a href="/kulis" class="sayfa-link">Kulis</a>';
+    var LINK_INDEX = '<a href="/" class="sayfa-link">Anasayfa</a>';
     var LINK_PODYUM = '<a href="/podyum" class="sayfa-link">Podyum</a>';
-    var SAAT_1312 = '<strong class="saat-vurgu">13:12</strong>';
-    var SAAT_1312_NOKTA = '<strong class="saat-vurgu">13.12</strong>';
 
     function podyumBosMesajiHtml() {
         injectSayfaLinkStyles();
-        return bosListeHtml('Henüz podyum hikayesi yok. ' + LINK_KULIS + '\'te oyları patlat!');
+        return bosListeHtml('Henüz podyum hikayesi yok. ' + LINK_INDEX + '\'te yeni hikayelere göz at!');
     }
 
     function injectSayfaLinkStyles() {
@@ -161,8 +159,8 @@
             '.sayfa-link:hover{opacity:0.88}' +
             '.saat-vurgu{font-weight:900;color:#d97706;font-variant-numeric:tabular-nums;letter-spacing:0.03em}' +
             'body.dark-mode .saat-vurgu{color:#fbbf24}' +
-            '.info-banner .saat-vurgu,.kulis-bos-paragraf .saat-vurgu{color:#b45309}' +
-            'body.dark-mode .info-banner .saat-vurgu,body.dark-mode .kulis-bos-paragraf .saat-vurgu{color:#fbbf24}';
+            '.info-banner .saat-vurgu{color:#b45309}' +
+            'body.dark-mode .info-banner .saat-vurgu{color:#fbbf24}';
         var s = document.getElementById('gunde5-sayfa-link-styles');
         if (!s) {
             s = document.createElement('style');
@@ -170,97 +168,6 @@
             document.head.appendChild(s);
         }
         s.textContent = css;
-    }
-
-    var KULIS_BARAJ = 3;
-    var KULIS_GIYOTIN_ID = 'kulisGiyotinBaraj';
-
-    function kulisSonPodyumTarihEtiketi() {
-        var p = trZamanParcalari(new Date(sonPodyumTrAniUtc()));
-        return padSayi(p.day) + '/' + padSayi(p.month) + '/' + p.year;
-    }
-
-    function kulisBosIcerikHtml() {
-        injectSayfaLinkStyles();
-        var podyumGun = kulisSonPodyumTarihEtiketi();
-        return (
-            '<h2 class="kulis-bos-baslik">Giyotin Görevini Yaptı, ' + LINK_KULIS + ' Temizlendi!</h2>' +
-            '<p class="kulis-bos-paragraf">Bugün saat ' + SAAT_1312 + ' oldu ve giyotin acımasızca indi. Dünün tüm hesabı kesildi; barajı geçemeyen her şey sonsuza dek silindi!</p>' +
-            '<p class="kulis-bos-paragraf">' + htmlEsc(podyumGun) + ' gününün o en fiyakalı, en çok konuşulan şampiyonları artık ' + LINK_PODYUM + 'da yerini aldı.</p>' +
-            '<p class="kulis-bos-paragraf kulis-bos-cta">' +
-            '👉 Günün şampiyonlarını görmek için hemen <a href="/podyum" class="kulis-bos-link sayfa-link" data-kulis-podyum>Podyum\'a tıkla</a>!' +
-            '</p>' +
-            '<p class="kulis-bos-paragraf">"Yarın ' + SAAT_1312_NOKTA + '\'ye kadar olan büyük yarışta ben de olmalıyım diyorsan:</p>' +
-            '<p class="kulis-bos-paragraf kulis-bos-cta">' +
-            '✍️ <a href="#" class="kulis-bos-link" data-kulis-hikaye>Hikayeni yaz ve oylamaya sun!</a>' +
-            '</p>' +
-            '<p class="kulis-bos-paragraf kulis-bos-uyari">Unutma hikayen yarın ya şampiyon olur ' + LINK_PODYUM + 'a çıkar ya da sonsuza dek silinir. Giyotin yarın tam ' + SAAT_1312_NOKTA + '\'de yine inecek.</p>'
-        );
-    }
-
-    /** @param {'merkez'|'alta'} mod */
-    function kulisBosHtml(mod) {
-        var cls = 'kulis-bos-kutu liste-bos';
-        if (mod === 'merkez') cls += ' kulis-bos-kutu--merkez';
-        else if (mod === 'alta') cls += ' kulis-bos-kutu--alta';
-        return '<div id="' + KULIS_GIYOTIN_ID + '" class="' + cls + '">' + kulisBosIcerikHtml() + '</div>';
-    }
-
-    function kulisAktifKartSayisi(liste) {
-        if (!liste) return 0;
-        return liste.querySelectorAll('.card[data-status="kulis"]').length;
-    }
-
-    function kulisGiyotinKaldir() {
-        var g = document.getElementById(KULIS_GIYOTIN_ID);
-        if (g) g.remove();
-    }
-
-    /** 3 kart barajı: &lt;3 ise giyotin metni; ≥3 gizle. */
-    function kulisBarajGuncelle(liste) {
-        if (!liste) return;
-        var n = kulisAktifKartSayisi(liste);
-        if (n >= KULIS_BARAJ) {
-            kulisGiyotinKaldir();
-            liste.classList.remove('kulis-liste--giyotin-merkez');
-            return;
-        }
-        var mod = n === 0 ? 'merkez' : 'alta';
-        liste.classList.toggle('kulis-liste--giyotin-merkez', n === 0);
-        var sentinel = document.getElementById('kulisLazySentinel');
-        var mevcut = document.getElementById(KULIS_GIYOTIN_ID);
-        if (!mevcut) {
-            var tmp = document.createElement('div');
-            tmp.innerHTML = kulisBosHtml(mod);
-            mevcut = tmp.firstChild;
-            if (sentinel) {
-                liste.insertBefore(mevcut, sentinel);
-            } else {
-                liste.appendChild(mevcut);
-            }
-            baglaKulisBosListe(mevcut);
-        } else {
-            mevcut.className = 'kulis-bos-kutu liste-bos kulis-bos-kutu--' + mod;
-            if (sentinel) {
-                liste.insertBefore(mevcut, sentinel);
-            }
-        }
-    }
-
-    function baglaKulisBosListe(kok) {
-        if (!kok) return;
-        var hikaye = kok.querySelector('[data-kulis-hikaye]');
-        if (hikaye) {
-            hikaye.addEventListener('click', function (ev) {
-                ev.preventDefault();
-                if (typeof global.acItirafModal === 'function') {
-                    global.acItirafModal();
-                    return;
-                }
-                var yaz = document.getElementById('navYazBtn');
-                if (yaz) yaz.click();
-            });
-        }
     }
 
     function kartDetayShell() {
@@ -378,17 +285,29 @@
 
     global.toggleKaydetFromCard = toggleKaydetFromCard;
 
+    function kartOyDurumuRenklendir(card, tip) {
+        if (!card) return;
+        var upBtn = card.querySelector('[data-vote="up"]') || card.querySelector('.kart-aksiyon--begeni');
+        var downBtn = card.querySelector('[data-vote="down"]') || card.querySelector('.kart-aksiyon--begenme');
+        if (upBtn) {
+            upBtn.classList.toggle('applauded', tip === 'up');
+            upBtn.classList.toggle('aktif', tip === 'up');
+        }
+        if (downBtn) {
+            downBtn.classList.toggle('disliked', tip === 'down');
+            downBtn.classList.toggle('aktif', tip === 'down');
+        }
+    }
+
     function kartOyArayuzunuGuncelle(card, sonuc) {
         if (!card || !sonuc) return;
         var upEl = card.querySelector('.up-num');
         var downEl = card.querySelector('.down-num');
         if (upEl) upEl.textContent = formatSayac(sonuc.up_votes);
         if (downEl) downEl.textContent = formatSayac(sonuc.down_votes);
-        var begeni = card.querySelector('.kart-aksiyon--begeni');
-        var begenme = card.querySelector('.kart-aksiyon--begenme');
         var o = sonuc.oy;
-        if (begeni) begeni.classList.toggle('aktif', o === 1);
-        if (begenme) begenme.classList.toggle('aktif', o === -1);
+        if (o === 1) kartOyDurumuRenklendir(card, 'up');
+        else if (o === -1) kartOyDurumuRenklendir(card, 'down');
     }
 
     /** Podyum hibrit canlandırma: yalnızca sayıları günceller (oy düğmesi durumu değişmez). */
@@ -436,8 +355,12 @@
             '.kart-aksiyon:hover{color:#1d9bf0;background:rgba(29,155,240,0.1)}' +
             '.kart-aksiyon--begeni:hover,.kart-aksiyon--begenme:hover{background:rgba(0,0,0,0.05)}' +
             'body.dark-mode .kart-aksiyon--begeni:hover,body.dark-mode .kart-aksiyon--begenme:hover{background:rgba(255,255,255,0.08)}' +
-            '.kart-aksiyon--begeni.aktif,.kart-aksiyon--begenme.aktif{background:rgba(0,0,0,0.06)}' +
-            'body.dark-mode .kart-aksiyon--begeni.aktif,body.dark-mode .kart-aksiyon--begenme.aktif{background:rgba(255,255,255,0.1)}' +
+            '.kart-aksiyon--begeni.aktif{background:#22c55e;color:#fff}' +
+            'body.dark-mode .kart-aksiyon--begeni.aktif{background:#16a34a;color:#fff}' +
+            '.kart-aksiyon--begeni.aktif .kart-aksiyon-etiket,.kart-aksiyon--begeni.aktif .kart-aksiyon-sayi{color:#fff}' +
+            '.kart-aksiyon--begenme.aktif{background:#f97316;color:#fff}' +
+            'body.dark-mode .kart-aksiyon--begenme.aktif{background:#fb923c;color:#fff}' +
+            '.kart-aksiyon--begenme.aktif .kart-aksiyon-etiket,.kart-aksiyon--begenme.aktif .kart-aksiyon-sayi{color:#fff}' +
             '.kart-aksiyon-emoji{font-size:18px;line-height:1;display:inline-flex;align-items:center;justify-content:center;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}' +
             '.kart-aksiyon--kaydet:hover,.kart-aksiyon--kaydet.aktif{color:#1d9bf0}' +
             '.kart-aksiyon--kaydet.aktif svg{fill:currentColor;stroke:currentColor}' +
@@ -446,6 +369,7 @@
             (SAYFA_GORUNTULENME_GORUNUR ? '' : '.kart-aksiyon--goruntulenme{visibility:hidden}') +
             '.kart-aksiyon-sayi{font-variant-numeric:tabular-nums;min-width:1ch;font-size:16px;font-weight:400;color:var(--text-muted);transition:transform .2s ease,color .2s ease}' +
             '.kart-aksiyon-sayi.g5-stat-tick{transform:scale(1.1);color:var(--text-main)}' +
+            '.kart-aksiyon--begeni .kart-aksiyon-etiket,.kart-aksiyon--begenme .kart-aksiyon-etiket{font-size:12px;font-weight:700;color:var(--text-main);white-space:nowrap}' +
             '.kart-aksiyon-ikon{display:inline-flex;width:18px;height:18px;flex-shrink:0}' +
             '.kart-aksiyon-ikon svg{width:18px;height:18px;display:block}';
         var s = document.getElementById('gunde5-kart-aksiyon-styles');
@@ -464,18 +388,24 @@
         var downN = down != null ? down : 0;
         var cevapN = cevapSayisi != null ? cevapSayisi : 0;
         var gorN = goruntulenme != null ? goruntulenme : 0;
+        var D = global.Gunde5DB;
+        var oyTip = D && D.oyDurumuOku ? D.oyDurumuOku(kartId) : null;
+        var begeniCls = oyTip === 'up' ? ' aktif' : '';
+        var begenmeCls = oyTip === 'down' ? ' aktif' : '';
         return (
             '<div class="kart-aksiyonlar">' +
                 '<button type="button" class="kart-aksiyon kart-aksiyon--yorum" data-cevap-yaz aria-label="Yorumlar">' +
                     ikonSvg(IKON_YORUM, false) +
                     sayiSpan(cevapN, '', 'data-cevap-sayi') +
                 '</button>' +
-                '<button type="button" class="kart-aksiyon kart-aksiyon--begeni" onclick="vote(\'' + kartId + '\', 1)" aria-label="Beğendim">' +
-                    oyEmojiHtml('\uD83D\uDC4D') +
+                '<button type="button" class="kart-aksiyon kart-aksiyon--begeni' + begeniCls + '" onclick="vote(\'' + kartId + '\', 1)" aria-label="Beğendim">' +
+                    oyEmojiHtml('\u2764\uFE0F') +
+                    '<span class="kart-aksiyon-etiket">Beğendim</span>' +
                     sayiSpan(upN, 'up-num', '') +
                 '</button>' +
-                '<button type="button" class="kart-aksiyon kart-aksiyon--begenme" onclick="vote(\'' + kartId + '\', -1)" aria-label="Beğenmedim">' +
+                '<button type="button" class="kart-aksiyon kart-aksiyon--begenme' + begenmeCls + '" onclick="vote(\'' + kartId + '\', -1)" aria-label="Beğenmedim">' +
                     oyEmojiHtml('\uD83D\uDC4E') +
+                    '<span class="kart-aksiyon-etiket">Beğenmedim</span>' +
                     sayiSpan(downN, 'down-num', '') +
                 '</button>' +
                 '<span class="kart-aksiyon kart-aksiyon--goruntulenme"' +
@@ -670,52 +600,6 @@
     global.kapatSikayetModal = kapatSikayetModal;
     global.gonderSikayet = gonderSikayet;
 
-    function renderKulisCard(row) {
-        var cins = row.gender === 'male' ? 'male' : 'female';
-        var rumuz = row.username || 'Müdavim';
-        var bol = metinBol(row.content_full || row.content_short || '');
-        var kartId = String(row.id);
-        var devamHtml = devamBtnHtml(bol.devam);
-        var fullHtml = bol.devam
-            ? '<span class="full-text">' + metinGoster(row.content_full || '') + '</span>'
-            : '';
-        var up = row.up_votes != null ? row.up_votes : 0;
-        var down = row.down_votes != null ? row.down_votes : 0;
-        var goruntulenme = row.sayfa_goruntulenme != null ? row.sayfa_goruntulenme : 0;
-
-        var kart = document.createElement('div');
-        kart.className = 'card ' + cins + (bol.devam ? ' uzun-metin' : '');
-        kart.setAttribute('data-id', kartId);
-        kart.setAttribute('data-status', 'kulis');
-        if (row.user_id) kart.setAttribute('data-itiraf-user-id', String(row.user_id));
-        if (rumuz && rumuz !== 'Gizli Üye') kart.setAttribute('data-itiraf-username', rumuz);
-        kart.innerHTML =
-            '<div class="card-header">' +
-                '<div class="user-block">' +
-                    '<div class="avatar"></div>' +
-                    '<div class="user-details">' +
-                        '<span class="username">' + htmlEsc(rumuz) + '</span>' +
-                        kullaniciMetaHtml(row) +
-                    '</div>' +
-                '</div>' +
-                '<div class="card-header-actions">' +
-                    cardMenuBtnHtml(kartId) +
-                '</div>' +
-            '</div>' +
-            '<div class="card-body">' +
-                '<span class="short-text">' + metinGoster(bol.kisa) + '</span>' +
-                fullHtml +
-                devamHtml +
-            '</div>' +
-            '<div class="card-footer">' +
-                kartAksiyonBarHtml(kartId, up, down, row.cevap_sayisi, goruntulenme) +
-            '</div>' +
-            kartDetayShell();
-        kartMetaDataAttr(kart, row);
-        avatarKartUygula(kart.querySelector('.avatar'), row);
-        return kart;
-    }
-
     var podyumRozet = ['\uD83D\uDC51 Günün 1.si', '\uD83E\uDD48 Günün 2.si', '\uD83E\uDD49 Günün 3.si', 'Günün 4.si', 'Günün 5.si'];
 
     function podyumDonemTarihMs(donem) {
@@ -739,6 +623,12 @@
         return (donemler || []).slice().sort(function (a, b) {
             return podyumDonemTarihMs(b) - podyumDonemTarihMs(a);
         });
+    }
+
+    function kartBaslikHtml(row) {
+        var b = row && row.baslik ? String(row.baslik).replace(/^\s+|\s+$/g, '') : '';
+        if (!b) return '';
+        return '<span class="kart-baslik">' + htmlEsc(b) + '</span>';
     }
 
     function renderPodyumCard(row, sira) {
@@ -783,6 +673,7 @@
                 '</div>' +
             '</div>' +
             '<div class="card-body">' +
+                kartBaslikHtml(row) +
                 '<span class="short-text">' + metinGoster(bol.kisa) + '</span>' +
                 fullHtml +
                 devamHtml +
@@ -1179,12 +1070,6 @@
         bosListe: bosListe,
         bosListeHtml: bosListeHtml,
         podyumBosMesajiHtml: podyumBosMesajiHtml,
-        kulisBosHtml: kulisBosHtml,
-        kulisBarajGuncelle: kulisBarajGuncelle,
-        kulisAktifKartSayisi: kulisAktifKartSayisi,
-        KULIS_BARAJ: KULIS_BARAJ,
-        baglaKulisBosListe: baglaKulisBosListe,
-        renderKulisCard: renderKulisCard,
         renderPodyumCard: renderPodyumCard,
         podyumDonemTarihMs: podyumDonemTarihMs,
         podyumDonemleriKronolojikSirala: podyumDonemleriKronolojikSirala,
@@ -1220,6 +1105,7 @@
         initHeaderProfilMenu: initHeaderProfilMenu,
         formatSayac: formatSayac,
         kartOyArayuzunuGuncelle: kartOyArayuzunuGuncelle,
+        kartOyDurumuRenklendir: kartOyDurumuRenklendir,
         kartPodyumIstatistikEnjekteEt: kartPodyumIstatistikEnjekteEt,
         toggleKaydet: toggleKaydet,
         isItirafKayitli: isItirafKayitli

@@ -159,7 +159,18 @@
         }
         db()
             .init()
-            .then(kayitGonder)
+            .then(function () {
+                if (!db().masterDurum) {
+                    kayitGonder();
+                    return;
+                }
+                return db()
+                    .masterDurum()
+                    .then(function (durum) {
+                        if (!durum || !durum.master) kayitGonder();
+                    })
+                    .catch(kayitGonder);
+            })
             .catch(function () {
                 kayitGonder();
             });

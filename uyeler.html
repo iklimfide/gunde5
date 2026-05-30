@@ -1085,7 +1085,6 @@
                 <div class="header-menu-panel" id="headerMenuPanel" hidden>
                     <nav class="header-menu-nav" aria-label="Site menüsü">
                         <a href="/podyum" class="header-menu-link">🏆 Podyum</a>
-                        <a href="/kulis" class="header-menu-link">🔥 Kulis</a>
                         <a href="/hakkinda" class="header-menu-link">ℹ️ Hakkında</a>
                         <a href="/iletisim" class="header-menu-link">✉️ İletişim</a>
                         <a href="/kvkk" class="header-menu-link">📋 KVKK</a>
@@ -1180,7 +1179,7 @@
                     <div class="auth-brand-text">gunde<span>5</span>.com</div>
                 </div>
                 <h2 class="auth-modal-baslik">Üye Girişi</h2>
-                <p class="auth-modal-alt-baslik">E-posta ve şifrenle kulise dön.</p>
+                <p class="auth-modal-alt-baslik">E-posta ve şifrenle giriş yap.</p>
                 <label class="auth-etiket" for="loginEmail">E-Posta</label>
                 <input class="auth-input" type="email" id="loginEmail" maxlength="80" placeholder="mail@adresin.com" autocomplete="email">
                 <label class="auth-etiket" for="loginPassword">Şifre</label>
@@ -1192,8 +1191,8 @@
     </div>
 
     <div class="bottom-nav" role="navigation" aria-label="Ana menü">
-        <a href="/kulis" class="nav-item">
-            <div class="icon">🔥</div><span>Kulis</span>
+        <a href="/" class="nav-item">
+            <div class="icon">🏠</div><span>Anasayfa</span>
         </a>
         <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn" aria-haspopup="dialog">
             <div class="icon">✍️</div><span>Hikaye Yaz</span>
@@ -1297,7 +1296,7 @@
         }
 
         document.getElementById('navYazBtn').addEventListener('click', function () {
-            window.location.href = '/kulis';
+            window.location.href = '/';
         });
     </script>
 </body>

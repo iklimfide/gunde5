@@ -1,36 +1,56 @@
--- Üyeliksiz oy: giriş gerekmez; viewer_key veya (girişliyse) user_id ile hikaye başına tek oy.
--- SECURITY INVOKER + RLS (Security Advisor uyumlu). Canlı şema: itiraflar / itiraf_oylar.
--- Kurulum: bu dosya + security-advisor-definer-fix-4.sql (RLS select/insert)
+﻿-- Adim 2/3 — oy RLS + RPC
+set statement_timeout = '0';
+set lock_timeout = '60s';
 
-alter table public.itiraf_oylar
-    add column if not exists viewer_key text;
+-- ---------------------------------------------------------------------------
+-- itiraf_oylar â€” insert + select (oy ver / oy durum INVOKER)
+-- ---------------------------------------------------------------------------
+grant insert, select on public.itiraf_oylar to anon, authenticated;
 
-alter table public.itiraf_oylar
-    alter column user_id drop not null;
-
-alter table public.itiraf_oylar
-    drop constraint if exists itiraf_oylar_itiraf_id_user_id_key;
-
-alter table public.itiraf_oylar
-    drop constraint if exists hikaye_oylar_hikaye_id_user_id_key;
-
-alter table public.itiraf_oylar
-    drop constraint if exists itiraf_oylar_kimlik_check;
-
-alter table public.itiraf_oylar
-    add constraint itiraf_oylar_kimlik_check check (
-        (user_id is not null and viewer_key is null)
-        or (user_id is null and viewer_key is not null and char_length(viewer_key) >= 8)
+drop policy if exists itiraf_oylar_insert_uye on public.itiraf_oylar;
+create policy itiraf_oylar_insert_uye on public.itiraf_oylar
+    for insert to authenticated
+    with check (
+        user_id = (select auth.uid())
+        and viewer_key is null
+        and oy in (1, -1)
+        and exists (
+            select 1 from public.itiraflar i
+            where i.id = itiraf_id
+        )
     );
 
-create unique index if not exists itiraf_oylar_user_uniq
-    on public.itiraf_oylar (itiraf_id, user_id)
-    where user_id is not null;
+drop policy if exists itiraf_oylar_insert_anon on public.itiraf_oylar;
+create policy itiraf_oylar_insert_anon on public.itiraf_oylar
+    for insert to anon
+    with check (
+        user_id is null
+        and viewer_key is not null
+        and char_length(viewer_key) >= 8
+        and oy in (1, -1)
+        and exists (
+            select 1 from public.itiraflar i
+            where i.id = itiraf_id
+        )
+    );
 
-create unique index if not exists itiraf_oylar_viewer_uniq
-    on public.itiraf_oylar (itiraf_id, viewer_key)
-    where viewer_key is not null;
+drop policy if exists itiraf_oylar_select_uye on public.itiraf_oylar;
+create policy itiraf_oylar_select_uye on public.itiraf_oylar
+    for select to authenticated
+    using (user_id = (select auth.uid()));
 
+drop policy if exists itiraf_oylar_select_anon on public.itiraf_oylar;
+create policy itiraf_oylar_select_anon on public.itiraf_oylar
+    for select to anon
+    using (
+        user_id is null
+        and viewer_key is not null
+        and viewer_key = coalesce(nullif(current_setting('g5.viewer_key', true), ''), '___none___')
+    );
+
+-- ---------------------------------------------------------------------------
+-- itiraf_oy_ver + oy_ver (INVOKER, zaten_oyladin JSON)
+-- ---------------------------------------------------------------------------
 create or replace function public.itiraf_oy_ver(
     p_itiraf_id bigint,
     p_oy smallint,
@@ -141,6 +161,9 @@ $$;
 revoke all on function public.oy_ver(bigint, integer, text) from public;
 grant execute on function public.oy_ver(bigint, integer, text) to anon, authenticated;
 
+-- ---------------------------------------------------------------------------
+-- itiraf_oy_durum (INVOKER + g5.viewer_key oturum anahtarÄ±)
+-- ---------------------------------------------------------------------------
 create or replace function public.itiraf_oy_durum(
     p_itiraf_id bigint,
     p_viewer_key text default null
@@ -198,42 +221,5 @@ $$;
 revoke all on function public.itiraf_oy_durum(bigint, text) from public;
 grant execute on function public.itiraf_oy_durum(bigint, text) to anon, authenticated;
 
--- INVOKER oy RPC için RLS
-grant insert, select on public.itiraf_oylar to anon, authenticated;
-
-drop policy if exists itiraf_oylar_insert_uye on public.itiraf_oylar;
-create policy itiraf_oylar_insert_uye on public.itiraf_oylar
-    for insert to authenticated
-    with check (
-        user_id = (select auth.uid())
-        and viewer_key is null
-        and oy in (1, -1)
-        and exists (select 1 from public.itiraflar i where i.id = itiraf_id)
-    );
-
-drop policy if exists itiraf_oylar_insert_anon on public.itiraf_oylar;
-create policy itiraf_oylar_insert_anon on public.itiraf_oylar
-    for insert to anon
-    with check (
-        user_id is null
-        and viewer_key is not null
-        and char_length(viewer_key) >= 8
-        and oy in (1, -1)
-        and exists (select 1 from public.itiraflar i where i.id = itiraf_id)
-    );
-
-drop policy if exists itiraf_oylar_select_uye on public.itiraf_oylar;
-create policy itiraf_oylar_select_uye on public.itiraf_oylar
-    for select to authenticated
-    using (user_id = (select auth.uid()));
-
-drop policy if exists itiraf_oylar_select_anon on public.itiraf_oylar;
-create policy itiraf_oylar_select_anon on public.itiraf_oylar
-    for select to anon
-    using (
-        user_id is null
-        and viewer_key is not null
-        and viewer_key = coalesce(nullif(current_setting('g5.viewer_key', true), ''), '___none___')
-    );
-
 notify pgrst, 'reload schema';
+
