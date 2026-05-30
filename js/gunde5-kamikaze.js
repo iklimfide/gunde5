@@ -100,30 +100,42 @@
         return deger || '—';
     }
 
+    /** Anasayfada görünür mü (planlı gelecek tarih hariç). */
+    function indexYayindaMi(row) {
+        if (!row || row.silindi_at) return false;
+        if (!row.created_at) return true;
+        return new Date(row.created_at).getTime() <= Date.now();
+    }
+
     function hikayeDurumKodu(row) {
         if (!row) return '';
         if (row.silindi_at) return 'silindi';
         if (row.status === 'podyum') return 'podyum';
-        return 'kulis';
+        if (row.status === 'kulis' && !indexYayindaMi(row)) return 'planli';
+        return 'index';
     }
 
     function hikayeDurumText(row) {
         var kod = hikayeDurumKodu(row);
         if (kod === 'silindi') return 'silindi';
         if (kod === 'podyum') return 'podyum';
-        return 'kulis';
+        if (kod === 'planli') return 'planlı';
+        return 'index';
     }
 
-    function statusBadge(status, silindi) {
+    function statusBadge(status, silindi, createdAt) {
         if (silindi) return '<span class="kamikaze-badge kamikaze-badge--silindi">silindi</span>';
         if (status === 'podyum') return '<span class="kamikaze-badge kamikaze-badge--podyum">podyum</span>';
-        return '<span class="kamikaze-badge kamikaze-badge--kulis">kulis</span>';
+        if (status === 'kulis' && createdAt && new Date(createdAt).getTime() > Date.now()) {
+            return '<span class="kamikaze-badge kamikaze-badge--planli">planlı</span>';
+        }
+        return '<span class="kamikaze-badge kamikaze-badge--index">index</span>';
     }
 
     function yorumDurumBadge(row) {
         if (row && row.hikaye_silindi) return '<span class="kamikaze-badge kamikaze-badge--silindi">hikaye silindi</span>';
         if (row && row.hikaye_status === 'podyum') return '<span class="kamikaze-badge kamikaze-badge--podyum">podyum</span>';
-        return '<span class="kamikaze-badge kamikaze-badge--kulis">kulis</span>';
+        return '<span class="kamikaze-badge kamikaze-badge--index">index</span>';
     }
 
     function userDurumText(row) {
@@ -175,6 +187,10 @@
         return liste.filter(function (r) {
             if (filter === 'silindi') return !!r.silindi_at;
             if (filter === 'gizli') return !!r.is_gizli && !r.silindi_at;
+            if (filter === 'index') return indexYayindaMi(r);
+            if (filter === 'planli') {
+                return r.status === 'kulis' && !r.silindi_at && !indexYayindaMi(r);
+            }
             return r.status === filter && !r.silindi_at;
         });
     }
@@ -564,7 +580,8 @@
         var items = [
             { etiket: 'Üye', deger: ozet.uye },
             { etiket: 'Aktif hikaye', deger: ozet.hikaye_aktif },
-            { etiket: 'Kulis', deger: ozet.kulis, cls: 'warn' },
+            { etiket: 'Index', deger: ozet.index != null ? ozet.index : ozet.kulis, cls: 'warn' },
+            { etiket: 'Planlı', deger: ozet.planli, cls: 'blue' },
             { etiket: 'Podyum', deger: ozet.podyum, cls: 'ok' },
             { etiket: 'Silinen', deger: ozet.silindi },
             { etiket: 'Gizli', deger: ozet.gizli },
@@ -662,11 +679,12 @@
             {
                 key: 'durum',
                 etiket: 'Durum',
-                value: function (r) { return statusBadge(r.status, r.silindi_at); },
+                value: function (r) { return statusBadge(r.status, r.silindi_at, r.created_at); },
                 raw: true,
                 filter: 'select',
                 options: [
-                    { value: 'kulis', label: 'Kulis' },
+                    { value: 'index', label: 'Index' },
+                    { value: 'planli', label: 'Planlı' },
                     { value: 'podyum', label: 'Podyum' },
                     { value: 'silindi', label: 'Silindi' }
                 ],
@@ -946,11 +964,11 @@
             empty: 'Podyum dönemi yok.'
         });
         html += renderTableSection({
-            id: 'kulis-lider',
-            title: 'Kulis liderlik',
-            rows: arr(veri.kulis_lider),
+            id: 'index-lider',
+            title: 'Index liderlik (r sırası)',
+            rows: arr(veri.index_lider || veri.kulis_lider),
             columns: hikayeKolonlari(),
-            empty: 'Kulis boş.'
+            empty: 'Anasayfada hikaye yok.'
         });
         html += renderTableSection({
             id: 'sikayetler',
@@ -1130,7 +1148,7 @@
             '<section class="kamikaze-modal-section">' +
             '<div class="kamikaze-modal-meta">' +
             '<span>#' + esc(hikaye.id) + '</span>' +
-            '<span>' + statusBadge(hikaye.status, hikaye.silindi_at) + '</span>' +
+            '<span>' + statusBadge(hikaye.status, hikaye.silindi_at, hikaye.created_at) + '</span>' +
             '<span>' + esc(fmtTarih(hikaye.created_at)) + '</span>' +
             '<span>👍 ' + esc(fmtSayi(hikaye.up_votes)) + ' · 👎 ' + esc(fmtSayi(hikaye.down_votes)) + '</span>' +
             '</div>' +
@@ -1153,7 +1171,7 @@
                 : '<button type="button" class="kamikaze-modal-btn kamikaze-modal-btn--tehlike" data-km-modal-act="story-delete">Sil</button>') +
             '</div>' +
             '<div class="kamikaze-modal-grid">' +
-            '<label>Durum<select id="kmStoryStatus"><option value="kulis"' + (hikaye.status === 'kulis' ? ' selected' : '') + '>Kulis</option><option value="podyum"' + (hikaye.status === 'podyum' ? ' selected' : '') + '>Podyum</option></select></label>' +
+            '<label>Durum<select id="kmStoryStatus"><option value="kulis"' + (hikaye.status === 'kulis' ? ' selected' : '') + '>Index</option><option value="podyum"' + (hikaye.status === 'podyum' ? ' selected' : '') + '>Podyum</option></select></label>' +
             '<label>Like/Dislike<input id="kmStoryVoteSummary" value="👍 ' + esc(fmtSayi(hikaye.up_votes)) + ' · 👎 ' + esc(fmtSayi(hikaye.down_votes)) + '" disabled></label>' +
             '</div>' +
             '<div class="kamikaze-modal-actions"><button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-save-status">Durumu uygula</button></div>' +

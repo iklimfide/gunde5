@@ -24,13 +24,16 @@
     <meta name="twitter:image" content="https://gunde5.com/og-share.png">
     <meta name="theme-color" content="#ffffff">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <script src="js/gunde5-shell.js"></script>
     <script defer src="js/gunde5-config.js?v=17"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
     <script defer src="js/gunde5-db.js?v=21"></script>
     <script defer src="js/gunde5-profil.js"></script>
+    <script defer src="js/gunde5-ui.js"></script>
+    <script defer src="js/gunde5-master.js"></script>
     <script defer src="js/gunde5-ziyaret.js?v=17"></script>
     <script defer src="js/gunde5-analytics.js?v=4"></script>
-    <script defer src="js/gunde5-index.js?v=24"></script>
+    <script defer src="js/gunde5-index.js?v=25"></script>
     <script defer src="js/gunde5-index-seo.js?v=17"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -112,6 +115,182 @@
             gap: 12px;
             margin-bottom: 8px;
             min-height: 44px;
+        }
+
+        html.g5-index-master-nav #indexPageTopbar {
+            display: none;
+        }
+
+        #indexSiteHeader[hidden] {
+            display: none !important;
+        }
+
+        #indexSiteHeader {
+            background-color: #1d9bf0;
+            color: #ffffff;
+            padding: 16px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            border-bottom: 1px solid #1a8cd8;
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+
+        #indexSiteHeader .header-brand {
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        #indexSiteHeader .header-brand:hover { opacity: 0.92; }
+        #indexSiteHeader .header-brand-red { color: #ef4444; }
+
+        #indexSiteHeader .header-sol {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 210;
+        }
+
+        #indexSiteHeader .header-sag {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 210;
+        }
+
+        #indexSiteHeader .header-menu-btn {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 0;
+        }
+
+        #indexSiteHeader .header-menu-bar {
+            display: block;
+            width: 18px;
+            height: 2px;
+            background: #ffffff;
+            border-radius: 1px;
+        }
+
+        #indexSiteHeader .header-menu-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 168px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+            padding: 8px;
+            z-index: 300;
+        }
+
+        body.dark-mode #indexSiteHeader .header-menu-panel,
+        [data-theme="dark"] #indexSiteHeader .header-menu-panel {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+        }
+
+        #indexSiteHeader .header-menu-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        #indexSiteHeader .header-menu-link {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #111827;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        body.dark-mode #indexSiteHeader .header-menu-link,
+        [data-theme="dark"] #indexSiteHeader .header-menu-link {
+            color: var(--text-main);
+        }
+
+        #indexSiteHeader .header-menu-link:hover { background: #f3f4f6; }
+
+        body.dark-mode #indexSiteHeader .header-menu-link:hover,
+        [data-theme="dark"] #indexSiteHeader .header-menu-link:hover {
+            background: #2f3336;
+        }
+
+        #indexSiteHeader .header-auth-btns {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #indexSiteHeader .header-auth-btns[hidden] { display: none !important; }
+
+        #indexSiteHeader .header-auth-btn {
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        #indexSiteHeader .header-profil-link {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            text-decoration: none;
+        }
+
+        #indexSiteHeader .header-profil-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #indexSiteHeader .header-profil-link.cins-female .header-profil-avatar:not(.has-foto) {
+            background-color: var(--female-color);
+        }
+
+        #indexSiteHeader .header-profil-link.cins-male .header-profil-avatar:not(.has-foto) {
+            background-color: var(--male-color);
+        }
+
+        #indexSiteHeader .header-profil-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .index-tagline {
@@ -1039,8 +1218,39 @@
 
     <div class="ss-watermark" aria-hidden="true">gunde<span class="brand-five">5</span>.com</div>
 
+    <header id="indexSiteHeader" hidden>
+        <div class="header-sol">
+            <div class="header-menu-wrap">
+                <button type="button" class="header-menu-btn" id="headerMenuBtn" aria-label="Menü" aria-expanded="false" aria-controls="headerMenuPanel" onclick="Gunde5UI.toggleHeaderMenu(event)">
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                </button>
+                <div class="header-menu-panel" id="headerMenuPanel" hidden>
+                    <nav class="header-menu-nav" aria-label="Site menüsü">
+                        <a href="/podyum" class="header-menu-link">🏆 Podyum</a>
+                        <a href="/" class="header-menu-link">🏠 Anasayfa</a>
+                        <a href="/hakkinda" class="header-menu-link">ℹ️ Hakkında</a>
+                        <a href="/iletisim" class="header-menu-link">✉️ İletişim</a>
+                        <a href="/kvkk" class="header-menu-link">📋 KVKK</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <a href="/" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <div class="header-sag">
+            <div class="header-auth-btns" id="headerAuthBtns">
+                <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit">Katıl</button>
+                <button type="button" class="header-auth-btn header-auth-btn--giris" id="hdrGiris">Giriş</button>
+            </div>
+            <a href="/profil" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+                <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
+            </a>
+        </div>
+    </header>
+
     <main>
-        <header class="page-topbar">
+        <header class="page-topbar" id="indexPageTopbar">
             <a href="/" class="brand">gunde<span class="brand-five">5</span>.com</a>
             <button type="button" class="theme-fab" onclick="toggleTheme()" id="themeBtn" aria-label="Tema değiştir">🌙</button>
         </header>

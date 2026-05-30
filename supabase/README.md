@@ -123,3 +123,5 @@ Canlı Supabase’de sırayla:
 4. **`security-advisor-definer-fix-4a.sql`** → **`4b.sql`** → **`4c.sql`** — analytics + oy + istatistik RPC’leri (`SECURITY INVOKER`). **Üçünü ayrı ayrı Run edin** (tek dosyada timeout olur). **`index-analytics.sql` sonrası**.
 
 Dashboard → Security Advisor → **Rerun**. Kamikaze paneli kullanılmıyorsa **`kamikaze-drop.sql`** (RPC temizliği; aksi halde kamikaze yalnızca `service_role` ile çalışır).
+
+Kamikaze (`/kamikaze`) hata veriyorsa (`hikayeler does not exist`): **`master-kamikaze-itiraf-fix.sql`** — `itiraflar` şeması + anasayfa (index) sayımları.

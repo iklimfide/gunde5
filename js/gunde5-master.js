@@ -648,7 +648,7 @@
             '<label>👍 <input type="number" data-m-up min="0" value="' + esc(upVal) + '"></label>' +
             '<label>👎 <input type="number" data-m-down min="0" value="' + esc(downVal) + '"></label>' +
             '<button type="button" class="master-aksiyon-btn" data-m-a="oylar">Oy kaydet</button>' +
-            '<select data-m-status><option value="kulis"' + (status === 'kulis' ? ' selected' : '') + '>Kulis</option>' +
+            '<select data-m-status><option value="kulis"' + (status === 'kulis' ? ' selected' : '') + '>Index</option>' +
             '<option value="podyum"' + (status === 'podyum' ? ' selected' : '') + '>Podyum</option></select>' +
             '<button type="button" class="master-aksiyon-btn" data-m-a="status">Durum uygula</button>' +
             '<button type="button" class="master-aksiyon-btn" data-m-a="geri_al">Geri al (sil)</button>' +

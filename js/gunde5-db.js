@@ -136,7 +136,7 @@
                 return 'Profil kaydedilemedi (veritabanı izni). Supabase SQL Editor\'da supabase/profil-uye-rpc.sql dosyasını bir kez çalıştırın, sonra sayfayı yenileyin.';
             }
             if (yetkiMsg.indexOf('master_kamikaze_') >= 0 || yetkiMsg.indexOf('master_oy_islem') >= 0) {
-                return 'Kamikaze için veritabanı izni eksik. Supabase SQL Editor\'da supabase/master-kamikaze-panel.sql dosyasını çalıştırın, sonra sayfayı yenileyin.';
+                return 'Kamikaze için veritabanı izni eksik. Supabase SQL Editor\'da supabase/master-kamikaze-itiraf-fix.sql dosyasını çalıştırın, sonra sayfayı yenileyin.';
             }
             if (yetkiMsg.indexOf('master_hikaye_ekle') >= 0) {
                 return 'Master hikaye ekleme izni eksik. Supabase SQL Editor\'da supabase/itiraf-hikaye-yaz-kurulum.sql dosyasını bir kez çalıştırın, sonra sayfayı yenileyin.';
@@ -183,7 +183,7 @@
         if ((msg.indexOf('master_kamikaze_panel') >= 0 || msg.indexOf('master_kamikaze_ara') >= 0 ||
                 msg.indexOf('master_kamikaze_hikaye_detay') >= 0 || msg.indexOf('master_oy_islem') >= 0) &&
             (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
-            return 'Kamikaze henüz kurulmadı. Supabase SQL Editor\'da supabase/master-kamikaze-panel.sql dosyasını çalıştırın.';
+            return 'Kamikaze henüz kurulmadı. Supabase SQL Editor\'da supabase/master-kamikaze-itiraf-fix.sql dosyasını çalıştırın.';
         }
         if (msg.indexOf('master_hikaye_islem') >= 0 && msg.indexOf('meta') >= 0 &&
             (msg.indexOf('bilinmeyen') >= 0 || msg.indexOf('gecersiz') >= 0)) {

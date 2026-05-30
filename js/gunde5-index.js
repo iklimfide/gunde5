@@ -836,6 +836,28 @@
         });
     }
 
+    async function indexMasterNavKur() {
+        var hdr = document.getElementById('indexSiteHeader');
+        if (!hdr) return;
+        var D = db();
+        if (!D || !D.masterDurum || !D.getGunde5User || !D.getGunde5User()) return;
+        try {
+            var durum = await D.masterDurum();
+            if (!durum || !durum.master) return;
+            hdr.hidden = false;
+            document.documentElement.classList.add('g5-index-master-nav');
+            if (global.Gunde5Shell && global.Gunde5Shell.applyShell) {
+                global.Gunde5Shell.applyShell();
+            }
+            if (global.Gunde5UI && global.Gunde5UI.guncelleHeaderOturum) {
+                global.Gunde5UI.guncelleHeaderOturum();
+            }
+            if (global.Gunde5Master && global.Gunde5Master.durumYenile) {
+                await global.Gunde5Master.durumYenile();
+            }
+        } catch (e) { /* master nav isteğe bağlı */ }
+    }
+
     async function baslat() {
         var D = db();
         if (!D || !D.isConfigured || !D.isConfigured()) {
@@ -843,6 +865,7 @@
             return;
         }
         await D.init();
+        await indexMasterNavKur();
         toolbarBagla();
         olaylariBagla();
         SAYFA = D.INDEX_SAYFA_BOYUT || 5;
