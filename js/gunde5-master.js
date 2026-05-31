@@ -125,6 +125,18 @@
         btn.hidden = true;
     }
 
+    function masterMenuNavEkle(link, oncekiId) {
+        var nav = document.querySelector('.header-menu-nav');
+        if (!nav) return;
+        var onceki = oncekiId && document.getElementById(oncekiId);
+        if (onceki && onceki.parentNode === nav) {
+            if (onceki.nextSibling) nav.insertBefore(link, onceki.nextSibling);
+            else nav.appendChild(link);
+        } else {
+            nav.appendChild(link);
+        }
+    }
+
     function menuIstatistikKaldir() {
         var link = document.getElementById('headerMenuIstatistik');
         if (link && link.parentNode) link.parentNode.removeChild(link);
@@ -149,19 +161,14 @@
         link.className = 'header-menu-link header-menu-link--master';
         link.id = 'headerMenuKamikaze';
         link.textContent = '☄️ Kamikaze';
-        var uyeler = document.getElementById('headerMenuUyeler');
-        if (uyeler && uyeler.nextSibling) nav.insertBefore(link, uyeler.nextSibling);
-        else {
-            var kvkk = nav.querySelector('a[href="/kvkk"]');
-            if (kvkk) nav.insertBefore(link, kvkk);
-            else nav.appendChild(link);
-        }
+        masterMenuNavEkle(link, 'headerMenuMudavim');
     }
 
     function menuIstatistikGuncelle() {
         if (!masterMi) {
             menuIstatistikKaldir();
             menuMetrikKaldir();
+            menuMudavimKaldir();
             return;
         }
         var link = document.getElementById('headerMenuIstatistik');
@@ -173,9 +180,7 @@
             link.className = 'header-menu-link header-menu-link--master';
             link.id = 'headerMenuIstatistik';
             link.textContent = '📊 İstatistikler';
-            var kvkk = nav.querySelector('a[href="/kvkk"]');
-            if (kvkk) nav.insertBefore(link, kvkk);
-            else nav.appendChild(link);
+            masterMenuNavEkle(link, null);
         }
         menuMetrikGuncelle();
     }
@@ -188,6 +193,7 @@
     function menuMetrikGuncelle() {
         if (!masterMi) {
             menuMetrikKaldir();
+            menuMudavimKaldir();
             return;
         }
         var link = document.getElementById('headerMenuMetrik');
@@ -199,13 +205,30 @@
         link.className = 'header-menu-link header-menu-link--master';
         link.id = 'headerMenuMetrik';
         link.textContent = '📈 Metrikler';
-        var istat = document.getElementById('headerMenuIstatistik');
-        if (istat) nav.insertBefore(link, istat.nextSibling);
-        else {
-            var kvkk = nav.querySelector('a[href="/kvkk"]');
-            if (kvkk) nav.insertBefore(link, kvkk);
-            else nav.appendChild(link);
+        masterMenuNavEkle(link, 'headerMenuIstatistik');
+        menuMudavimGuncelle();
+    }
+
+    function menuMudavimKaldir() {
+        var link = document.getElementById('headerMenuMudavim');
+        if (link && link.parentNode) link.parentNode.removeChild(link);
+    }
+
+    function menuMudavimGuncelle() {
+        if (!masterMi) {
+            menuMudavimKaldir();
+            return;
         }
+        var link = document.getElementById('headerMenuMudavim');
+        if (link) return;
+        var nav = document.querySelector('.header-menu-nav');
+        if (!nav) return;
+        link = document.createElement('a');
+        link.href = '/mudavimler';
+        link.className = 'header-menu-link header-menu-link--master';
+        link.id = 'headerMenuMudavim';
+        link.textContent = '🏆 Müdavimler';
+        masterMenuNavEkle(link, 'headerMenuMetrik');
     }
 
     function menuUyelerKaldir() {
@@ -214,26 +237,7 @@
     }
 
     function menuUyelerGuncelle() {
-        if (!masterMi) {
-            menuUyelerKaldir();
-            return;
-        }
-        var link = document.getElementById('headerMenuUyeler');
-        if (link) return;
-        var nav = document.querySelector('.header-menu-nav');
-        if (!nav) return;
-        link = document.createElement('a');
-        link.href = '/uyeler';
-        link.className = 'header-menu-link header-menu-link--master';
-        link.id = 'headerMenuUyeler';
-        link.textContent = '👥 Üyeler';
-        var istat = document.getElementById('headerMenuIstatistik');
-        if (istat) nav.insertBefore(link, istat);
-        else {
-            var kvkk = nav.querySelector('a[href="/kvkk"]');
-            if (kvkk) nav.insertBefore(link, kvkk);
-            else nav.appendChild(link);
-        }
+        menuUyelerKaldir();
     }
 
     function mountMenuItem() {

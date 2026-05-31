@@ -158,8 +158,10 @@ begin
          v_en_begenilen, v_en_paylasilan, v_en_begenilmeyen, v_en_gorulen
     from (select 1) x;
 
-    with cur as materialized (
-        select distinct public.analytics_kimlik(e.user_id, e.visitor_id) as kid
+    -- Geri gelen: seçilen dönemde aynı kişi 2+ oturum (gün farkı şart değil; aynı gün iki geliş sayılır)
+    select count(*)::int into v_geri_gelen
+    from (
+        select public.analytics_kimlik(e.user_id, e.visitor_id) as kid
         from public.site_analytics_events e
         where e.created_at >= v_since
           and (
@@ -167,20 +169,9 @@ begin
             or (v_haric = 'uyeler' and e.user_id is null)
             or (v_haric = 'master' and (e.user_id is null or e.user_id is distinct from v_master))
           )
-    ),
-    past as materialized (
-        select distinct public.analytics_kimlik(e.user_id, e.visitor_id) as kid
-        from public.site_analytics_events e
-        where e.created_at < v_since
-          and (
-            v_haric = 'yok'
-            or (v_haric = 'uyeler' and e.user_id is null)
-            or (v_haric = 'master' and (e.user_id is null or e.user_id is distinct from v_master))
-          )
-    )
-    select count(*)::int into v_geri_gelen
-    from cur c
-    where exists (select 1 from past p where p.kid = c.kid);
+        group by 1
+        having count(distinct e.session_id) >= 2
+    ) geri;
 
     if coalesce(v_avg_stories, 0) <= 0 and coalesce(v_index_oturum, 0) > 0 then
         v_avg_stories := 5;

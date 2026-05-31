@@ -3,6 +3,8 @@ Allow: /
 Disallow: /profil.html
 Disallow: /profil
 Disallow: /istatistikler.html
+Disallow: /mudavimler
+Disallow: /mudavimler.html
 Disallow: /uyeler.html
 
 Sitemap: https://gunde5.com/sitemap.xml

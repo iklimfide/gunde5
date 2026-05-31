@@ -12,6 +12,8 @@
     { "source": "/iletisim.html", "destination": "/iletisim" },
     { "source": "/kvkk.html", "destination": "/kvkk" },
     { "source": "/istatistikler.html", "destination": "/istatistikler" },
+    { "source": "/metrikler.html", "destination": "/metrikler" },
+    { "source": "/mudavimler.html", "destination": "/mudavimler" },
     { "source": "/uyeler.html", "destination": "/uyeler" },
     { "source": "/kamikaze.html", "destination": "/kamikaze" },
     { "source": "/404.html", "destination": "/404" }

@@ -21,6 +21,7 @@ ROUTE_TO_HTML = {
     "/kvkk": "/kvkk.html",
     "/istatistikler": "/istatistikler.html",
     "/metrikler": "/metrikler.html",
+    "/mudavimler": "/mudavimler.html",
     "/uyeler": "/uyeler.html",
     "/404": "/404.html",
 }

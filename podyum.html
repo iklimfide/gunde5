@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -1332,17 +1332,11 @@
                     <span class="header-menu-bar" aria-hidden="true"></span>
                 </button>
                 <div class="header-menu-panel" id="headerMenuPanel" hidden>
-                    <nav class="header-menu-nav" aria-label="Site menüsü">
-                        <a href="/podyum" class="header-menu-link">🏆 Podyum</a>
-                        <a href="/" class="header-menu-link">🏠 Anasayfa</a>
-                        <a href="/hakkinda" class="header-menu-link">ℹ️ Hakkında</a>
-                        <a href="/iletisim" class="header-menu-link">✉️ İletişim</a>
-                        <a href="/kvkk" class="header-menu-link">📋 KVKK</a>
-                    </nav>
+                    <nav class="header-menu-nav" aria-label="Site menüsü"></nav>
                 </div>
             </div>
         </div>
-        <a href="/podyum" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <a href="/" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
         <div class="header-sag">
             <div class="header-auth-btns" id="headerAuthBtns">
                 <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
@@ -1731,7 +1725,9 @@
         function planliTarihIso() {
             var inp = document.getElementById('masterHikayePlan');
             if (!inp || !inp.value) return null;
-            var d = new Date(inp.value);
+            var raw = String(inp.value).trim();
+            if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(raw)) return null;
+            var d = new Date(raw);
             if (isNaN(d.getTime())) return null;
             return d.toISOString();
         }
@@ -1758,7 +1754,12 @@
                 return;
             }
             var btn = document.getElementById('hikayeMasterGonderBtn');
-            if (btn) btn.disabled = true;
+            var btnMetin = btn ? btn.textContent : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Gönderiliyor…';
+            }
+            var planIso = planliTarihIso();
             try {
                 var body = {
                     username: rumuz,
@@ -1769,26 +1770,33 @@
                     content_full: metin
                 };
                 if (baslik) body.baslik = baslik;
-                var planIso = planliTarihIso();
                 if (planIso) body.created_at = planIso;
                 var sonuc = await Gunde5DB.masterHikayeEkle(body);
                 if (!sonuc || !sonuc.ok) {
                     throw new Error((sonuc && sonuc.hata) || 'Kayıt başarısız');
                 }
-                var row = sonuc.hikaye;
+                var planliMi = planIso && new Date(planIso).getTime() > Date.now();
                 sifirlaHikayeModal();
                 Gunde5UI.kapatHikayeModal();
-                var planInp = document.getElementById('masterHikayePlan');
-                if (planInp && planInp.value && planIso && new Date(planIso).getTime() > Date.now()) {
+                if (planliMi) {
                     Gunde5UI.showToast('Hikaye planlandı — anasayfada yayın saatinde görünür.');
                 } else {
                     Gunde5UI.showToast('Hikaye yayında!');
                     window.location.href = '/';
                 }
             } catch (err) {
-                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
+                var mesaj = (Gunde5DB && Gunde5DB.hataMesaji)
+                    ? Gunde5DB.hataMesaji(err)
+                    : ((err && err.message) ? err.message : 'Kayıt başarısız');
+                if (Gunde5UI && Gunde5UI.showToast) {
+                    Gunde5UI.showToast(mesaj, 'hata');
+                }
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = btnMetin || 'Gönder';
+                }
             }
-            if (btn) btn.disabled = false;
         }
 
         async function gonderHikaye() {

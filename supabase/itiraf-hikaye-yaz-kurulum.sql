@@ -99,7 +99,12 @@ begin
     v_kisa := case when char_length(v_tam) <= 140 then v_tam else left(v_tam, 137) || '...' end;
 
     if p_body ? 'created_at' and nullif(trim(p_body->>'created_at'), '') is not null then
-        v_created := (p_body->>'created_at')::timestamptz;
+        begin
+            v_created := (p_body->>'created_at')::timestamptz;
+        exception
+            when others then
+                return jsonb_build_object('ok', false, 'hata', 'gecersiz yayin tarihi');
+        end;
     else
         v_created := now();
     end if;

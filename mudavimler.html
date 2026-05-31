@@ -3,22 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hakkında — gunde5.com</title>
+    <title>Müdavimler — gunde5.com</title>
     <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <meta name="description" content="Gunde5.com hakkında: Kulis, Podyum, giyotin ve 13:12 kuralı. Eğlence ve mizah odaklı hikâye platformu.">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://gunde5.com/hakkinda">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="gunde5.com">
-    <meta property="og:locale" content="tr_TR">
-    <meta property="og:title" content="Hakkında — gunde5.com">
-    <meta property="og:description" content="Gunde5 nasıl çalışır? Kulis, Podyum ve günlük TOP 5 seçimi.">
-    <meta property="og:url" content="https://gunde5.com/hakkinda">
-    <meta property="og:image" content="https://gunde5.com/apple-touch-icon.png">
-    <meta name="twitter:card" content="summary">
+    <meta name="description" content="Gunde5 retention ve sadakat laboratuvarı (yönetici).">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#1d9bf0">
     <style>
         :root {
@@ -419,7 +410,7 @@
         }
         .gunde5-toast--hata { background: #991b1b; }
         .container {
-            max-width: 680px;
+            max-width: 720px;
             margin: 0 auto;
             padding: 18px 16px 28px;
         }
@@ -468,35 +459,17 @@
             gap: 8px;
         }
         .accordion-item {
-            --acc: #2563eb;
-            --acc-soft: #eff6ff;
-            --acc-border: #bfdbfe;
-            background: var(--acc-soft);
-            border: 1px solid var(--acc-border);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 14px;
             overflow: hidden;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .accordion-item[open] {
-            border-color: var(--acc);
-            box-shadow: 0 4px 14px color-mix(in srgb, var(--acc) 18%, transparent);
+            border-color: rgba(37, 99, 235, 0.25);
         }
-        .accordion-item--site { --acc: #2563eb; --acc-soft: #eff6ff; --acc-border: #bfdbfe; }
-        .accordion-item--podyum { --acc: #d97706; --acc-soft: #fffbeb; --acc-border: #fcd34d; }
-        .accordion-item--giyotin { --acc: #dc2626; --acc-soft: #fef2f2; --acc-border: #fca5a5; }
-        .accordion-item--saat { --acc: #78350f; --acc-soft: #fef9c3; --acc-border: #ca8a04; }
-        .accordion-item--kulis { --acc: #e11d48; --acc-soft: #fff1f2; --acc-border: #fb7185; }
-        .accordion-item--reklam { --acc: #059669; --acc-soft: #ecfdf5; --acc-border: #6ee7b7; }
-        .accordion-item--gizlilik { --acc: #7c3aed; --acc-soft: #f5f3ff; --acc-border: #c4b5fd; }
-        .accordion-item--iletisim { --acc: #0891b2; --acc-soft: #ecfeff; --acc-border: #67e8f9; }
-        body.dark-mode .accordion-item--site { --acc: #60a5fa; --acc-soft: rgba(29, 155, 240, 0.14); --acc-border: rgba(96, 165, 250, 0.35); }
-        body.dark-mode .accordion-item--podyum { --acc: #fbbf24; --acc-soft: rgba(217, 119, 6, 0.16); --acc-border: rgba(251, 191, 36, 0.35); }
-        body.dark-mode .accordion-item--giyotin { --acc: #f87171; --acc-soft: rgba(220, 38, 38, 0.14); --acc-border: rgba(248, 113, 113, 0.35); }
-        body.dark-mode .accordion-item--saat { --acc: #facc15; --acc-soft: rgba(120, 53, 15, 0.22); --acc-border: rgba(234, 179, 8, 0.45); }
-        body.dark-mode .accordion-item--kulis { --acc: #fb7185; --acc-soft: rgba(225, 29, 72, 0.16); --acc-border: rgba(251, 113, 133, 0.4); }
-        body.dark-mode .accordion-item--reklam { --acc: #34d399; --acc-soft: rgba(5, 150, 105, 0.14); --acc-border: rgba(52, 211, 153, 0.35); }
-        body.dark-mode .accordion-item--gizlilik { --acc: #a78bfa; --acc-soft: rgba(124, 58, 237, 0.14); --acc-border: rgba(167, 139, 250, 0.35); }
-        body.dark-mode .accordion-item--iletisim { --acc: #22d3ee; --acc-soft: rgba(8, 145, 178, 0.14); --acc-border: rgba(34, 211, 238, 0.35); }
+        body.dark-mode .accordion-item[open] {
+            border-color: rgba(96, 165, 250, 0.3);
+        }
         .accordion-item summary {
             list-style: none;
             cursor: pointer;
@@ -504,7 +477,6 @@
             font-size: 14px;
             font-weight: 800;
             letter-spacing: -0.01em;
-            color: var(--acc);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -521,20 +493,19 @@
             align-items: center;
             justify-content: center;
             border-radius: 8px;
-            background: color-mix(in srgb, var(--acc) 14%, transparent);
-            color: var(--acc);
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--text-muted);
             font-size: 16px;
             font-weight: 700;
             line-height: 1;
-            transition: transform 0.2s ease, background 0.2s ease;
+            transition: transform 0.2s ease;
+        }
+        body.dark-mode .accordion-item summary::after {
+            background: rgba(255, 255, 255, 0.06);
         }
         .accordion-item[open] summary::after {
             content: '−';
             transform: rotate(180deg);
-            background: color-mix(in srgb, var(--acc) 22%, transparent);
-        }
-        .accordion-body .saat-vurgu {
-            color: var(--acc);
         }
         .accordion-body {
             padding: 0 16px 14px;
@@ -656,6 +627,396 @@
             font-variant-numeric: tabular-nums;
         }
         body.dark-mode .saat-vurgu { color: #fbbf24; }
+        .istat-filtre {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            margin: 0 0 16px;
+        }
+        .istat-filtre--haric {
+            margin-top: -8px;
+            margin-bottom: 14px;
+        }
+        .istat-filtre-etiket {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-right: 2px;
+        }
+        .istat-filtre-not {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .istat-gun-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .istat-gun-btn--aktif {
+            background: #1d9bf0;
+            border-color: #1d9bf0;
+            color: #ffffff;
+        }
+        .istat-yenile-btn {
+            border: 1px dashed var(--border-color);
+            background: transparent;
+            color: var(--text-muted);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .istat-yukleniyor {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 24px 0;
+        }
+        .istat-yetkisiz {
+            text-align: center;
+            padding: 32px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+        .istat-yetkisiz-metin {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .istat-giris-btn {
+            border: none;
+            background: #1d9bf0;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .istat-donem-notu {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin: 0 0 14px;
+        }
+        .istat-bolum { margin-bottom: 22px; }
+        .istat-bolum-baslik {
+            font-size: 14px;
+            font-weight: 900;
+            margin: 0 0 10px;
+            letter-spacing: -0.02em;
+        }
+        .istat-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .istat-kpi {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .istat-kpi-etiket {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+        .istat-kpi-deger {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+        }
+        .istat-kpi-alt {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+        .istat-bolum-not {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin: -4px 0 10px;
+            line-height: 1.45;
+        }
+        .istat-bolum--hero {
+            background: linear-gradient(165deg, rgba(29, 155, 240, 0.08), rgba(29, 155, 240, 0.02));
+            border: 1px solid rgba(29, 155, 240, 0.18);
+            border-radius: 16px;
+            padding: 14px 12px 12px;
+        }
+        body.dark-mode .istat-bolum--hero {
+            background: linear-gradient(165deg, rgba(29, 155, 240, 0.14), rgba(29, 155, 240, 0.04));
+            border-color: rgba(96, 165, 250, 0.22);
+        }
+        .istat-kpi-grid--hero {
+            grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+        }
+        .istat-kpi-grid--hero .istat-kpi-deger {
+            font-size: 18px;
+        }
+        .istat-detay {
+            margin: 18px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            background: var(--bg-card);
+            overflow: hidden;
+        }
+        .istat-detay summary {
+            cursor: pointer;
+            padding: 12px 14px;
+            font-size: 13px;
+            font-weight: 800;
+            list-style: none;
+        }
+        .istat-detay summary::-webkit-details-marker { display: none; }
+        .istat-detay[open] summary {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .istat-detay > .istat-kpi-grid,
+        .istat-detay > .istat-bolum {
+            padding: 0 12px 12px;
+        }
+        .istat-detay .istat-bolum-baslik {
+            margin-top: 12px;
+        }
+        .istat-tablo-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-card);
+        }
+        .istat-tablo {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .istat-tablo th,
+        .istat-tablo td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+        .istat-tablo th {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.03);
+        }
+        body.dark-mode .istat-tablo th { background: rgba(255, 255, 255, 0.04); }
+        .istat-tablo tr:last-child td { border-bottom: none; }
+        .istat-bos, .istat-hata {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding: 8px 0;
+        }
+        .istat-hata { color: #b91c1c; }
+        body.dark-mode .istat-hata { color: #f87171; }
+        .istat-capraz-link, .intro a {
+            color: #1d9bf0;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .istat-capraz-link:hover, .intro a:hover { text-decoration: underline; }
+        /* Müdavimler — amber sadakat teması */
+        .mudavim-bolum--hero {
+            background: linear-gradient(165deg, rgba(217, 119, 6, 0.10), rgba(251, 191, 36, 0.04));
+            border-color: rgba(217, 119, 6, 0.22);
+        }
+        body.dark-mode .mudavim-bolum--hero {
+            background: linear-gradient(165deg, rgba(251, 191, 36, 0.14), rgba(217, 119, 6, 0.05));
+            border-color: rgba(251, 191, 36, 0.24);
+        }
+        .mudavim-kpi--altin .istat-kpi-deger { color: #b45309; }
+        body.dark-mode .mudavim-kpi--altin .istat-kpi-deger { color: #fbbf24; }
+        .mudavim-hunisi {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 0 4px;
+        }
+        .mudavim-huni-adim {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .mudavim-huni-bar-wrap {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .mudavim-huni-bar {
+            min-width: 72px;
+            background: linear-gradient(90deg, #d97706, #fbbf24);
+            border-radius: 8px;
+            padding: 10px 12px;
+            text-align: center;
+            transition: width 0.2s ease;
+        }
+        body.dark-mode .mudavim-huni-bar {
+            background: linear-gradient(90deg, #b45309, #f59e0b);
+        }
+        .mudavim-huni-adet {
+            font-size: 15px;
+            font-weight: 900;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+        }
+        .mudavim-huni-etiket {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-top: 6px;
+            text-align: center;
+        }
+        .mudavim-huni-oran {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+        .mudavim-huni-ok {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1;
+            margin: 2px 0;
+        }
+        .mudavim-cizgi-grafik {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .mudavim-grafik-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .mudavim-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+        }
+        .mudavim-legend-item i {
+            display: inline-block;
+            width: 14px;
+            height: 3px;
+            border-radius: 2px;
+        }
+        .mudavim-legend--yeni i { background: #2563eb; }
+        .mudavim-legend--geri i { background: #d97706; }
+        .mudavim-legend--dun i { background: #16a34a; }
+        .mudavim-grafik-cizgi--dun { stroke: #16a34a; }
+        .mudavim-bolum--gunluk {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px 12px;
+        }
+        .mudavim-sutun-grafik .mudavim-sutunlar {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 8px 4px 4px;
+            min-height: 120px;
+        }
+        .mudavim-sutun-grup {
+            flex: 1 0 36px;
+            min-width: 36px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .mudavim-sutun-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 3px;
+            height: 92px;
+            width: 100%;
+        }
+        .mudavim-sutun-bar {
+            width: 8px;
+            border-radius: 3px 3px 0 0;
+            min-height: 4px;
+        }
+        .mudavim-bar--yeni { background: #2563eb; }
+        .mudavim-bar--geri { background: #d97706; }
+        .mudavim-bar--dun { background: #16a34a; }
+        .mudavim-sutun-etiket {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .mudavim-grafik-svg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .mudavim-grafik-grid {
+            stroke: var(--border-color);
+            stroke-width: 1;
+        }
+        .mudavim-grafik-cizgi {
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .mudavim-grafik-cizgi--yeni { stroke: #2563eb; }
+        .mudavim-grafik-cizgi--geri { stroke: #d97706; }
+        .mudavim-grafik-x {
+            font-size: 9px;
+            fill: var(--text-muted);
+            font-weight: 600;
+        }
+        .mudavim-yasam-kutu {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px 12px;
+        }
+        .mudavim-yasam-metin {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.5;
+            margin: 0;
+        }
+        .mudavim-yasam-metin strong {
+            color: #b45309;
+            font-weight: 900;
+        }
+        body.dark-mode .mudavim-yasam-metin strong { color: #fbbf24; }
     </style>
     <script src="js/gunde5-shell.js"></script>
     <script defer src="js/gunde5-perf.js"></script>
@@ -666,6 +1027,7 @@
     <script src="js/gunde5-db.js"></script>
     <script src="js/gunde5-paylas.js"></script>
     <script src="js/gunde5-bildirim.js"></script>
+    <script src="js/gunde5-mudavimler.js"></script>
 </head>
 <body>
     <header>
@@ -694,47 +1056,30 @@
     </header>
 
     <div class="container">
-        <h1 class="page-title">Hakkında</h1>
+        <h1 class="page-title">🏆 Müdavimler</h1>
+        <p class="intro">Siteye tekrar tekrar gelen kullanıcıları anlamak — retention, sadakat ve alışkanlık laboratuvarı. Davranış metrikleri için <a href="/metrikler">Metrikler</a>, trafik için <a href="/istatistikler">İstatistikler</a>.</p>
 
-        <p class="intro">Gunde5.com Arif G. (<a href="mailto:arif@gunde5.com">arif@gunde5.com</a>) tarafından eğlence ve mizah amaçlı kurulmuştur. Herhangi bir ticari beklentisi yoktur.</p>
-
-        <div class="accordion">
-            <details class="accordion-item accordion-item--site">
-                <summary>gunde5.com nedir?</summary>
-                <div class="accordion-body">
-                    <p>gunde5.com <a href="/">anasayfada</a> kısa ve uzun perde arkası insan hikayeleri yayınlanır; beğeni, beğenmeme ve yorumlarla etkileşim kurulur. Seçilen hikayeler <a href="/podyum">Podyum</a> arşivinde kalıcı olarak durur. Site tamamen eğlence ve mizah odaklıdır.</p>
-                </div>
-            </details>
-
-            <details class="accordion-item accordion-item--podyum">
-                <summary>Podyum nasıl çalışır?</summary>
-                <div class="accordion-body">
-                    <p><a href="/podyum">Podyum</a>, günün en çok konuşulan hikayelerinin kalıcı arşividir. Anasayfadaki tüm hikayeler okunabilir; podyuma alınanlar burada tarih ve sıra ile listelenir.</p>
-                </div>
-            </details>
-
-            <details class="accordion-item accordion-item--reklam">
-                <summary>İlerde reklam olacak mı?</summary>
-                <div class="accordion-body">
-                    <p>Para miktarının ikna gücüne bağlı. Sonuçta kayınpederin 50.000 Dolarlık teklifine kim hayır diyebilir ki? 😂😂😂</p>
-                </div>
-            </details>
-
-            <details class="accordion-item accordion-item--gizlilik">
-                <summary>Gizlilik</summary>
-                <div class="accordion-body">
-                    <p>Tüm hikayeler herkese açıktır. Herkes okuyabilir. Oy vermek ya da cevap yazmak için üyelik gerekir. Yazarken “Gizli Üye” seçeneğini işaretlersen rumuzun “Gizli Üye” olarak görünür; profil bilgilerin o hikayede paylaşılmaz. Paylaşılan içerikten yazarı sorumludur.</p>
-                    <p>KVKK kapsamındaki aydınlatma metni ve kullanıcı sözleşmesi için <a href="/kvkk" class="mini-link">buraya tıklayınız</a>.</p>
-                </div>
-            </details>
-
-            <details class="accordion-item accordion-item--iletisim">
-                <summary>İletişim</summary>
-                <div class="accordion-body">
-                    <p>Geri bildirim, öneri veya sorularınız için <a href="/iletisim" class="mini-link">İletişim</a> sayfasına bakabilir veya <a href="mailto:arif@gunde5.com" class="mini-link">arif@gunde5.com</a> adresine yazabilirsiniz.</p>
-                </div>
-            </details>
+        <div id="mudavimYetkisiz" class="istat-yetkisiz" hidden>
+            <p class="istat-yetkisiz-metin"></p>
+            <button type="button" class="istat-giris-btn" id="mudavimGirisBtn" hidden>Giriş yap</button>
         </div>
+
+        <div id="mudavimFiltre" class="istat-filtre" hidden>
+            <button type="button" class="istat-gun-btn" data-mudavim-gun="7" aria-pressed="false">7 gün</button>
+            <button type="button" class="istat-gun-btn istat-gun-btn--aktif" data-mudavim-gun="30" aria-pressed="true">30 gün</button>
+            <button type="button" class="istat-gun-btn" data-mudavim-gun="90" aria-pressed="false">90 gün</button>
+            <button type="button" class="istat-gun-btn" data-mudavim-gun="365" aria-pressed="false">365 gün</button>
+            <button type="button" class="istat-yenile-btn" id="mudavimYenile">Yenile</button>
+        </div>
+        <div id="mudavimHaricFiltre" class="istat-filtre istat-filtre--haric" hidden>
+            <span class="istat-filtre-etiket">Hariç tut:</span>
+            <button type="button" class="istat-gun-btn istat-gun-btn--aktif" data-mudavim-haric="master" aria-pressed="true">Master</button>
+            <button type="button" class="istat-gun-btn" data-mudavim-haric="uyeler" aria-pressed="false">Tüm üyeler</button>
+            <button type="button" class="istat-gun-btn" data-mudavim-haric="yok" aria-pressed="false">Filtre yok</button>
+        </div>
+
+        <p id="mudavimYukleniyor" class="istat-yukleniyor" hidden>Yükleniyor…</p>
+        <div id="mudavimIcerik" hidden></div>
     </div>
 
     <div id="authOverlay" class="auth-overlay" aria-hidden="true">
@@ -792,8 +1137,6 @@
         <a href="/podyum" class="nav-item">
             <div class="icon">🏆</div><span>Podyum</span>
         </a>
-    </div>
-
     </div>
 
     <script>
@@ -867,6 +1210,7 @@
                 Gunde5UI.oturumModallariKapat();
                 guncelleHeaderOturum();
                 Gunde5UI.showToast('Hoş geldin, ' + (u && u.username ? u.username : '') + '!');
+                if (window.Gunde5Mudavimler && Gunde5Mudavimler.init) Gunde5Mudavimler.init(true);
             } catch (err) {
                 Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
             }
@@ -882,6 +1226,7 @@
                 Gunde5UI.oturumModallariKapat();
                 guncelleHeaderOturum();
                 Gunde5UI.showToast('Tekrar hoş geldin!');
+                if (window.Gunde5Mudavimler && Gunde5Mudavimler.init) Gunde5Mudavimler.init(true);
             } catch (err) {
                 Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
             }
@@ -889,10 +1234,6 @@
 
         document.getElementById('navYazBtn').addEventListener('click', function () {
             window.location.href = '/';
-        });
-
-        Gunde5DB.init().then(function () {
-            guncelleHeaderOturum();
         });
     </script>
 </body>

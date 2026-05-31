@@ -3,6 +3,7 @@
     var client = null;
     var cachedUser = null;
     var ready = false;
+    var authListenerKayitli = false;
 
     function isConfigured() {
         var url = global.GUNDE5_SUPABASE_URL;
@@ -193,6 +194,10 @@
             (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
             return 'Master hikaye ekleme kurulmamış. Supabase SQL Editor\'da supabase/itiraf-hikaye-yaz-kurulum.sql dosyasını bir kez çalıştırın.';
         }
+        if (msg.indexOf('invalid input syntax for type timestamp') >= 0 ||
+            msg.indexOf('gecersiz yayin tarihi') >= 0) {
+            return 'Yayın tarihi geçersiz. Tarih/saat alanını temizleyip tekrar seçin.';
+        }
         if (msg.indexOf('master_') >= 0 && (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
             return 'Master yönetim yok. Supabase SQL Editor\'da supabase/master-admin.sql dosyasını çalıştırın.';
         }
@@ -265,24 +270,35 @@
 
         var authRes = await sb.auth.getUser();
         if (authRes.data && authRes.data.user) {
-            await loadProfile(authRes.data.user.id);
+            try {
+                await loadProfile(authRes.data.user.id);
+            } catch (profileErr) {
+                cacheUser(null);
+            }
         } else {
             cacheUser(null);
         }
 
-        sb.auth.onAuthStateChange(async function (event, session) {
-            if (session && session.user) {
-                await loadProfile(session.user.id);
-            } else if (event === 'SIGNED_OUT') {
-                cacheUser(null);
-            }
-            if (typeof global.guncelleHeaderOturum === 'function') {
-                global.guncelleHeaderOturum();
-            }
-            if (typeof global.gunde5AuthDegisti === 'function') {
-                global.gunde5AuthDegisti(event);
-            }
-        });
+        if (!authListenerKayitli) {
+            authListenerKayitli = true;
+            sb.auth.onAuthStateChange(async function (event, session) {
+                if (session && session.user) {
+                    try {
+                        await loadProfile(session.user.id);
+                    } catch (profileErr) {
+                        cacheUser(null);
+                    }
+                } else if (event === 'SIGNED_OUT') {
+                    cacheUser(null);
+                }
+                if (typeof global.guncelleHeaderOturum === 'function') {
+                    global.guncelleHeaderOturum();
+                }
+                if (typeof global.gunde5AuthDegisti === 'function') {
+                    global.gunde5AuthDegisti(event);
+                }
+            });
+        }
 
         ready = true;
         return true;
@@ -426,11 +442,11 @@
 
     /** Index — yalnızca kartta kullanılan sütunlar (ek sorgu / profil birleştirme yok). */
     var INDEX_ITIRAF_SELECT =
-        'id,baslik,username,age,gender,city,yasadigi_yer,content_short,content_full,up_votes,down_votes';
+        'id,baslik,username,age,gender,city,yasadigi_yer,content_short,content_full,up_votes,down_votes,created_at';
 
     /** Gelecek tarihli kayıtlar (planlı yayın) anasayfada görünmez. */
     function indexYayindaFiltre(q) {
-        return q.lte('created_at', new Date().toISOString());
+        return q.lte('created_at', new Date().toISOString()).is('silindi_at', null);
     }
 
     /** @param {'yeni'|'eski'|'populer'} sort */
@@ -721,10 +737,23 @@
         return profilGuncelle({ avatarUrl: null });
     }
 
-    async function masterRpc(fn, body) {
+    async function masterRpc(fn, body, opts) {
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
-        var res = await sb.rpc(fn, { p_body: body || {} });
+        var o = opts || {};
+        var timeoutMs = o.timeoutMs || 45000;
+        var rpcPromise = sb.rpc(fn, { p_body: body || {} });
+        var res;
+        if (timeoutMs > 0) {
+            var timeoutPromise = new Promise(function (_, reject) {
+                setTimeout(function () {
+                    reject(new Error('Sunucu yanıt vermedi (zaman aşımı). Ağ sekmesinde master_hikaye_ekle isteğine bakın.'));
+                }, timeoutMs);
+            });
+            res = await Promise.race([rpcPromise, timeoutPromise]);
+        } else {
+            res = await rpcPromise;
+        }
         if (res.error) throw res.error;
         return res.data;
     }
@@ -757,7 +786,19 @@
             b.baslik = String(b.baslik).replace(/^\s+|\s+$/g, '');
             if (!b.baslik) delete b.baslik;
         }
-        return masterRpc('master_hikaye_ekle', b);
+        if (b.created_at != null) {
+            var plan = String(b.created_at).trim();
+            if (!plan) {
+                delete b.created_at;
+            } else {
+                var planMs = new Date(plan).getTime();
+                if (isNaN(planMs)) {
+                    throw new Error('Yayın tarihi geçersiz. Tarih/saat alanını temizleyip tekrar seçin.');
+                }
+                b.created_at = new Date(planMs).toISOString();
+            }
+        }
+        return masterRpc('master_hikaye_ekle', b, { timeoutMs: 45000 });
     }
 
     async function masterUyeIcerik(uyeId, opts) {
@@ -1406,6 +1447,17 @@
         return res.data || { ok: false };
     }
 
+    async function masterMudavimIstatistik(gun, haric) {
+        var sb = getClient();
+        if (!sb) return { ok: false };
+        var res = await sb.rpc('master_mudavim_istatistik', {
+            p_gun: gun || 30,
+            p_haric: haric || 'master'
+        });
+        if (res.error) throw res.error;
+        return res.data || { ok: false };
+    }
+
     /** @deprecated master_trafik_istatistik + master_metrik_istatistik kullanın */
     async function masterZiyaretIstatistik(gun, haric) {
         return masterTrafikIstatistik(gun, haric);
@@ -1908,6 +1960,7 @@
         analyticsEventKaydet: analyticsEventKaydet,
         masterTrafikIstatistik: masterTrafikIstatistik,
         masterMetrikIstatistik: masterMetrikIstatistik,
+        masterMudavimIstatistik: masterMudavimIstatistik,
         masterZiyaretIstatistik: masterZiyaretIstatistik,
         getViewerKey: getViewerKey,
         sikayetGonder: sikayetGonder,

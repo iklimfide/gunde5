@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -27,13 +27,13 @@
     <script src="js/gunde5-shell.js"></script>
     <script defer src="js/gunde5-config.js?v=17"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
-    <script defer src="js/gunde5-db.js?v=21"></script>
+    <script defer src="js/gunde5-db.js?v=23"></script>
     <script defer src="js/gunde5-profil.js"></script>
     <script defer src="js/gunde5-ui.js"></script>
     <script defer src="js/gunde5-master.js"></script>
     <script defer src="js/gunde5-ziyaret.js?v=17"></script>
     <script defer src="js/gunde5-analytics.js?v=4"></script>
-    <script defer src="js/gunde5-index.js?v=25"></script>
+    <script defer src="js/gunde5-index.js?v=29"></script>
     <script defer src="js/gunde5-index-seo.js?v=17"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -43,6 +43,7 @@
             --text-main: #111827;
             --text-muted: #6b7280;
             --border-color: #f3f4f6;
+            --header-bg: #ffffff;
             --text-color: #111827;
             --female-color: #db2777;
             --female-bg: #fff1f2;
@@ -59,6 +60,7 @@
             --text-main: #e7e9ea;
             --text-muted: #71767b;
             --border-color: #2f3336;
+            --header-bg: #15181c;
             --text-color: #e7e9ea;
             --female-color: #f43f5e;
             --female-bg: #201319;
@@ -120,6 +122,111 @@
         html.g5-index-master-nav #indexPageTopbar {
             display: none;
         }
+
+        html.g5-index-master-nav main {
+            padding-bottom: 96px;
+        }
+
+        #indexBottomNav[hidden] {
+            display: none !important;
+        }
+
+        html.g5-index-master-nav #indexBottomNav {
+            display: flex;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            min-height: 64px;
+            padding: 0 2px 8px;
+            background: var(--header-bg);
+            border-top: 1px solid var(--border-color);
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 2px;
+            z-index: 1000;
+            box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.03);
+        }
+
+        .nav-item {
+            flex: 1 1 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 6px 2px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            color: #9ca3af;
+            cursor: pointer;
+            text-decoration: none;
+            line-height: 1.05;
+        }
+
+        .nav-item > span {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .nav-item.active { color: var(--text-main); }
+
+        .nav-item .icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+            flex-shrink: 0;
+        }
+
+        .nav-item--btn {
+            border: none;
+            background: transparent;
+            font: inherit;
+            width: auto;
+        }
+
+        .nav-item--fab {
+            flex: 0 0 auto;
+            width: clamp(72px, 22vw, 96px);
+            min-height: 68px;
+            margin-bottom: 14px;
+            padding: 10px 6px 12px;
+            justify-content: center;
+            align-self: flex-end;
+            border-radius: 18px;
+            background: linear-gradient(
+                165deg,
+                rgba(255, 255, 255, 0.97) 0%,
+                rgba(248, 250, 252, 0.99) 50%,
+                rgba(241, 245, 249, 0.96) 100%
+            );
+            border: 1px solid rgba(15, 23, 42, 0.07);
+            box-shadow:
+                0 10px 28px rgba(15, 23, 42, 0.08),
+                0 2px 10px rgba(29, 155, 240, 0.14);
+            color: var(--text-main);
+        }
+
+        body.dark-mode .nav-item--fab,
+        [data-theme="dark"] .nav-item--fab {
+            background: linear-gradient(
+                165deg,
+                rgba(30, 35, 40, 0.98) 0%,
+                rgba(21, 24, 28, 0.99) 100%
+            );
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 10px 28px rgba(0, 0, 0, 0.35),
+                0 2px 10px rgba(29, 155, 240, 0.12);
+        }
+
+        .nav-item--fab .icon { font-size: 22px; margin-bottom: 4px; }
+
+        .nav-item--fab > span { font-size: 9px; }
 
         #indexSiteHeader[hidden] {
             display: none !important;
@@ -401,18 +508,28 @@
 
         .story-card .card-header {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 12px;
         }
 
         .story-card .card-header-actions {
             display: flex;
-            align-items: center;
-            gap: 12px;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
             flex-shrink: 0;
-            margin-left: 4px;
+            margin-left: 8px;
+            max-width: min(52%, 11.5rem);
+        }
+
+        .story-card .card-header-etiket {
+            display: flex;
+            justify-content: flex-end;
+            max-width: 100%;
+            line-height: 0;
         }
 
         .story-card .user-block {
@@ -567,13 +684,17 @@
 
         .story-card .card-footer {
             margin-top: 0;
+            margin-left: -6px;
+            margin-right: -6px;
+            width: calc(100% + 12px);
             padding-top: 12px;
             border-top: 1px solid rgba(0, 0, 0, 0.04);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
+            gap: 5px;
+            flex-wrap: nowrap;
+            min-width: 0;
         }
 
         body.dark-mode .story-card .card-footer,
@@ -581,23 +702,31 @@
             border-top-color: rgba(255, 255, 255, 0.06);
         }
 
-        .vote-box {
+        .story-card .vote-box {
             display: flex;
-            gap: 8px;
+            flex: 1 1 auto;
+            min-width: 0;
+            gap: 6px;
+            flex-wrap: nowrap;
         }
 
-        .vote-btn {
+        .story-card .vote-btn {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             color: var(--text-main);
-            padding: 8px 16px;
+            padding: 7px 10px;
             border-radius: 30px;
-            font-size: 14px;
+            font-size: clamp(11px, 3.1vw, 14px);
             font-weight: 700;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            gap: 4px;
+            flex: 1 1 0;
+            min-width: 0;
+            white-space: nowrap;
+            line-height: 1.2;
             transition: all 0.2s;
         }
 
@@ -633,18 +762,42 @@
             cursor: default;
         }
 
-        .share-btn {
+        .story-card .share-btn {
             background-color: var(--text-main);
             color: var(--bg-main);
             border: none;
-            padding: 8px 16px;
+            padding: 7px 12px;
             border-radius: 30px;
-            font-size: 14px;
+            font-size: clamp(11px, 3.1vw, 14px);
             font-weight: 600;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            gap: 4px;
+            flex-shrink: 0;
+            white-space: nowrap;
+            line-height: 1.2;
+        }
+
+        @media (max-width: 480px) {
+            .story-card .card-footer {
+                margin-left: -8px;
+                margin-right: -8px;
+                width: calc(100% + 16px);
+                gap: 4px;
+            }
+
+            .story-card .vote-box {
+                gap: 4px;
+            }
+
+            .story-card .vote-btn,
+            .story-card .share-btn {
+                padding: 6px 8px;
+                font-size: 11px;
+                gap: 3px;
+            }
         }
 
         .page-tail {
@@ -686,6 +839,142 @@
             cursor: pointer;
             width: 100%;
             margin-bottom: 20px;
+        }
+
+        .index-yayin-etiket {
+            display: block;
+            max-width: 100%;
+            margin: 0;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: clamp(9px, 2.5vw, 11px);
+            font-weight: 700;
+            line-height: 1.3;
+            letter-spacing: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .index-yayin-etiket--bugun {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .index-yayin-etiket--dun {
+            background: #ffedd5;
+            color: #9a3412;
+            border: 1px solid #fdba74;
+        }
+
+        .index-yayin-etiket--hafta {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .index-yayin-etiket--eski {
+            background: #f3f4f6;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+        }
+
+        body.dark-mode .index-yayin-etiket--bugun,
+        [data-theme="dark"] .index-yayin-etiket--bugun {
+            background: rgba(34, 197, 94, 0.18);
+            color: #86efac;
+            border-color: rgba(34, 197, 94, 0.35);
+        }
+
+        body.dark-mode .index-yayin-etiket--dun,
+        [data-theme="dark"] .index-yayin-etiket--dun {
+            background: rgba(249, 115, 22, 0.18);
+            color: #fdba74;
+            border-color: rgba(249, 115, 22, 0.35);
+        }
+
+        body.dark-mode .index-yayin-etiket--hafta,
+        [data-theme="dark"] .index-yayin-etiket--hafta {
+            background: rgba(59, 130, 246, 0.18);
+            color: #93c5fd;
+            border-color: rgba(59, 130, 246, 0.35);
+        }
+
+        body.dark-mode .index-yayin-etiket--eski,
+        [data-theme="dark"] .index-yayin-etiket--eski {
+            background: rgba(255, 255, 255, 0.06);
+            color: #9ca3af;
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .index-bugun-bilgi {
+            margin: 4px 0 14px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            text-align: center;
+            background: #FFF8E1;
+            border: 1px solid #FFD54F;
+        }
+
+        body.dark-mode .index-bugun-bilgi,
+        [data-theme="dark"] .index-bugun-bilgi {
+            background: rgba(255, 248, 225, 0.1);
+            border-color: rgba(255, 213, 79, 0.45);
+        }
+
+        .index-bugun-bilgi-satir {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.45;
+            color: #5D4037;
+        }
+
+        .index-bugun-bilgi-satir--alt {
+            margin-top: 4px;
+            font-size: 12px;
+            font-weight: 400;
+            color: #6D5C4D;
+        }
+
+        body.dark-mode .index-bugun-bilgi-satir,
+        [data-theme="dark"] .index-bugun-bilgi-satir {
+            color: #FFE082;
+        }
+
+        body.dark-mode .index-bugun-bilgi-satir--alt,
+        [data-theme="dark"] .index-bugun-bilgi-satir--alt {
+            color: #BCAAA4;
+        }
+
+        .load-more-btn.index-load-more--onceki {
+            background: #4f46e5;
+            border: none;
+            color: #ffffff;
+            padding: 14px 20px;
+            font-size: 15px;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        }
+
+        .load-more-btn.index-load-more--onceki:hover {
+            background: #4338ca;
+        }
+
+        .load-more-btn.index-load-more--onceki:active {
+            transform: scale(0.98);
+        }
+
+        body.dark-mode .load-more-btn.index-load-more--onceki,
+        [data-theme="dark"] .load-more-btn.index-load-more--onceki {
+            background: #4f46e5;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.45);
+        }
+
+        body.dark-mode .load-more-btn.index-load-more--onceki:hover,
+        [data-theme="dark"] .load-more-btn.index-load-more--onceki:hover {
+            background: #4338ca;
         }
 
         .mail-link {
@@ -1227,13 +1516,7 @@
                     <span class="header-menu-bar" aria-hidden="true"></span>
                 </button>
                 <div class="header-menu-panel" id="headerMenuPanel" hidden>
-                    <nav class="header-menu-nav" aria-label="Site menüsü">
-                        <a href="/podyum" class="header-menu-link">🏆 Podyum</a>
-                        <a href="/" class="header-menu-link">🏠 Anasayfa</a>
-                        <a href="/hakkinda" class="header-menu-link">ℹ️ Hakkında</a>
-                        <a href="/iletisim" class="header-menu-link">✉️ İletişim</a>
-                        <a href="/kvkk" class="header-menu-link">📋 KVKK</a>
-                    </nav>
+                    <nav class="header-menu-nav" aria-label="Site menüsü"></nav>
                 </div>
             </div>
         </div>
@@ -1291,6 +1574,18 @@
             <p class="page-tail-satir page-tail-satir--kucuk">©️ copyright gunde5.com 2026</p>
         </div>
     </main>
+
+    <div class="bottom-nav" id="indexBottomNav" role="navigation" aria-label="Ana menü" hidden>
+        <a href="/" class="nav-item active">
+            <div class="icon">🏠</div><span>Anasayfa</span>
+        </a>
+        <button type="button" class="nav-item nav-item--btn nav-item--fab" id="indexNavYazBtn" aria-haspopup="dialog">
+            <div class="icon">✍️</div><span>Hikaye Yaz</span>
+        </button>
+        <a href="/podyum" class="nav-item">
+            <div class="icon">🏆</div><span>Podyum</span>
+        </a>
+    </div>
 
     <div class="modal" id="aboutModal" onclick="closeModal(event)">
         <div class="modal-content modal-content--faq" onclick="event.stopPropagation()">

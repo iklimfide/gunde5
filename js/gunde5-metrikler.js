@@ -111,7 +111,7 @@
 
         html += '<section class="istat-bolum istat-bolum--hero"><h2 class="istat-bolum-baslik">Özet</h2><div class="istat-kpi-grid istat-kpi-grid--hero">';
         html += kpiKart('Tekil ziyaretçi', fmtSayi(veri.tekil_ziyaretci), 'Analytics visitor_id / üye');
-        html += kpiKart('Geri gelen', fmtSayi(davranis.geri_gelen), 'Oran: %' + fmtOran(davranis.geri_gelen_oran));
+        html += kpiKart('Geri gelen', fmtSayi(davranis.geri_gelen), 'Oran: %' + fmtOran(davranis.geri_gelen_oran) + ' · dönemde 2+ oturum (aynı gün dahil)');
         html += kpiKart('Ortalama hikâye', fmtOran(davranis.ortalama_hikaye), 'Index oturumu başına');
         html += kpiKart('Daha Fazla Oku', '%' + fmtOran(davranis.daha_fazla_oran), 'İlk 5\'i geçenler');
         html += kpiKart('Paylaşım', fmtSayi(etkilesim.paylasim), 'Paylaş butonu');
