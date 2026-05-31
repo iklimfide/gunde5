@@ -275,6 +275,22 @@
         html += hunisiHtml(veri.hunisi, veri.tekil_ziyaretci);
         html += '</section>';
 
+        html += tabloHtml(
+            '📊 İlk Kaynak → Sadakat',
+            [
+                { etiket: 'İlk Kaynak', alan: 'kaynak' },
+                { etiket: 'Tekil Kullanıcı', deger: function (r) { return fmtSayi(r.tekil); } },
+                { etiket: 'Geri Gelen', deger: function (r) { return fmtSayi(r.geri_gelen); } },
+                { etiket: '2+ Gün Gelen', deger: function (r) { return fmtSayi(r.gun_2); } },
+                { etiket: 'Dün de Gelen', deger: function (r) { return fmtSayi(r.dun_de_gelen); } },
+                { etiket: 'Ortalama Hikâye', deger: function (r) { return fmtOran(r.ort_hikaye); } },
+                { etiket: 'Ortalama Süre', deger: function (r) { return fmtSayi(r.ort_sure) + ' sn'; } }
+            ],
+            arrCoz(veri.kaynak_tablo),
+            'Henüz ilk kaynak verisi yok.',
+            'İlk ziyaret referrer\'i kalıcıdır; Instagram, X, Google, Direct vb. gruplara ayrılır. Dün de Gelen: bugün gelenlerden dün de gelmiş olanlar.'
+        );
+
         var sadikSatirlar = arrCoz(veri.en_sadik).map(function (r, i) {
             return {
                 ad: 'Müdavim #' + (i + 1),

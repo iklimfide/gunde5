@@ -1,8 +1,95 @@
--- analytics_event_kaydet: impression/vote gelince oturum satiri da olustur
--- (page_view sessions insert basarisiz olsa bile metrikler dolar)
--- İlk kaynak kilidi için analytics-first-source.sql dosyasını çalıştırın.
--- SQL Editor'da bir kez Run.
+-- İlk ziyaret referrer'ı (visitor_id başına kalıcı, değişmez)
+-- analytics-event-session-fix.sql sonrası SQL Editor'da bir kez Run.
+-- Geriye dönük doldurma büyük tabloda uzun sürebilir; gerekirse aşağıdaki SET satırının yorumunu kaldırın.
 
+-- set local statement_timeout = '600s';
+
+-- created_at indeksi (mudavim / trafik sorguları)
+create index if not exists site_analytics_events_created_idx
+    on public.site_analytics_events (created_at desc);
+
+-- ---------------------------------------------------------------------------
+-- Referrer → kaynak grubu (Instagram, X, Google, Direct …)
+-- ---------------------------------------------------------------------------
+create or replace function public.analytics_referrer_kaynak(p_referrer text)
+returns text
+language sql
+immutable
+set search_path = public
+as $$
+    select case
+        when coalesce(p_referrer, '') = '' then 'Direct'
+        when p_referrer ilike '%instagram.%' or p_referrer ilike '%l.instagram.%' then 'Instagram'
+        when p_referrer ilike '%facebook.%' or p_referrer ilike '%fb.%' or p_referrer ilike '%l.facebook.%' then 'Facebook'
+        when p_referrer ilike '%t.co%'
+            or p_referrer ilike '%twitter.%'
+            or p_referrer ilike '%x.com%'
+            or p_referrer ilike '%android-app://com.twitter.%' then 'X'
+        when p_referrer ilike '%google.%' or p_referrer ilike '%google.com%' then 'Google'
+        when p_referrer ilike '%bing.%' then 'Bing'
+        when p_referrer ilike '%yahoo.%' then 'Yahoo'
+        when p_referrer ilike '%duckduckgo.%' then 'DuckDuckGo'
+        else 'Diğer'
+    end;
+$$;
+
+-- ---------------------------------------------------------------------------
+-- Kalıcı ilk kaynak (visitor_id PK — yalnızca ilk insert)
+-- ---------------------------------------------------------------------------
+create table if not exists public.site_analytics_first_source (
+    visitor_id text primary key,
+    referrer text,
+    analytics_first_source varchar(64) not null,
+    first_seen_at timestamptz not null default now(),
+    constraint site_analytics_first_source_vid_len check (char_length(visitor_id) >= 8)
+);
+
+create index if not exists site_analytics_first_source_kaynak_idx
+    on public.site_analytics_first_source (analytics_first_source);
+
+alter table public.site_analytics_first_source enable row level security;
+revoke all on public.site_analytics_first_source from anon, authenticated;
+grant insert on public.site_analytics_first_source to anon, authenticated;
+grant select on public.site_analytics_first_source to authenticated;
+
+drop policy if exists site_analytics_first_source_insert on public.site_analytics_first_source;
+create policy site_analytics_first_source_insert on public.site_analytics_first_source
+    for insert to anon, authenticated
+    with check (char_length(visitor_id) >= 8);
+
+drop policy if exists site_analytics_first_source_select_master on public.site_analytics_first_source;
+create policy site_analytics_first_source_select_master on public.site_analytics_first_source
+    for select to authenticated
+    using (public.master_email_eslesir());
+
+-- Mevcut oturumlardan geriye dönük doldur (en erken oturum referrer'ı)
+insert into public.site_analytics_first_source (visitor_id, referrer, analytics_first_source, first_seen_at)
+select distinct on (s.visitor_id)
+    s.visitor_id,
+    s.referrer,
+    public.analytics_referrer_kaynak(s.referrer),
+    s.started_at
+from public.site_analytics_sessions s
+where char_length(s.visitor_id) >= 8
+order by s.visitor_id, s.started_at asc
+on conflict (visitor_id) do nothing;
+
+-- page_view payload'ından yedek (oturumda referrer boş kalmışsa)
+insert into public.site_analytics_first_source (visitor_id, referrer, analytics_first_source, first_seen_at)
+select distinct on (e.visitor_id)
+    e.visitor_id,
+    nullif(trim(coalesce(e.payload->>'referrer', '')), ''),
+    public.analytics_referrer_kaynak(nullif(trim(coalesce(e.payload->>'referrer', '')), '')),
+    e.created_at
+from public.site_analytics_events e
+where e.event_type = 'page_view'
+  and char_length(e.visitor_id) >= 8
+order by e.visitor_id, e.created_at asc
+on conflict (visitor_id) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- analytics_event_kaydet: ilk ziyarette kaynak kilitle (ON CONFLICT DO NOTHING)
+-- ---------------------------------------------------------------------------
 create or replace function public.analytics_event_kaydet(p_body jsonb)
 returns jsonb
 language plpgsql
@@ -47,6 +134,11 @@ begin
     if v_sayfa is null and v_event in ('story_impression', 'story_vote', 'story_share', 'load_more_click') then
         v_sayfa := 'index';
     end if;
+
+    -- İlk ziyaret kaynağı: yalnızca ilk insert geçerli, sonradan güncellenmez
+    insert into public.site_analytics_first_source (visitor_id, referrer, analytics_first_source)
+    values (v_vid, v_ref, public.analytics_referrer_kaynak(v_ref))
+    on conflict (visitor_id) do nothing;
 
     if v_event = 'page_view' then
         insert into public.site_analytics_sessions (
