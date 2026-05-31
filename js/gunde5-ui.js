@@ -552,6 +552,14 @@
         kapatItirafModal();
     }
 
+    function acHikayeModal() {
+        var modal = hikayeModalEl();
+        if (!modal) return;
+        modal.classList.add('acik');
+        modal.setAttribute('aria-hidden', 'false');
+        guncelleModalScrollKilidi();
+    }
+
     function oturumModallariKapat() {
         closeAuthModal();
         kapatItirafModal();
@@ -1083,6 +1091,7 @@
         gitProfilSayfasi: gitProfilSayfasi,
         itirafUyeGerekli: itirafUyeGerekli,
         hikayeUyeGerekli: itirafUyeGerekli,
+        acHikayeModal: acHikayeModal,
         kapatHikayeModal: kapatHikayeModal,
         uygulaAvatarElement: uygulaAvatarElement,
         closeAuthModal: closeAuthModal,

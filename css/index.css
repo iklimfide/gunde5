@@ -92,8 +92,13 @@
             display: none !important;
         }
 
+        html.g5-index-uye-nav #indexBottomNav,
         html.g5-index-master-nav #indexBottomNav {
             display: flex;
+        }
+
+        html.g5-index-uye-nav main {
+            padding-bottom: 96px;
         }
 
         .bottom-nav {
