@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -24,44 +24,31 @@
     <meta name="twitter:image" content="https://gunde5.com/og-share.png">
     <meta name="theme-color" content="#ffffff">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="stylesheet" href="css/index.css?v=2">
+    <link rel="stylesheet" href="css/index.css?v=3">
     <script src="js/gunde5-shell.js"></script>
     <script defer src="js/gunde5-config.js?v=17"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js" crossorigin></script>
     <script defer src="js/gunde5-db.js?v=25"></script>
-    <script defer src="js/gunde5-index.js?v=34"></script>
+    <script defer src="js/gunde5-index.js?v=37"></script>
 </head>
 <body>
 
     <div class="ss-watermark" aria-hidden="true">gunde<span class="brand-five">5</span>.com</div>
 
-    <header id="indexSiteHeader" hidden>
-        <div class="header-sol">
-            <div class="header-menu-wrap">
-                <button type="button" class="header-menu-btn" id="headerMenuBtn" aria-label="Menü" aria-expanded="false" aria-controls="headerMenuPanel" onclick="Gunde5UI.toggleHeaderMenu(event)">
-                    <span class="header-menu-bar" aria-hidden="true"></span>
-                    <span class="header-menu-bar" aria-hidden="true"></span>
-                    <span class="header-menu-bar" aria-hidden="true"></span>
-                </button>
-                <div class="header-menu-panel" id="headerMenuPanel" hidden>
-                    <nav class="header-menu-nav" aria-label="Site menüsü"></nav>
-                </div>
-            </div>
-        </div>
-        <a href="/" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
-        <div class="header-sag">
-            <div class="header-auth-btns" id="headerAuthBtns">
-                <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit">Katıl</button>
-                <button type="button" class="header-auth-btn header-auth-btn--giris" id="hdrGiris">Giriş</button>
-            </div>
-            <a href="/profil" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
-                <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
-            </a>
-        </div>
-    </header>
-
     <main>
         <header class="page-topbar" id="indexPageTopbar">
+            <div class="page-topbar-sol" id="indexTopbarSol" hidden>
+                <div class="header-menu-wrap">
+                    <button type="button" class="topbar-menu-btn" id="headerMenuBtn" aria-label="Menü" aria-expanded="false" aria-controls="headerMenuPanel" onclick="Gunde5UI.toggleHeaderMenu(event)">
+                        <span class="topbar-menu-bar" aria-hidden="true"></span>
+                        <span class="topbar-menu-bar" aria-hidden="true"></span>
+                        <span class="topbar-menu-bar" aria-hidden="true"></span>
+                    </button>
+                    <div class="header-menu-panel" id="headerMenuPanel" hidden>
+                        <nav class="header-menu-nav" aria-label="Site menüsü"></nav>
+                    </div>
+                </div>
+            </div>
             <a href="/" class="brand">gunde<span class="brand-five">5</span>.com</a>
             <button type="button" class="theme-fab" onclick="toggleTheme()" id="themeBtn" aria-label="Tema değiştir">🌙</button>
         </header>
@@ -102,82 +89,6 @@
             <p class="page-tail-satir page-tail-satir--kucuk">©️ copyright gunde5.com 2026</p>
         </div>
     </main>
-
-    <div class="bottom-nav" id="indexBottomNav" role="navigation" aria-label="Ana menü" hidden>
-        <a href="/" class="nav-item active">
-            <div class="icon">🏠</div><span>Anasayfa</span>
-        </a>
-        <button type="button" class="nav-item nav-item--btn nav-item--fab" id="indexNavYazBtn" aria-haspopup="dialog">
-            <div class="icon">✍️</div><span>Hikaye Yaz</span>
-        </button>
-        <a href="/podyum" class="nav-item">
-            <div class="icon">🏆</div><span>Podyum</span>
-        </a>
-    </div>
-
-    <div class="hikaye-modal" id="hikayeModal" role="dialog" aria-modal="true" aria-labelledby="hikayeModalBaslik" aria-hidden="true">
-        <div class="hikaye-modal-panel">
-            <div class="hikaye-modal-ust">
-                <button type="button" class="hikaye-modal-kapat" id="hikayeModalKapat" aria-label="Kapat">×</button>
-                <div class="hikaye-modal-baslik-wrap">
-                    <h2 class="hikaye-modal-baslik" id="hikayeModalBaslik">Hikayeni Yaz</h2>
-                    <p class="hikaye-modal-ipucu">Hikayen anasayfada yayınlanır; en beğenilenler podyum arşivine alınır.</p>
-                </div>
-            </div>
-            <div id="hikayeUyeIcerik">
-                <input type="text" class="hikaye-baslik-input" id="hikayeBaslik" maxlength="120" autocomplete="off" placeholder="Başlık (isteğe bağlı)…">
-                <textarea class="hikaye-textarea" id="hikayeTextarea" placeholder="Tüm hikayeni buraya yaz…" rows="10"></textarea>
-                <div class="hikaye-modal-alt">
-                    <button type="button" class="gizli-uye-sec" id="gizliUyeSec" aria-pressed="false">🎭 Gizli Üye olarak yaz</button>
-                    <button type="button" class="hikaye-gonder-btn" id="hikayeGonderBtn">Gönder</button>
-                </div>
-            </div>
-            <div id="hikayeMasterIcerik" class="hikaye-master-form" hidden>
-                <div class="hikaye-master-alan">
-                    <label for="masterHikayeRumuz">Rumuz</label>
-                    <input type="text" id="masterHikayeRumuz" maxlength="50" autocomplete="off" placeholder="Örn. KaktüsAvcısı">
-                </div>
-                <div class="hikaye-master-alan">
-                    <label for="masterHikayeYas">Yaş</label>
-                    <input type="number" id="masterHikayeYas" min="18" max="120" inputmode="numeric" placeholder="18–120">
-                </div>
-                <div class="hikaye-master-alan">
-                    <label for="masterHikayeCinsiyet">Cinsiyet</label>
-                    <select id="masterHikayeCinsiyet">
-                        <option value="female">Kadın</option>
-                        <option value="male">Erkek</option>
-                    </select>
-                </div>
-                <div class="hikaye-master-alan">
-                    <label for="masterHikayeIl">Yaşadığı il</label>
-                    <select id="masterHikayeIl"></select>
-                </div>
-                <div class="hikaye-master-alan hikaye-master-yurtdisi" id="masterHikayeYurtdisiWrap" hidden>
-                    <label for="masterHikayeYurtdisi">Yurtdışı şehir</label>
-                    <input type="text" id="masterHikayeYurtdisi" maxlength="80" autocomplete="off" placeholder="Örn. Berlin">
-                </div>
-                <div class="hikaye-master-alan">
-                    <label for="masterHikayePlan">Yayınlanma zamanı planla</label>
-                    <div class="hikaye-plan-satir">
-                        <input type="datetime-local" id="masterHikayePlan">
-                        <button type="button" class="hikaye-plan-temizle" id="masterHikayePlanTemizle">Tarihi sil</button>
-                    </div>
-                    <p class="hikaye-master-ipucu">Boş bırakırsan hemen yayınlanır. Gelecek tarih seçersen anasayfada o saate kadar görünmez.</p>
-                </div>
-                <div class="hikaye-master-alan">
-                    <label for="masterHikayeBaslik">Başlık (isteğe bağlı)</label>
-                    <input type="text" id="masterHikayeBaslik" maxlength="120" autocomplete="off" placeholder="Örn. Kaktüs felaketi">
-                </div>
-                <div class="hikaye-master-alan">
-                    <label for="masterHikayeMetin">Hikaye</label>
-                    <textarea class="hikaye-textarea" id="masterHikayeMetin" placeholder="Tüm hikayeyi buraya yaz…" rows="8"></textarea>
-                </div>
-                <div class="hikaye-modal-alt" style="margin-top:0">
-                    <button type="button" class="hikaye-gonder-btn" id="hikayeMasterGonderBtn">Gönder</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="modal" id="aboutModal" onclick="closeModal(event)">
         <div class="modal-content modal-content--faq" onclick="event.stopPropagation()">

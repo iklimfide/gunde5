@@ -23,6 +23,9 @@ ROUTE_TO_HTML = {
     "/metrikler": "/metrikler.html",
     "/mudavimler": "/mudavimler.html",
     "/uyeler": "/uyeler.html",
+    "/kamikaze": "/kamikaze.html",
+    "/hikaye-gonder": "/hikaye-gonder.html",
+    "/bulut": "/bulut.html",
     "/404": "/404.html",
 }
 HTML_TO_ROUTE = {

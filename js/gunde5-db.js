@@ -794,30 +794,83 @@
 
     async function masterHikayeEkle(body) {
         await init();
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+
+        var oturum = await sb.auth.getSession();
+        if (!oturum.data.session) {
+            throw new Error('Oturum süresi doldu. Sayfayı yenileyip tekrar giriş yap.');
+        }
+
+        var durum = await masterDurum();
+        if (!durum || !durum.master) {
+            throw new Error('Bu işlem yalnızca site yöneticisi içindir.');
+        }
+
         var b = Object.assign({}, body || {});
-        if (b.content_full != null) {
-            b.content_full = metinPerdele(String(b.content_full).replace(/^\s+|\s+$/g, ''));
-        }
-        if (b.username != null) {
-            b.username = String(b.username).replace(/^\s+|\s+$/g, '');
-        }
-        if (b.baslik != null) {
-            b.baslik = String(b.baslik).replace(/^\s+|\s+$/g, '');
-            if (!b.baslik) delete b.baslik;
-        }
-        if (b.created_at != null) {
-            var plan = String(b.created_at).trim();
-            if (!plan) {
-                delete b.created_at;
-            } else {
-                var planMs = new Date(plan).getTime();
-                if (isNaN(planMs)) {
-                    throw new Error('Yayın tarihi geçersiz. Tarih/saat alanını temizleyip tekrar seçin.');
-                }
-                b.created_at = new Date(planMs).toISOString();
+
+        var rumuz = String(b.username || '').replace(/^\s+|\s+$/g, '');
+        if (rumuz.length < 2) throw new Error('Rumuz en az 2 karakter olmalı.');
+
+        var yas = parseInt(b.age, 10);
+        if (!yas || yas < 18 || yas > 120) throw new Error('Yaş 18–120 arasında olmalı.');
+
+        var cinsiyet = String(b.gender || '').toLowerCase();
+        if (cinsiyet !== 'male' && cinsiyet !== 'female') throw new Error('Geçersiz cinsiyet.');
+
+        var tam = metinPerdele(String(b.content_full || '').replace(/^\s+|\s+$/g, ''));
+        if (!tam) throw new Error('Hikaye metni boş olamaz.');
+
+        var baslikMetin = b.baslik != null ? String(b.baslik).replace(/^\s+|\s+$/g, '') : '';
+        if (baslikMetin.length > 120) throw new Error('Başlık en fazla 120 karakter olabilir.');
+
+        var yer = b.yasadigi_yer != null ? String(b.yasadigi_yer).replace(/^\s+|\s+$/g, '') : '';
+        var yurtdisi = b.yurtdisi_sehir != null ? String(b.yurtdisi_sehir).replace(/^\s+|\s+$/g, '') : '';
+        if (yer !== 'yurtdisi') yurtdisi = '';
+
+        var kisa = tam.length <= 140 ? tam : tam.slice(0, 137) + '...';
+
+        var kayit = {
+            user_id: null,
+            username: rumuz,
+            age: yas,
+            gender: cinsiyet,
+            yasadigi_yer: yer || null,
+            yurtdisi_sehir: yurtdisi || null,
+            content_full: tam,
+            content_short: kisa,
+            status: 'kulis',
+            is_gizli: false
+        };
+        if (baslikMetin) kayit.baslik = baslikMetin;
+
+        if (b.created_at != null && String(b.created_at).replace(/^\s+|\s+$/g, '') !== '') {
+            var planMs = Date.parse(String(b.created_at).trim());
+            if (isNaN(planMs)) {
+                throw new Error('Yayın tarihi geçersiz. Tarih/saat alanını temizleyip tekrar seçin.');
             }
+            kayit.created_at = new Date(planMs).toISOString();
         }
-        return masterRpc('master_hikaye_ekle', b, { timeoutMs: 20000 });
+
+        var res = await sb.from('itiraflar').insert(kayit).select('*').single();
+        if (res.error) {
+            if (res.error.code === '42501') {
+                var rpcBody = Object.assign({}, b, {
+                    username: rumuz,
+                    age: yas,
+                    gender: cinsiyet,
+                    yasadigi_yer: yer || null,
+                    yurtdisi_sehir: yurtdisi || null,
+                    content_full: tam
+                });
+                if (baslikMetin) rpcBody.baslik = baslikMetin;
+                if (kayit.created_at) rpcBody.created_at = kayit.created_at;
+                return masterRpc('master_hikaye_ekle', rpcBody, { timeoutMs: 20000 });
+            }
+            throw res.error;
+        }
+
+        return { ok: true, hikaye: res.data };
     }
 
     async function masterUyeIcerik(uyeId, opts) {
@@ -1490,6 +1543,7 @@
         try {
             var res = await rpcIlk(['itiraf_goruntulenme_kaydet', 'hikaye_goruntulenme_kaydet'], {
                 p_itiraf_id: id,
+                p_hikaye_id: id,
                 p_viewer_key: getViewerKey()
             });
             return res.data;
@@ -1505,6 +1559,59 @@
                 return null;
             }
         }
+    }
+
+    function goruntulenmeMapOlustur(liste) {
+        var map = {};
+        (liste || []).forEach(function (r) {
+            if (!r || r.id == null) return;
+            map[r.id] = {
+                tekil_goruntulenme: r.tekil_goruntulenme,
+                sayfa_goruntulenme: r.sayfa_goruntulenme
+            };
+        });
+        return map;
+    }
+
+    /** Master Kamikaze — hikaye görüntülenme (itiraflar + analytics yedek). */
+    async function masterHikayeGoruntulenmeToplu(ids) {
+        await init();
+        var sb = getClient();
+        if (!sb) return {};
+        var clean = [];
+        (ids || []).forEach(function (id) {
+            var n = parseInt(id, 10);
+            if (n && clean.indexOf(n) < 0) clean.push(n);
+        });
+        if (!clean.length) return {};
+
+        try {
+            var res = await sb.rpc('master_hikaye_goruntulenme_toplu', { p_ids: clean });
+            if (!res.error && res.data) {
+                return goruntulenmeMapOlustur(res.data);
+            }
+        } catch (eRpc) { /* RPC yoksa doğrudan oku */ }
+
+        return hikayeGoruntulenmeToplu(clean);
+    }
+
+    /** itiraflar.sayfa/tekil_goruntulenme — doğrudan okuma. */
+    async function hikayeGoruntulenmeToplu(ids) {
+        var sb = getClient();
+        if (!sb) return {};
+        var clean = [];
+        (ids || []).forEach(function (id) {
+            var n = parseInt(id, 10);
+            if (n && clean.indexOf(n) < 0) clean.push(n);
+        });
+        if (!clean.length) return {};
+
+        var res = await sb
+            .from('itiraflar')
+            .select('id,tekil_goruntulenme,sayfa_goruntulenme')
+            .in('id', clean);
+        if (res.error) throw res.error;
+        return goruntulenmeMapOlustur(res.data);
     }
 
     var bildirimRtKanal = null;
@@ -1975,6 +2082,8 @@
         oyDurumuSunucudan: oyDurumuSunucudan,
         oyDurumlariSenkron: oyDurumlariSenkron,
         goruntulenmeKaydet: goruntulenmeKaydet,
+        hikayeGoruntulenmeToplu: hikayeGoruntulenmeToplu,
+        masterHikayeGoruntulenmeToplu: masterHikayeGoruntulenmeToplu,
         ziyaretKaydet: ziyaretKaydet,
         analyticsEventKaydet: analyticsEventKaydet,
         masterTrafikIstatistik: masterTrafikIstatistik,

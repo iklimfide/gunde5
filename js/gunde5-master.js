@@ -90,6 +90,7 @@
             temizleKartlar();
             profilModTemizle();
             menuGuncelle();
+            menuHikayeGonderGuncelle();
             menuIstatistikGuncelle();
             menuUyelerGuncelle();
             menuKamikazeGuncelle();
@@ -104,6 +105,7 @@
         modAcik = false;
         document.body.classList.remove('master-mod-aktif');
         menuGuncelle();
+        menuHikayeGonderGuncelle();
         menuIstatistikGuncelle();
         menuUyelerGuncelle();
         menuKamikazeGuncelle();
@@ -132,6 +134,32 @@
         if (onceki && onceki.parentNode === nav) {
             if (onceki.nextSibling) nav.insertBefore(link, onceki.nextSibling);
             else nav.appendChild(link);
+        } else {
+            nav.appendChild(link);
+        }
+    }
+
+    function menuHikayeGonderKaldir() {
+        var link = document.getElementById('headerMenuHikayeGonder');
+        if (link && link.parentNode) link.parentNode.removeChild(link);
+    }
+
+    function menuHikayeGonderGuncelle() {
+        if (!masterMi) {
+            menuHikayeGonderKaldir();
+            return;
+        }
+        if (document.getElementById('headerMenuHikayeGonder')) return;
+        var nav = document.querySelector('.header-menu-nav');
+        if (!nav) return;
+        var link = document.createElement('a');
+        link.href = '/hikaye-gonder';
+        link.className = 'header-menu-link header-menu-link--master';
+        link.id = 'headerMenuHikayeGonder';
+        link.textContent = '✍️ Hikaye gönder';
+        var istat = document.getElementById('headerMenuIstatistik');
+        if (istat && istat.parentNode === nav) {
+            nav.insertBefore(link, istat);
         } else {
             nav.appendChild(link);
         }
@@ -166,6 +194,7 @@
 
     function menuIstatistikGuncelle() {
         if (!masterMi) {
+            menuHikayeGonderKaldir();
             menuIstatistikKaldir();
             menuMetrikKaldir();
             menuMudavimKaldir();

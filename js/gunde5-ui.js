@@ -87,42 +87,15 @@
     }
 
     function showToastUyeGerekli(mesaj) {
-        var el = toastElAl();
-        clearTimeout(el._g5t);
-        el.className = 'gunde5-toast gunde5-toast--uye gunde5-toast--hata';
-        el.innerHTML =
-            '<span class="gunde5-toast-metin">' +
-            htmlEsc(mesaj) +
-            '</span>' +
-            '<div class="gunde5-toast-aksiyonlar">' +
-            '<button type="button" class="gunde5-toast-btn gunde5-toast-btn--giris" data-g5-auth="login">Giriş yap</button>' +
-            '<button type="button" class="gunde5-toast-btn gunde5-toast-btn--kayit" data-g5-auth="register">Kayıt ol</button>' +
-            '</div>';
-        el.style.display = 'block';
-        if (!el._g5uyeBagli) {
-            el._g5uyeBagli = true;
-            el.addEventListener('click', function (e) {
-                var btn = e.target.closest('[data-g5-auth]');
-                if (!btn) return;
-                var mode = btn.getAttribute('data-g5-auth');
-                el.style.display = 'none';
-                el.innerHTML = '';
-                if (typeof global.openAuthModal === 'function') {
-                    global.openAuthModal(mode === 'register' ? 'register' : 'login');
-                }
-            });
-        }
-        el._g5t = setTimeout(function () {
-            el.style.display = 'none';
-            el.innerHTML = '';
-        }, TOAST_UYE_MS);
+        showToast(
+            mesaj || 'Bu işlem yalnızca yönetici oturumunda kullanılabilir.',
+            'hata'
+        );
     }
 
     function uyeGirisUyarisi(mesaj) {
         if (uyeMi()) return true;
-        showToastUyeGerekli(
-            mesaj || 'Bu işlem için üye girişi yapmanız gerekiyor.'
-        );
+        showToastUyeGerekli(mesaj);
         return false;
     }
 
@@ -518,17 +491,8 @@
         return overlay.style.display === 'flex' || overlay.classList.contains('acik');
     }
 
-    function hikayeModalEl() {
-        return document.getElementById('itirafModal') || document.getElementById('hikayeModal');
-    }
-
-    function itirafModalAcikMi() {
-        var modal = hikayeModalEl();
-        return !!(modal && modal.classList.contains('acik'));
-    }
-
     function guncelleModalScrollKilidi() {
-        document.body.style.overflow = (authModalAcikMi() || itirafModalAcikMi()) ? 'hidden' : '';
+        document.body.style.overflow = authModalAcikMi() ? 'hidden' : '';
     }
 
     function closeAuthModal() {
@@ -541,23 +505,11 @@
     }
 
     function kapatItirafModal() {
-        var modal = hikayeModalEl();
-        if (!modal) return;
-        modal.classList.remove('acik');
-        modal.setAttribute('aria-hidden', 'true');
         guncelleModalScrollKilidi();
     }
 
     function kapatHikayeModal() {
         kapatItirafModal();
-    }
-
-    function acHikayeModal() {
-        var modal = hikayeModalEl();
-        if (!modal) return;
-        modal.classList.add('acik');
-        modal.setAttribute('aria-hidden', 'false');
-        guncelleModalScrollKilidi();
     }
 
     function oturumModallariKapat() {
@@ -841,9 +793,9 @@
         });
     }
 
-    function headerMenuAuthClick(mode) {
+    function headerMenuAuthClick() {
         closeHeaderMenu();
-        if (typeof global.openAuthModal === 'function') global.openAuthModal(mode);
+        global.location.href = '/bulut';
     }
 
     function headerMenuTemaClick() {
@@ -1091,7 +1043,6 @@
         gitProfilSayfasi: gitProfilSayfasi,
         itirafUyeGerekli: itirafUyeGerekli,
         hikayeUyeGerekli: itirafUyeGerekli,
-        acHikayeModal: acHikayeModal,
         kapatHikayeModal: kapatHikayeModal,
         uygulaAvatarElement: uygulaAvatarElement,
         closeAuthModal: closeAuthModal,

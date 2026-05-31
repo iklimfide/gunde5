@@ -56,7 +56,7 @@
         body {
             background-color: var(--bg-main);
             color: var(--text-main);
-            padding-bottom: 92px;
+            padding-bottom: 24px;
             transition: background-color 0.2s, color 0.2s;
         }
 
@@ -612,100 +612,6 @@
             margin-top: 8px;
         }
 
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            min-height: 64px;
-            padding: 0 2px 8px;
-            background: var(--header-bg);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 2px;
-            z-index: 1000;
-            box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.03);
-        }
-        .nav-item {
-            flex: 1 1 0;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            padding: 6px 2px 8px;
-            font-size: 10px;
-            font-weight: 800;
-            color: #9ca3af;
-            cursor: pointer;
-            text-decoration: none;
-            line-height: 1.05;
-        }
-        .nav-item > span {
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .nav-item.active { color: var(--text-main); }
-        .nav-item .icon {
-            font-size: 20px;
-            margin-bottom: 2px;
-            flex-shrink: 0;
-        }
-        .nav-item--btn {
-            border: none;
-            background: transparent;
-            font: inherit;
-            width: auto;
-            color: inherit;
-        }
-        .nav-item--fab {
-            flex: 0 0 auto;
-            width: clamp(72px, 22vw, 96px);
-            min-height: 68px;
-            margin-bottom: 14px;
-            padding: 10px 6px 12px;
-            justify-content: center;
-            align-self: flex-end;
-            border-radius: 18px;
-            background: linear-gradient(
-                165deg,
-                rgba(255, 255, 255, 0.97) 0%,
-                rgba(248, 250, 252, 0.99) 50%,
-                rgba(241, 245, 249, 0.96) 100%
-            );
-            border: 1px solid rgba(15, 23, 42, 0.07);
-            box-shadow:
-                0 10px 28px rgba(15, 23, 42, 0.08),
-                0 2px 10px rgba(29, 155, 240, 0.14);
-            color: var(--text-main);
-            transform: translateY(-8px);
-        }
-        body.dark-mode .nav-item--fab {
-            background: linear-gradient(
-                165deg,
-                rgba(34, 44, 58, 0.98) 0%,
-                rgba(18, 24, 32, 0.99) 100%
-            );
-            border-color: rgba(255, 255, 255, 0.1);
-            box-shadow:
-                0 12px 32px rgba(0, 0, 0, 0.45),
-                0 2px 12px rgba(29, 155, 240, 0.2);
-        }
-        .nav-item--fab .icon {
-            font-size: 24px;
-            margin-bottom: 4px;
-        }
-        .nav-item--fab > span {
-            font-size: 9.5px;
-            font-weight: 900;
-            letter-spacing: -0.22px;
-            white-space: nowrap;
-        }
-
         .auth-overlay {
             display: none;
             position: fixed;
@@ -873,10 +779,6 @@
         </div>
         <a href="/" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
         <div class="header-sag">
-            <div class="header-auth-btns" id="headerAuthBtns">
-                <button type="button" class="header-auth-btn header-auth-btn--kayit" id="hdrKayit" onclick="openAuthModal('register')">Katıl</button>
-                <button type="button" class="header-auth-btn header-auth-btn--giris" id="hdrGiris" onclick="openAuthModal('login')">Giriş</button>
-            </div>
             <a href="/profil" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
                 <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
             </a>
@@ -888,62 +790,11 @@
         <div id="profilMasterWrap"></div>
         <div id="profilIcerik"></div>
     </div>
-
-    <div class="bottom-nav" role="navigation" aria-label="Ana menü">
-        <a href="/" class="nav-item">
-            <div class="icon">🏠</div><span>Anasayfa</span>
+<span>Anasayfa</span>
         </a>
-        <button type="button" class="nav-item nav-item--btn nav-item--fab" id="navYazBtn">
-            <div class="icon">✍️</div><span>Hikaye Yaz</span>
-        </button>
         <a href="/podyum" class="nav-item">
             <div class="icon">🏆</div><span>Podyum</span>
         </a>
-    </div>
-
-    <div id="authOverlay" class="auth-overlay" aria-hidden="true">
-        <div class="auth-modal-panel" id="authModalPanel">
-            <button type="button" class="auth-modal-kapat" onclick="closeAuthModal()" aria-label="Kapat">×</button>
-            <div id="authRegister" class="auth-view aktif">
-                <div class="auth-brand">
-                    <div class="auth-brand-text">gunde<span>5</span>.com</div>
-                </div>
-                <div class="auth-cins-satir">
-                    <button type="button" class="auth-cins-btn" id="regCinsFemale" onclick="secAuthCinsiyet('female')">♀ KADIN</button>
-                    <button type="button" class="auth-cins-btn" id="regCinsMale" onclick="secAuthCinsiyet('male')">♂ ERKEK</button>
-                </div>
-                <input type="hidden" id="regGender" value="">
-                <label class="auth-etiket" for="regUsername">Kullanıcı Adı</label>
-                <input class="auth-input" type="text" id="regUsername" maxlength="15" minlength="5" placeholder="5–15 karakter" autocomplete="username">
-                <label class="auth-etiket" for="regEmail">E-Posta</label>
-                <input class="auth-input" type="email" id="regEmail" maxlength="80" placeholder="mail@adresin.com" autocomplete="email">
-                <label class="auth-etiket" for="regPassword">Şifre</label>
-                <input class="auth-input" type="password" id="regPassword" minlength="6" placeholder="Min. 6 karakter" autocomplete="new-password">
-                <label class="auth-etiket auth-etiket--yil" for="regBirthYear">Doğum tarihi: (Minimum 18 yaş gerekir.)</label>
-                <select class="auth-select" id="regBirthYear">
-                    <option value="">Yıl</option>
-                </select>
-                <label class="auth-kvkk">
-                    <input type="checkbox" id="authKvk">
-                    <span><a href="/kvkk#sozlesme" target="_blank" rel="noopener" onclick="event.stopPropagation()">Kullanıcı Sözleşmesi</a>'ni ve <a href="/kvkk#aydinlatma" target="_blank" rel="noopener" onclick="event.stopPropagation()">KVKK Aydınlatma Metni</a>'ni okudum, onaylıyorum.</span>
-                </label>
-                <button type="button" class="auth-submit auth-submit--kayit" onclick="kayitOl()">Kayıt Ol</button>
-                <p class="auth-gecis">Zaten üye misin? <button type="button" onclick="toggleAuthMode('login')">Giriş Yap</button></p>
-            </div>
-            <div id="authLogin" class="auth-view">
-                <div class="auth-brand">
-                    <div class="auth-brand-text">gunde<span>5</span>.com</div>
-                </div>
-                <h2 class="auth-modal-baslik">Üye Girişi</h2>
-                <p class="auth-modal-alt-baslik">E-posta ve şifrenle giriş yap.</p>
-                <label class="auth-etiket" for="loginEmail">E-Posta</label>
-                <input class="auth-input" type="email" id="loginEmail" maxlength="80" placeholder="mail@adresin.com" autocomplete="email">
-                <label class="auth-etiket" for="loginPassword">Şifre</label>
-                <input class="auth-input" type="password" id="loginPassword" placeholder="Şifren" autocomplete="current-password">
-                <button type="button" class="auth-submit auth-submit--giris" onclick="girisYap()">Giriş Yap</button>
-                <p class="auth-gecis">Hesabınız yok mu? <button type="button" onclick="toggleAuthMode('register')">Kayıt Ol</button></p>
-            </div>
-        </div>
     </div>
 
     <script src="js/gunde5-config.js"></script>
@@ -992,7 +843,7 @@
             if (!u || !u.username) {
                 el.innerHTML = '<p class="liste-bos">Bu sayfa giriş yapmış üyeler içindir.</p>';
                 if (Gunde5UI.uyeGirisUyarisi) {
-                    Gunde5UI.uyeGirisUyarisi('Profil için üye girişi yapmanız gerekiyor.');
+                    Gunde5UI.uyeGirisUyarisi('Profil yalnızca yönetici oturumunda açılır.');
                 }
                 return;
             }
@@ -1317,117 +1168,10 @@
         }
 
         async function cikisYap() {
-
             await Gunde5DB.cikisYap();
             document.body.removeAttribute('data-user-gender');
             window.location.href = '/';
         }
-
-        function doldurYilSecenekleri() {
-            var sel = document.getElementById('regBirthYear');
-            if (!sel || sel.options.length > 1) return;
-            var yil = new Date().getFullYear() - 18;
-            var minYil = 1940;
-            var opt;
-            while (yil >= minYil) {
-                opt = document.createElement('option');
-                opt.value = String(yil);
-                opt.textContent = String(yil);
-                sel.appendChild(opt);
-                yil -= 1;
-            }
-        }
-
-        function openAuthModal(mode) {
-            doldurYilSecenekleri();
-            var overlay = document.getElementById('authOverlay');
-            overlay.style.display = 'flex';
-            overlay.classList.add('acik');
-            overlay.setAttribute('aria-hidden', 'false');
-            document.body.style.overflow = 'hidden';
-            toggleAuthMode(mode || 'register');
-        }
-
-        function toggleAuthMode(mode) {
-            var reg = document.getElementById('authRegister');
-            var log = document.getElementById('authLogin');
-            if (mode === 'login') {
-                reg.classList.remove('aktif');
-                log.classList.add('aktif');
-            } else {
-                log.classList.remove('aktif');
-                reg.classList.add('aktif');
-            }
-        }
-
-        function secAuthCinsiyet(cins) {
-            var panel = document.getElementById('authModalPanel');
-            var maleBtn = document.getElementById('regCinsMale');
-            var femaleBtn = document.getElementById('regCinsFemale');
-            panel.classList.remove('cins-female', 'cins-male');
-            maleBtn.classList.remove('secili-male');
-            femaleBtn.classList.remove('secili-female');
-            document.getElementById('regGender').value = cins;
-            if (cins === 'male') {
-                panel.classList.add('cins-male');
-                maleBtn.classList.add('secili-male');
-            } else {
-                panel.classList.add('cins-female');
-                femaleBtn.classList.add('secili-female');
-            }
-        }
-
-        function yasHesapla(dogumYili) {
-            return new Date().getFullYear() - parseInt(dogumYili, 10);
-        }
-
-        async function kayitOl() {
-            try {
-                var u = await Gunde5DB.kayitOl({
-                    username: document.getElementById('regUsername').value,
-                    email: document.getElementById('regEmail').value,
-                    password: document.getElementById('regPassword').value,
-                    dogumYili: document.getElementById('regBirthYear').value,
-                    gender: document.getElementById('regGender').value,
-                    kvkk: document.getElementById('authKvk').checked
-                });
-                var cins = (u && u.gender) ? u.gender : document.getElementById('regGender').value;
-                document.body.setAttribute('data-user-gender', cins);
-                Gunde5UI.oturumModallariKapat();
-                guncelleHeaderOturum();
-                await yukleProfil();
-                Gunde5UI.showToast('Hoş geldin, ' + (u && u.username ? u.username : '') + '!');
-            } catch (err) {
-                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
-            }
-        }
-
-        async function girisYap() {
-            var email = document.getElementById('loginEmail').value.replace(/^\s+|\s+$/g, '');
-            var sifre = document.getElementById('loginPassword').value;
-            if (!email || !sifre) return;
-            try {
-                var u = await Gunde5DB.girisYap({ email: email, password: sifre });
-                if (u && u.gender) {
-                    document.body.setAttribute('data-user-gender', u.gender);
-                }
-                Gunde5UI.oturumModallariKapat();
-                guncelleHeaderOturum();
-                await yukleProfil();
-                Gunde5UI.showToast('Tekrar hoş geldin!');
-            } catch (err) {
-                Gunde5UI.showToast(Gunde5DB.hataMesaji(err), 'hata');
-            }
-        }
-
-        document.getElementById('navYazBtn').addEventListener('click', function () {
-            if (!Gunde5UI.uyeMi()) {
-                Gunde5UI.showToast('Hikaye yazmak için üye girişi gerekir.', 'hata');
-                openAuthModal('register');
-                return;
-            }
-            window.location.href = '/?yaz=1';
-        });
 
         Gunde5DB.init().then(function () {
             return yukleProfil();

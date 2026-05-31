@@ -268,7 +268,7 @@
         var giris = document.getElementById('metrikGirisBtn');
         if (giris) {
             giris.addEventListener('click', function () {
-                if (typeof global.openAuthModal === 'function') global.openAuthModal('login');
+                global.location.href = '/bulut';
             });
         }
     }

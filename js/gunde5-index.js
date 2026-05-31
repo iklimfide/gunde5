@@ -1014,39 +1014,17 @@
         }, SAHIP_ARAC_GECIKME_MS);
     }
 
-    async function indexHikayeNavKur() {
-        var altNav = document.getElementById('indexBottomNav');
-        if (!altNav || global.__g5IndexHikayeNavKuruldu) return;
-        var D = db();
-        if (!D || !D.init) return;
-        try {
-            await D.init();
-            var u = D.getGunde5User && D.getGunde5User();
-            if (!u || !u.id) return;
-            global.__g5IndexHikayeNavKuruldu = true;
-            await scriptYukle('js/gunde5-ui.js');
-            await scriptYukle('js/gunde5-profil.js');
-            await scriptYukle('js/gunde5-hikaye-yaz.js?v=5');
-            document.documentElement.classList.add('g5-index-uye-nav');
-            altNav.hidden = false;
-            if (global.Gunde5HikayeYaz && global.Gunde5HikayeYaz.init) {
-                global.Gunde5HikayeYaz.init({ navYazId: 'indexNavYazBtn' });
-            }
-        } catch (e) { /* üye nav isteğe bağlı */ }
-    }
-
     async function indexMasterNavKur() {
-        var hdr = document.getElementById('indexSiteHeader');
-        if (!hdr) return;
+        var menuSol = document.getElementById('indexTopbarSol');
+        if (!menuSol) return;
         var D = db();
         if (!D || !D.masterDurum) return;
         try {
             var durum = await D.masterDurum();
             if (!durum || !durum.master) return;
-            await indexHikayeNavKur();
+            await scriptYukle('js/gunde5-ui.js');
             await scriptYukle('js/gunde5-master.js');
-            hdr.hidden = false;
-            document.documentElement.classList.add('g5-index-master-nav');
+            menuSol.hidden = false;
             if (global.Gunde5Shell && global.Gunde5Shell.applyShell) {
                 global.Gunde5Shell.applyShell();
             }
@@ -1059,10 +1037,9 @@
         } catch (e) { /* master nav isteğe bağlı */ }
     }
 
-    function indexNavErtele() {
+    function indexMasterNavErtele() {
         var idle = global.requestIdleCallback || function (fn) { setTimeout(fn, 300); };
         idle(function () {
-            indexHikayeNavKur();
             indexMasterNavKur();
         });
     }
@@ -1081,7 +1058,7 @@
         var cached = onbellekKullanilabilirMi() ? cacheOku() : null;
         if (cached && cached.rows.length) {
             await onbellektenGoster(cached);
-            indexNavErtele();
+            indexMasterNavErtele();
             arkaplanIlkSayfaYenile().then(function () {
                 return hedefKartaKaydirOtomatik(0);
             });
@@ -1089,7 +1066,7 @@
         }
 
         await sonrakiPart(null);
-        indexNavErtele();
+        indexMasterNavErtele();
     }
 
     function boot() {

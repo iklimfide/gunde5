@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hikaye gönder — gunde5.com</title>
+    <link rel="icon" href="favicon.ico" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="description" content="gunde5 master hikaye gönderme paneli.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#1d9bf0">
+    <style>
+        :root {
+            --bg-main: #f7f7f7;
+            --bg-card: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --female-color: #db2777;
+            --male-color: #2563eb;
+        }
+        body.dark-mode {
+            --bg-main: #0f1419;
+            --bg-card: #0b0f14;
+            --text-main: #e7e9ea;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255,255,255,0.10);
+            --female-color: #f43f5e;
+            --male-color: #1d9bf0;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            transition: background-color .2s, color .2s;
+        }
+        header {
+            background-color: #1d9bf0;
+            color: #fff;
+            padding: 16px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            border-bottom: 1px solid #1a8cd8;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-brand { color: #fff; text-decoration: none; }
+        .header-brand-red { color: #ef4444; }
+        .header-sol {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 110;
+        }
+        .header-sag {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 110;
+        }
+        .header-menu-wrap { position: relative; }
+        .header-menu-btn {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 0;
+        }
+        .header-menu-bar {
+            display: block;
+            width: 18px;
+            height: 2px;
+            background: #fff;
+            border-radius: 1px;
+        }
+        .header-menu-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 176px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+            padding: 8px;
+            z-index: 200;
+        }
+        body.dark-mode .header-menu-panel {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+        }
+        .header-menu-nav { display: flex; flex-direction: column; gap: 2px; }
+        .header-menu-link {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #111827;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        body.dark-mode .header-menu-link { color: var(--text-main); }
+        .header-menu-link:hover { background: #f3f4f6; }
+        body.dark-mode .header-menu-link:hover { background: #2f3336; }
+        .header-auth-btns { display: flex; align-items: center; gap: 8px; }
+        .header-auth-btns[hidden] { display: none !important; }
+        .header-auth-btn {
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .header-auth-btn--giris {
+            background: #fff;
+            color: #1d9bf0;
+            border-color: #fff;
+        }
+        .header-profil-link {
+            display: none;
+            align-items: center;
+            padding: 4px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            text-decoration: none;
+        }
+        .header-profil-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            color: #fff;
+        }
+        .header-profil-link.cins-female .header-profil-avatar:not(.has-foto) { background-color: var(--female-color); }
+        .header-profil-link.cins-male .header-profil-avatar:not(.has-foto) { background-color: var(--male-color); }
+        .container {
+            width: min(560px, calc(100% - 24px));
+            margin: 12px auto 40px;
+        }
+        .page-title {
+            font-size: clamp(26px, 5vw, 36px);
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            margin-bottom: 10px;
+        }
+        .hg-yetkisiz {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 18px;
+            display: grid;
+            gap: 12px;
+        }
+        .hg-yetkisiz p { font-size: 14px; font-weight: 600; line-height: 1.45; }
+        .hg-btn {
+            justify-self: start;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            background: #1d9bf0;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .hg-kart {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 14px 18px 18px;
+        }
+        .hg-form { display: flex; flex-direction: column; gap: 10px; }
+        .hg-alan label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .hg-alan input,
+        .hg-alan select,
+        .hg-alan textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            outline: none;
+        }
+        .hg-alan textarea {
+            min-height: 200px;
+            resize: vertical;
+            line-height: 1.55;
+            font-weight: 500;
+        }
+        .hg-ipucu {
+            margin: 0;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        .hg-plan-satir {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .hg-plan-satir input { flex: 1; min-width: 0; }
+        .hg-plan-temizle {
+            flex-shrink: 0;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .hg-gonder {
+            margin-top: 4px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 999px;
+            background: #1d9bf0;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            align-self: flex-end;
+        }
+        .hg-gonder:disabled { opacity: 0.55; cursor: not-allowed; }
+    </style>
+    <script src="js/gunde5-shell.js"></script>
+    <script src="js/gunde5-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+    <script src="js/gunde5-profil.js"></script>
+    <script src="js/gunde5-ui.js"></script>
+    <script src="js/gunde5-db.js?v=26"></script>
+    <script src="js/gunde5-master.js"></script>
+    <script src="js/gunde5-hikaye-gonder.js?v=3"></script>
+</head>
+<body>
+    <header>
+        <div class="header-sol">
+            <div class="header-menu-wrap">
+                <button type="button" class="header-menu-btn" id="headerMenuBtn" aria-label="Menü" aria-expanded="false" aria-controls="headerMenuPanel" onclick="Gunde5UI.toggleHeaderMenu(event)">
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                </button>
+                <div class="header-menu-panel" id="headerMenuPanel" hidden>
+                    <nav class="header-menu-nav" aria-label="Site menüsü"></nav>
+                </div>
+            </div>
+        </div>
+        <a href="/" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <div class="header-sag">
+            <a href="/profil" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+                <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1 class="page-title">✍️ Hikaye gönder</h1>
+
+        <div id="hgYetkisiz" class="hg-yetkisiz" hidden>
+            <p id="hgYetkisizMetin"></p>
+            <button type="button" class="hg-btn" id="hgGirisBtn" hidden>Anasayfaya git</button>
+        </div>
+
+        <div id="hgFormWrap" class="hg-kart" hidden>
+            <form id="hgForm" class="hg-form">
+                <div class="hg-alan">
+                    <label for="hgRumuz">Rumuz</label>
+                    <input type="text" id="hgRumuz" maxlength="50" autocomplete="off" placeholder="Örn. KaktüsAvcısı" required>
+                </div>
+                <div class="hg-alan">
+                    <label for="hgYas">Yaş</label>
+                    <input type="number" id="hgYas" min="18" max="120" inputmode="numeric" placeholder="18–120" required>
+                </div>
+                <div class="hg-alan">
+                    <label for="hgCinsiyet">Cinsiyet</label>
+                    <select id="hgCinsiyet">
+                        <option value="female">Kadın</option>
+                        <option value="male">Erkek</option>
+                    </select>
+                </div>
+                <div class="hg-alan">
+                    <label for="hgIl">Yaşadığı il</label>
+                    <select id="hgIl"></select>
+                </div>
+                <div class="hg-alan" id="hgYurtdisiWrap" hidden>
+                    <label for="hgYurtdisi">Yurtdışı şehir</label>
+                    <input type="text" id="hgYurtdisi" maxlength="80" autocomplete="off" placeholder="Örn. Berlin">
+                </div>
+                <div class="hg-alan">
+                    <label for="hgPlan">Yayınlanma zamanı planla</label>
+                    <div class="hg-plan-satir">
+                        <input type="datetime-local" id="hgPlan" step="60">
+                        <button type="button" class="hg-plan-temizle" id="hgPlanTemizle">Tarihi sil</button>
+                    </div>
+                    <p class="hg-ipucu">Boş bırakırsan hemen yayınlanır.</p>
+                </div>
+                <div class="hg-alan">
+                    <label for="hgBaslik">Başlık (isteğe bağlı)</label>
+                    <input type="text" id="hgBaslik" maxlength="120" autocomplete="off" placeholder="Örn. Kaktüs felaketi">
+                </div>
+                <div class="hg-alan">
+                    <label for="hgMetin">Hikaye</label>
+                    <textarea id="hgMetin" placeholder="Tüm hikayeyi buraya yaz…" required></textarea>
+                </div>
+                <button type="submit" class="hg-gonder" id="hgGonderBtn">Gönder</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        function guncelleHeaderOturum() {
+            if (window.Gunde5UI && Gunde5UI.guncelleHeaderOturum) Gunde5UI.guncelleHeaderOturum();
+        }
+    </script>
+</body>
+</html>

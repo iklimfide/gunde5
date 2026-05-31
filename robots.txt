@@ -6,5 +6,9 @@ Disallow: /istatistikler.html
 Disallow: /mudavimler
 Disallow: /mudavimler.html
 Disallow: /uyeler.html
+Disallow: /bulut
+Disallow: /bulut.html
+Disallow: /hikaye-gonder
+Disallow: /hikaye-gonder.html
 
 Sitemap: https://gunde5.com/sitemap.xml

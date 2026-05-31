@@ -40,6 +40,30 @@
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
       ]
+    },
+    {
+      "source": "/hikaye-gonder",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/hikaye-gonder.html",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/bulut",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/bulut.html",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
     }
   ],
   "redirects": [
@@ -58,6 +82,8 @@
     { "source": "/mudavimler.html", "destination": "/mudavimler", "permanent": true },
     { "source": "/uyeler.html", "destination": "/uyeler", "permanent": true },
     { "source": "/kamikaze.html", "destination": "/kamikaze", "permanent": true },
+    { "source": "/hikaye-gonder.html", "destination": "/hikaye-gonder", "permanent": true },
+    { "source": "/bulut.html", "destination": "/bulut", "permanent": true },
     { "source": "/404.html", "destination": "/404", "permanent": true },
     { "source": "/itiraf/:id", "destination": "/h/:id", "permanent": true }
   ],

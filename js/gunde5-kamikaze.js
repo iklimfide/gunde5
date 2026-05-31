@@ -81,23 +81,11 @@
         }
     }
 
-    function fmtGun(gun) {
-        if (!gun) return '';
-        var p = String(gun).split('-');
-        if (p.length === 3) return p[2] + '/' + p[1];
-        return String(gun);
-    }
-
     function kisaMetin(s, max) {
         var t = String(s || '').trim();
         if (!t) return '—';
         if (t.length <= max) return esc(t);
         return esc(t.slice(0, max - 1)) + '…';
-    }
-
-    function ayarDegeri(anahtar, deger) {
-        if (anahtar && /token|secret|key/i.test(anahtar)) return '••••••••';
-        return deger || '—';
     }
 
     /** Anasayfada görünür mü (planlı gelecek tarih hariç). */
@@ -609,36 +597,6 @@
         );
     }
 
-    function barChartHtml(baslik, rows, cls) {
-        var liste = arr(rows);
-        var max = 1;
-        liste.forEach(function (r) {
-            var adet = parseInt(r && r.adet, 10) || 0;
-            if (adet > max) max = adet;
-        });
-        return (
-            '<section class="kamikaze-section kamikaze-chart-box">' +
-            '<div class="kamikaze-section-head"><h2>' + esc(baslik) + '</h2></div>' +
-            (
-                !liste.length
-                    ? '<p class="kamikaze-empty">Veri yok.</p>'
-                    : '<div class="kamikaze-bars">' +
-                    liste.map(function (r) {
-                        var adet = parseInt(r && r.adet, 10) || 0;
-                        var h = Math.max(12, Math.round((adet / max) * 120));
-                        return (
-                            '<div class="kamikaze-bar-col">' +
-                            '<div class="kamikaze-bar ' + esc(cls || '') + '" style="height:' + h + 'px" title="' + esc(fmtSayi(adet)) + '"></div>' +
-                            '<span>' + esc(fmtGun(r.gun)) + '</span>' +
-                            '</div>'
-                        );
-                    }).join('') +
-                    '</div>'
-            ) +
-            '</section>'
-        );
-    }
-
     function hikayeActionHtml(r) {
         return (
             '<div class="kamikaze-actions">' +
@@ -648,6 +606,63 @@
                 : '') +
             '</div>'
         );
+    }
+
+    function hikayeIdleriTopla(veri, arama) {
+        var ids = {};
+        function ekle(liste) {
+            arr(liste).forEach(function (r) {
+                if (r && r.id != null) ids[r.id] = true;
+            });
+        }
+        if (veri) {
+            ekle(veri.son_hikayeler);
+            ekle(veri.index_lider);
+            ekle(veri.kulis_lider);
+        }
+        if (arama) {
+            ekle(arama.hikayeler);
+        }
+        return Object.keys(ids).map(function (k) { return parseInt(k, 10); }).filter(Boolean);
+    }
+
+    function goruntulenmeMapUygula(liste, map) {
+        if (!liste || !map) return liste;
+        return liste.map(function (r) {
+            var g = map[r.id];
+            if (!g) return r;
+            return Object.assign({}, r, {
+                tekil_goruntulenme: g.tekil_goruntulenme != null ? g.tekil_goruntulenme : r.tekil_goruntulenme,
+                sayfa_goruntulenme: g.sayfa_goruntulenme != null ? g.sayfa_goruntulenme : r.sayfa_goruntulenme
+            });
+        });
+    }
+
+    async function goruntulenmeZenginlestir(veri, arama) {
+        var D = db();
+        if (!D || !veri || veri.ok === false) return veri;
+        var ids = hikayeIdleriTopla(veri, arama);
+        if (!ids.length) return veri;
+
+        var map = {};
+        try {
+            if (D.masterHikayeGoruntulenmeToplu) {
+                map = await D.masterHikayeGoruntulenmeToplu(ids);
+            } else if (D.hikayeGoruntulenmeToplu) {
+                map = await D.hikayeGoruntulenmeToplu(ids);
+            }
+        } catch (e) {
+            return veri;
+        }
+        if (!map || !Object.keys(map).length) return veri;
+
+        veri.son_hikayeler = goruntulenmeMapUygula(veri.son_hikayeler, map);
+        veri.index_lider = goruntulenmeMapUygula(veri.index_lider, map);
+        veri.kulis_lider = goruntulenmeMapUygula(veri.kulis_lider, map);
+        if (arama && arama.hikayeler) {
+            arama.hikayeler = goruntulenmeMapUygula(arama.hikayeler, map);
+        }
+        return veri;
     }
 
     function yorumActionHtml(r) {
@@ -707,6 +722,22 @@
                 filter: 'text',
                 filterValue: function (r) { return String(num(r.up_votes, 0)) + ' ' + String(num(r.down_votes, 0)); },
                 sortValue: function (r) { return num(r.up_votes, 0) - num(r.down_votes, 0); }
+            },
+            {
+                key: 'tekil',
+                etiket: 'Tekil',
+                value: function (r) { return fmtSayi(r.tekil_goruntulenme); },
+                filter: 'text',
+                filterValue: function (r) { return String(num(r.tekil_goruntulenme, 0)); },
+                sortValue: function (r) { return num(r.tekil_goruntulenme, 0); }
+            },
+            {
+                key: 'cogul',
+                etiket: 'Çoğul',
+                value: function (r) { return fmtSayi(r.sayfa_goruntulenme); },
+                filter: 'text',
+                filterValue: function (r) { return String(num(r.sayfa_goruntulenme, 0)); },
+                sortValue: function (r) { return num(r.sayfa_goruntulenme, 0); }
             },
             {
                 key: 'icerik',
@@ -926,10 +957,6 @@
         var html = '';
         html += renderAramaBolumu();
         html += kpiHtml(veri.ozet);
-        html += '<div class="kamikaze-chart-grid">';
-        html += barChartHtml('Son 14 gün — yeni hikaye', veri.gunluk_hikaye, 'kamikaze-bar--amber');
-        html += barChartHtml('Son 14 gün — yeni üye', veri.gunluk_uye, 'kamikaze-bar--green');
-        html += '</div>';
         html += renderTableSection({
             id: 'hikayeler',
             title: 'Hikayeler',
@@ -939,63 +966,13 @@
             empty: 'Bu filtrede hikaye yok.'
         });
         html += renderTableSection({
-            id: 'yorumlar',
-            title: 'Son yorumlar',
-            rows: arr(veri.son_yorumlar),
-            columns: yorumKolonlari(),
-            empty: 'Yorum yok.'
-        });
-        html += renderTableSection({
-            id: 'uyeler',
-            title: 'Son üyeler',
-            rows: arr(veri.son_uyeler),
-            columns: uyeKolonlari(),
-            empty: 'Üye yok.'
-        });
-        html += renderTableSection({
-            id: 'podyum',
-            title: 'Podyum dönemleri',
-            rows: arr(veri.podyum_donemler),
-            columns: [
-                { key: 'donem', etiket: 'Dönem', alan: 'donem', filter: 'text', sortValue: function (r) { return r.donem || ''; } },
-                { key: 'adet', etiket: 'Kart', value: function (r) { return fmtSayi(r.adet); }, filter: 'text', sortValue: function (r) { return num(r.adet, 0); } },
-                { key: 'sira', etiket: 'Max sıra', value: function (r) { return r.max_sira || '—'; }, filter: 'text', sortValue: function (r) { return num(r.max_sira, 0); } }
-            ],
-            empty: 'Podyum dönemi yok.'
-        });
-        html += renderTableSection({
             id: 'index-lider',
             title: 'Index liderlik (r sırası)',
             rows: arr(veri.index_lider || veri.kulis_lider),
             columns: hikayeKolonlari(),
             empty: 'Anasayfada hikaye yok.'
         });
-        html += renderTableSection({
-            id: 'sikayetler',
-            title: 'Şikayetler',
-            rows: arr(veri.sikayetler),
-            columns: [
-                { key: 'id', etiket: 'ID', value: function (r) { return '#' + r.id; }, filter: 'text', sortValue: function (r) { return num(r.id, 0); } },
-                { key: 'hikaye', etiket: 'Hikaye', value: function (r) { return '#' + r.hikaye_id + ' ' + statusBadge(r.hikaye_status, false); }, raw: true, filter: 'text', filterValue: function (r) { return String(r.hikaye_id) + ' ' + (r.hikaye_status || ''); }, sortValue: function (r) { return num(r.hikaye_id, 0); } },
-                { key: 'sebep', etiket: 'Sebep', alan: 'sebep', filter: 'text' },
-                { key: 'aciklama', etiket: 'Açıklama', value: function (r) { return kisaMetin(r.aciklama, 120); }, raw: true, filter: 'text', filterValue: function (r) { return r.aciklama || ''; }, sortable: false },
-                { key: 'tarih', etiket: 'Tarih', value: function (r) { return fmtTarih(r.created_at); }, filter: 'text', sortValue: function (r) { return new Date(r.created_at || 0).getTime(); } },
-                { key: 'aksiyon', etiket: 'İşlem', value: function (r) { return '<div class="kamikaze-actions"><button type="button" class="kamikaze-action-btn" data-km-act="story-open" data-story-id="' + esc(r.hikaye_id) + '">Hikaye</button></div>'; }, raw: true, sortable: false }
-            ],
-            empty: 'Şikayet yok.'
-        });
-        html += renderTableSection({
-            id: 'site-ayar',
-            title: 'Site ayarları',
-            rows: arr(veri.site_ayar),
-            columns: [
-                { key: 'anahtar', etiket: 'Anahtar', value: function (r) { return '<code>' + esc(r.anahtar) + '</code>'; }, raw: true, filter: 'text', filterValue: function (r) { return r.anahtar; }, sortValue: function (r) { return r.anahtar || ''; } },
-                { key: 'deger', etiket: 'Değer', value: function (r) { return kisaMetin(ayarDegeri(r.anahtar, r.deger), 140); }, raw: true, filter: 'text', filterValue: function (r) { return ayarDegeri(r.anahtar, r.deger); }, sortable: false },
-                { key: 'guncelleme', etiket: 'Güncelleme', value: function (r) { return fmtTarih(r.updated_at); }, filter: 'text', sortValue: function (r) { return new Date(r.updated_at || 0).getTime(); } }
-            ],
-            empty: 'Site ayarı yok.'
-        });
-        html += '<p class="kamikaze-note">Kamikaze artık arama, sütun bazlı filtreleme ve master düzenleme akışlarını tek panelde toplar. Hikaye, yorum, üye ve oy kayıtları modal üzerinden yönetilebilir.</p>';
+        html += '<p class="kamikaze-note">Arama, sütun filtreleri ve hikaye modalı üzerinden yönetim.</p>';
 
         kok.innerHTML = html;
         if (meta) meta.textContent = 'Son güncelleme: ' + fmtTarih(veri.zaman);
@@ -1042,6 +1019,7 @@
         yukleniyor(true);
         try {
             panelData = await D.masterKamikazePanel();
+            panelData = await goruntulenmeZenginlestir(panelData, aramaData);
             render(panelData);
         } catch (e) {
             render({ ok: false, hata: D.hataMesaji ? D.hataMesaji(e) : String(e) });
@@ -1091,6 +1069,9 @@
             var sonuc = await D.masterKamikazeAra(aramaMetni, 40);
             if (istekNo !== aramaIstekNo) return;
             aramaData = sonuc;
+            if (panelData && panelData.ok) {
+                await goruntulenmeZenginlestir(panelData, aramaData);
+            }
         } catch (e) {
             if (istekNo !== aramaIstekNo) return;
             aramaData = { ok: false, hata: D.hataMesaji ? D.hataMesaji(e) : String(e) };
@@ -1151,6 +1132,7 @@
             '<span>' + statusBadge(hikaye.status, hikaye.silindi_at, hikaye.created_at) + '</span>' +
             '<span>' + esc(fmtTarih(hikaye.created_at)) + '</span>' +
             '<span>👍 ' + esc(fmtSayi(hikaye.up_votes)) + ' · 👎 ' + esc(fmtSayi(hikaye.down_votes)) + '</span>' +
+            '<span>👁 ' + esc(fmtSayi(hikaye.tekil_goruntulenme)) + ' tekil · ' + esc(fmtSayi(hikaye.sayfa_goruntulenme)) + ' çoğul</span>' +
             '</div>' +
             '<div class="kamikaze-modal-actions">' +
             (hikaye.user_id
@@ -1413,6 +1395,17 @@
         try {
             var sonuc = await D.masterKamikazeHikayeDetay(hikayeId);
             if (!sonuc || !sonuc.ok) throw new Error((sonuc && sonuc.hata) || 'Hikaye yüklenemedi');
+            if (sonuc.hikaye && (D.masterHikayeGoruntulenmeToplu || D.hikayeGoruntulenmeToplu)) {
+                try {
+                    var fn = D.masterHikayeGoruntulenmeToplu || D.hikayeGoruntulenmeToplu;
+                    var gMap = await fn([hikayeId]);
+                    var g = gMap[hikayeId];
+                    if (g) {
+                        sonuc.hikaye.tekil_goruntulenme = g.tekil_goruntulenme;
+                        sonuc.hikaye.sayfa_goruntulenme = g.sayfa_goruntulenme;
+                    }
+                } catch (eG) { /* sessiz */ }
+            }
             modalState.type = 'story';
             modalState.title = 'Hikaye #' + hikayeId;
             modalState.data = sonuc;
@@ -1885,8 +1878,7 @@
         var giris = document.getElementById('kamikazeGirisBtn');
         if (giris) {
             giris.addEventListener('click', function () {
-                if (typeof global.openAuthModal === 'function') global.openAuthModal('login');
-                else global.location.href = '/';
+                global.location.href = '/bulut';
             });
         }
 

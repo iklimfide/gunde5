@@ -199,6 +199,10 @@
             sayfa: 'index',
             story_id: id
         });
+        var D = db();
+        if (D && D.goruntulenmeKaydet) {
+            D.goruntulenmeKaydet(id).catch(function () { /* sessiz */ });
+        }
     }
 
     function kartlariIzle(kok) {

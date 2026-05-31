@@ -200,12 +200,12 @@ begin
                     i.b,
                     i.up_votes,
                     i.down_votes,
+                    i.tekil_goruntulenme,
+                    i.sayfa_goruntulenme,
                     i.podyum_donem,
                     i.podyum_sira,
                     i.is_gizli,
                     i.silindi_at,
-                    i.tekil_goruntulenme,
-                    i.sayfa_goruntulenme,
                     i.content_full,
                     left(coalesce(i.content_full, i.content_short, ''), 120) as onizleme,
                     i.created_at
@@ -431,6 +431,8 @@ begin
                     i.b,
                     i.up_votes,
                     i.down_votes,
+                    i.tekil_goruntulenme,
+                    i.sayfa_goruntulenme,
                     i.podyum_donem,
                     i.podyum_sira,
                     i.created_at,
@@ -524,6 +526,8 @@ begin
                 'gender', i.gender,
                 'yasadigi_yer', i.yasadigi_yer,
                 'yurtdisi_sehir', i.yurtdisi_sehir,
+                'tekil_goruntulenme', i.tekil_goruntulenme,
+                'sayfa_goruntulenme', i.sayfa_goruntulenme,
                 'content_full', i.content_full,
                 'created_at', i.created_at
             )

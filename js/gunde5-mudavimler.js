@@ -406,7 +406,7 @@
         var giris = document.getElementById('mudavimGirisBtn');
         if (giris) {
             giris.addEventListener('click', function () {
-                if (typeof global.openAuthModal === 'function') global.openAuthModal('login');
+                global.location.href = '/bulut';
             });
         }
     }
