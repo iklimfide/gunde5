@@ -999,6 +999,21 @@
         });
     }
 
+    var SAHIP_ARAC_GECIKME_MS = 6000;
+
+    function sahipAraclariPlanla() {
+        if (global.__g5SahipPlanli) return;
+        global.__g5SahipPlanli = true;
+        setTimeout(function () {
+            if (global.__g5SecondaryLoaded) return;
+            scriptYukle('js/gunde5-perf.js?v=3').then(function () {
+                if (global.Gunde5Perf && global.Gunde5Perf.kick) {
+                    global.Gunde5Perf.kick();
+                }
+            });
+        }, SAHIP_ARAC_GECIKME_MS);
+    }
+
     async function indexMasterNavKur() {
         var hdr = document.getElementById('indexSiteHeader');
         var altNav = document.getElementById('indexBottomNav');
@@ -1012,7 +1027,11 @@
                 return;
             }
             await scriptYukle('js/gunde5-ui.js');
-            await scriptYukle('js/gunde5-master.js');
+            await scriptYukle('js/gunde5-profil.js');
+            await scriptYukle('js/gunde5-hikaye-yaz.js?v=3');
+            if (global.Gunde5HikayeYaz && global.Gunde5HikayeYaz.init) {
+                global.Gunde5HikayeYaz.init({ navYazId: 'indexNavYazBtn' });
+            }
             hdr.hidden = false;
             if (altNav) altNav.hidden = false;
             document.documentElement.classList.add('g5-index-master-nav');
@@ -1035,15 +1054,6 @@
         });
     }
 
-    function indexAltNavBagla() {
-        var yazBtn = document.getElementById('indexNavYazBtn');
-        if (!yazBtn || yazBtn.__g5IndexYazBagli) return;
-        yazBtn.__g5IndexYazBagli = true;
-        yazBtn.addEventListener('click', function () {
-            window.location.href = '/podyum';
-        });
-    }
-
     async function baslat() {
         var D = db();
         if (!D || !D.isConfigured || !D.isConfigured()) {
@@ -1053,7 +1063,6 @@
         await D.init();
         toolbarBagla();
         olaylariBagla();
-        indexAltNavBagla();
         SAYFA = D.INDEX_SAYFA_BOYUT || 5;
 
         var cached = onbellekKullanilabilirMi() ? cacheOku() : null;
@@ -1071,6 +1080,7 @@
     }
 
     function boot() {
+        sahipAraclariPlanla();
         if (!db()) {
             durumYaz('<p class="index-durum index-durum--hata">gunde5-db yüklenemedi.</p>');
             return;

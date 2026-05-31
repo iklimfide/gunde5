@@ -1,5 +1,7 @@
 /**
- * gunde5 — LCP: Analytics ve düşük öncelikli betikler sayfa yüklendikten sonra.
+ * gunde5 — Analytics / ziyaret / gtag (düşük öncelik).
+ * Index: gunde5-index.js gecikmeyle yükler ve kick() çağırır.
+ * Diğer sayfalar: load sonrası otomatik.
  */
 (function (w) {
     'use strict';
@@ -71,9 +73,17 @@
         loadSequential(ikincilListe(), 0);
     }
 
-    w.addEventListener('load', function () {
+    function kick() {
         loadGtag();
         var idle = w.requestIdleCallback || function (fn) { setTimeout(fn, 150); };
         idle(loadSecondary);
-    }, { once: true });
+    }
+
+    w.Gunde5Perf = { kick: kick };
+
+    if (!isIndexSayfasi()) {
+        w.addEventListener('load', function () {
+            kick();
+        }, { once: true });
+    }
 })(window);

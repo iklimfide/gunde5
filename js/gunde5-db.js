@@ -756,7 +756,11 @@
             res = await rpcPromise;
         }
         if (res.error) throw res.error;
-        return res.data;
+        var data = res.data;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { /* ham string */ }
+        }
+        return data;
     }
 
     async function masterDurum() {
