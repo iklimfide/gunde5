@@ -261,6 +261,7 @@
     }
 
     async function init() {
+        if (ready) return true;
         if (!isConfigured()) {
             ready = false;
             return false;

@@ -99,14 +99,50 @@
         if (row.age) {
             p.push(row.age + ' Yaş');
         }
-        var P = global.Gunde5Profil;
-        var yer = P && P.yasadigiYerSatirdan
-            ? P.yasadigiYerSatirdan(row)
-            : (row.yasadigi_yer || row.city);
+        var yer = yerSatirEtiket(row);
         if (yer) {
             p.push(yer);
         }
         return p.join(' • ');
+    }
+
+    var YER_ETIKET = {
+        yurtdisi: 'Yurtdışı',
+        istanbul_avrupa: 'İstanbul Avrupa',
+        istanbul_anadolu: 'İstanbul Anadolu',
+        ankara: 'Ankara',
+        izmir: 'İzmir'
+    };
+
+    function basHarfBuyukTr(s) {
+        var ham = String(s || '').trim();
+        if (!ham) return '';
+        try {
+            return ham.charAt(0).toLocaleUpperCase('tr-TR') + ham.slice(1).toLocaleLowerCase('tr-TR');
+        } catch (eBas) {
+            var ilk = ham.charAt(0).toUpperCase();
+            if (ilk === 'I') ilk = 'İ';
+            return ilk + ham.slice(1).toLowerCase();
+        }
+    }
+
+    function yerSatirEtiket(row) {
+        if (!row) return '';
+        if (row.yasadigi_yer) {
+            if (row.yasadigi_yer === 'yurtdisi') return 'Yurtdışı';
+            if (YER_ETIKET[row.yasadigi_yer]) return YER_ETIKET[row.yasadigi_yer];
+            var ham = String(row.yasadigi_yer).trim();
+            if (ham.indexOf('_') >= 0) {
+                return ham.split('_').filter(Boolean).map(basHarfBuyukTr).join(' ');
+            }
+            return basHarfBuyukTr(ham);
+        }
+        if (row.city) {
+            var c = String(row.city).trim();
+            if (!c) return '';
+            return YER_ETIKET[c] || basHarfBuyukTr(c.replace(/_/g, ' '));
+        }
+        return '';
     }
 
     function icerikMetni(row) {
@@ -131,7 +167,6 @@
 
     async function kartOyDurumlariniSenkron(rows) {
         var D = db();
-        var UI = global.Gunde5UI;
         if (!D || !D.oyDurumlariSenkron || !rows || !rows.length) return;
         var ids = rows.map(function (r) { return r.id; });
         var durum = await D.oyDurumlariSenkron(ids);
@@ -139,9 +174,7 @@
             var tip = durum[id];
             if (!tip) return;
             var card = document.getElementById('h-' + id);
-            if (UI && UI.kartOyDurumuRenklendir) {
-                UI.kartOyDurumuRenklendir(card, tip);
-            }
+            oyButonRenklendir(card, tip);
         });
     }
 
@@ -683,16 +716,38 @@
     }
 
     function oyButonRenklendir(card, tip) {
-        var UI = global.Gunde5UI;
-        if (UI && UI.kartOyDurumuRenklendir) {
-            UI.kartOyDurumuRenklendir(card, tip);
-            return;
-        }
-        if (!card || !tip) return;
+        if (!card) return;
         var upBtn = card.querySelector('[data-vote="up"]');
         var downBtn = card.querySelector('[data-vote="down"]');
-        if (upBtn) upBtn.classList.toggle('applauded', tip === 'up');
-        if (downBtn) downBtn.classList.toggle('disliked', tip === 'down');
+        if (upBtn) {
+            upBtn.classList.toggle('applauded', tip === 'up');
+            upBtn.classList.toggle('aktif', tip === 'up');
+        }
+        if (downBtn) {
+            downBtn.classList.toggle('disliked', tip === 'down');
+            downBtn.classList.toggle('aktif', tip === 'down');
+        }
+    }
+
+    function confettiPatlat() {
+        if (typeof global.confetti === 'function') {
+            global.confetti({ particleCount: 50, spread: 60, origin: { y: 0.85 } });
+            return;
+        }
+        if (global.__g5ConfettiYukleniyor) return;
+        global.__g5ConfettiYukleniyor = true;
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
+        s.onload = function () {
+            global.__g5ConfettiYukleniyor = false;
+            if (typeof global.confetti === 'function') {
+                global.confetti({ particleCount: 50, spread: 60, origin: { y: 0.85 } });
+            }
+        };
+        s.onerror = function () {
+            global.__g5ConfettiYukleniyor = false;
+        };
+        document.head.appendChild(s);
     }
 
     async function oyTikla(btn) {
@@ -735,8 +790,8 @@
             oyKaydet(id, gercekTip);
             if (sonuc.zaten_oyladin) {
                 showToast(MSJ_ZATEN_OYLADIN);
-            } else if (tip === 'up' && typeof global.confetti === 'function') {
-                global.confetti({ particleCount: 50, spread: 60, origin: { y: 0.85 } });
+            } else if (tip === 'up') {
+                confettiPatlat();
             }
         } catch (err) {
             var mesaj = hataMesaji(err);
@@ -933,17 +988,31 @@
         });
     }
 
-    function indexMasterNavKur() {
+    function scriptYukle(src) {
+        return new Promise(function (resolve) {
+            var s = document.createElement('script');
+            s.src = src;
+            s.defer = true;
+            s.onload = function () { resolve(); };
+            s.onerror = function () { resolve(); };
+            document.head.appendChild(s);
+        });
+    }
+
+    async function indexMasterNavKur() {
         var hdr = document.getElementById('indexSiteHeader');
         var altNav = document.getElementById('indexBottomNav');
-        if (!hdr) return Promise.resolve();
+        if (!hdr) return;
         var D = db();
-        if (!D || !D.masterDurum) return Promise.resolve();
-        return D.masterDurum().then(function (durum) {
+        if (!D || !D.masterDurum) return;
+        try {
+            var durum = await D.masterDurum();
             if (!durum || !durum.master) {
                 if (altNav) altNav.hidden = true;
                 return;
             }
+            await scriptYukle('js/gunde5-ui.js');
+            await scriptYukle('js/gunde5-master.js');
             hdr.hidden = false;
             if (altNav) altNav.hidden = false;
             document.documentElement.classList.add('g5-index-master-nav');
@@ -954,9 +1023,16 @@
                 global.Gunde5UI.guncelleHeaderOturum();
             }
             if (global.Gunde5Master && global.Gunde5Master.durumYenile) {
-                return global.Gunde5Master.durumYenile();
+                await global.Gunde5Master.durumYenile();
             }
-        }).catch(function () { /* master nav isteğe bağlı */ });
+        } catch (e) { /* master nav isteğe bağlı */ }
+    }
+
+    function indexMasterNavErtele() {
+        var idle = global.requestIdleCallback || function (fn) { setTimeout(fn, 300); };
+        idle(function () {
+            indexMasterNavKur();
+        });
     }
 
     function indexAltNavBagla() {
@@ -983,7 +1059,7 @@
         var cached = onbellekKullanilabilirMi() ? cacheOku() : null;
         if (cached && cached.rows.length) {
             await onbellektenGoster(cached);
-            indexMasterNavKur();
+            indexMasterNavErtele();
             arkaplanIlkSayfaYenile().then(function () {
                 return hedefKartaKaydirOtomatik(0);
             });
@@ -991,7 +1067,7 @@
         }
 
         await sonrakiPart(null);
-        indexMasterNavKur();
+        indexMasterNavErtele();
     }
 
     function boot() {

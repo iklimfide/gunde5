@@ -5,7 +5,35 @@
     'use strict';
 
     var GTAG_ID = 'G-WL5L866SD6';
-    var SECONDARY = ['js/gunde5-ziyaret.js', 'js/gunde5-seo.js', 'js/gunde5-master.js'];
+
+    function isIndexSayfasi() {
+        var p = (w.location && w.location.pathname) || '';
+        return !p || p === '/' || p === '/index.html';
+    }
+
+    function itirafParamVar() {
+        try {
+            var params = new URLSearchParams(w.location.search || '');
+            var q = params.get('itiraf') || params.get('h');
+            return !!(q && /^\d+$/.test(q));
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function ikincilListe() {
+        if (isIndexSayfasi()) {
+            var liste = [
+                'js/gunde5-analytics.js?v=4',
+                'js/gunde5-ziyaret.js?v=17'
+            ];
+            if (itirafParamVar()) {
+                liste.push('js/gunde5-index-seo.js?v=17');
+            }
+            return liste;
+        }
+        return ['js/gunde5-ziyaret.js', 'js/gunde5-seo.js', 'js/gunde5-master.js'];
+    }
 
     function loadScript(src, cb) {
         var s = document.createElement('script');
@@ -40,7 +68,7 @@
     function loadSecondary() {
         if (w.__g5SecondaryLoaded) return;
         w.__g5SecondaryLoaded = true;
-        loadSequential(SECONDARY.slice(), 0);
+        loadSequential(ikincilListe(), 0);
     }
 
     w.addEventListener('load', function () {
