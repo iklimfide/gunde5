@@ -135,16 +135,15 @@
     function hikayeGonderBasariliYenile(planliMi) {
         sifirlaHikayeModal();
         if (ui() && ui().kapatHikayeModal) ui().kapatHikayeModal();
-        if (planliMi) {
-            ui().showToast('Hikaye planlandı — anasayfada yayın saatinde görünür.');
-        } else {
-            ui().showToast('Hikaye yayında!');
-        }
-        if (anasayfaMi()) {
+        if (ui() && ui().showToast) {
             if (planliMi) {
-                global.setTimeout(function () { global.location.reload(); }, 500);
-                return;
+                ui().showToast('Hikaye planlandı — anasayfada yayın saatinde görünür.');
+            } else {
+                ui().showToast('Hikaye yayında!');
             }
+        }
+        if (planliMi) return;
+        if (anasayfaMi()) {
             if (global.Gunde5Index && global.Gunde5Index.baslat) {
                 global.Gunde5Index.baslat().catch(function () {
                     global.location.reload();
@@ -154,11 +153,7 @@
             global.location.reload();
             return;
         }
-        if (planliMi) {
-            global.setTimeout(function () { global.location.reload(); }, 500);
-        } else {
-            global.setTimeout(function () { global.location.href = '/'; }, 400);
-        }
+        global.setTimeout(function () { global.location.href = '/'; }, 400);
     }
 
     async function gonderMasterHikaye() {
@@ -197,6 +192,7 @@
             if (!D || !D.masterHikayeEkle) {
                 throw new Error('Hikaye gönderme hazır değil. Sayfayı yenileyip tekrar dene.');
             }
+            if (D.init) await D.init();
             var body = {
                 username: rumuz,
                 age: yas,
@@ -252,6 +248,7 @@
 
         try {
             var D = db();
+            if (D.init) await D.init();
             await D.hikayeGonder(metin, gizli, baslik || null);
             gonderDevamEdiyor = false;
             hikayeGonderBasariliYenile(false);

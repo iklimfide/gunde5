@@ -1028,7 +1028,7 @@
             }
             await scriptYukle('js/gunde5-ui.js');
             await scriptYukle('js/gunde5-profil.js');
-            await scriptYukle('js/gunde5-hikaye-yaz.js?v=3');
+            await scriptYukle('js/gunde5-hikaye-yaz.js?v=4');
             if (global.Gunde5HikayeYaz && global.Gunde5HikayeYaz.init) {
                 global.Gunde5HikayeYaz.init({ navYazId: 'indexNavYazBtn' });
             }

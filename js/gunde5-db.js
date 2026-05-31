@@ -4,6 +4,7 @@
     var cachedUser = null;
     var ready = false;
     var authListenerKayitli = false;
+    var masterRpcBilet = 0;
 
     function isConfigured() {
         var url = global.GUNDE5_SUPABASE_URL;
@@ -741,19 +742,31 @@
     async function masterRpc(fn, body, opts) {
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
+
+        var oturum = await sb.auth.getSession();
+        if (!oturum.data.session) {
+            throw new Error('Oturum süresi doldu. Sayfayı yenileyip tekrar giriş yap.');
+        }
+
         var o = opts || {};
-        var timeoutMs = o.timeoutMs || 45000;
+        var timeoutMs = o.timeoutMs != null ? o.timeoutMs : 20000;
+        var bilet = ++masterRpcBilet;
+
         var rpcPromise = sb.rpc(fn, { p_body: body || {} });
         var res;
         if (timeoutMs > 0) {
             var timeoutPromise = new Promise(function (_, reject) {
                 setTimeout(function () {
-                    reject(new Error('Sunucu yanıt vermedi (zaman aşımı). Ağ sekmesinde master_hikaye_ekle isteğine bakın.'));
+                    reject(new Error('Sunucu yanıt vermedi (20 sn). Sayfayı yenileyip tekrar dene.'));
                 }, timeoutMs);
             });
             res = await Promise.race([rpcPromise, timeoutPromise]);
         } else {
             res = await rpcPromise;
+        }
+
+        if (bilet !== masterRpcBilet) {
+            throw new Error('Gönderim iptal edildi. Tekrar dene.');
         }
         if (res.error) throw res.error;
         var data = res.data;
@@ -780,6 +793,7 @@
     }
 
     async function masterHikayeEkle(body) {
+        await init();
         var b = Object.assign({}, body || {});
         if (b.content_full != null) {
             b.content_full = metinPerdele(String(b.content_full).replace(/^\s+|\s+$/g, ''));
@@ -803,7 +817,7 @@
                 b.created_at = new Date(planMs).toISOString();
             }
         }
-        return masterRpc('master_hikaye_ekle', b, { timeoutMs: 45000 });
+        return masterRpc('master_hikaye_ekle', b, { timeoutMs: 20000 });
     }
 
     async function masterUyeIcerik(uyeId, opts) {
