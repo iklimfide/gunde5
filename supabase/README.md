@@ -28,6 +28,12 @@ PowerShell’de `cd D:\gunde5 && npm run dev` çalışmazsa: `Set-Location D:\gu
 
 Hikaye iç linki: `http://localhost:8080/podyum?itiraf=7` (podyum), `http://localhost:8080/?itiraf=7` (anasayfa).
 
+## Footer hikaye / mesaj gönderimi
+
+1. SQL Editor → **`footer-submissions.sql`** (`user_submissions`, `contact_messages`, `master_bildirimler`, RPC’ler).
+2. Vercel ortam değişkeni (önerilir): `GUNDE5_SUPABASE_SERVICE_ROLE_KEY` — `/api/footer-story` ve `/api/footer-message` IP hash ile rate limit uygular. Yoksa istemci doğrudan `footer_gonder_*` RPC çağırır (`visitor_id` ile).
+3. Master gelen kutusu: `/admin/inbox` (hikaye + mesaj sekmeleri; yalnızca master oturumu). Eski URL’ler yönlendirilir.
+
 ## Ziyaret / trafik kaynağı
 
 1. `master-admin.sql` veya `security-advisor-definer-fix.sql` çalışmış olmalı (`master_email_eslesir`).
@@ -51,14 +57,16 @@ Olay türlerini doğrulamak için: **`analytics-diagnostics.sql`** (`story_vote`
 
 **SQL Editor (önerilen):** `supabase/seed-hikayeler-txt-3.sql` → Run (çift eklemez).
 
-**Service role ile:** Dashboard → API → `service_role` anahtarı →
+**Terminalden doğrudan (gunde5.txt):** Dashboard → API → `service_role` →
 
 ```powershell
 $env:SUPABASE_SERVICE_ROLE_KEY = "eyJ..."
-node scripts/hikaye-ekle.mjs
+python scripts/gunde5-txt-to-sql.py "C:\Users\iklim\Downloads\gunde5.txt" --ekle
 ```
 
-Yeni txt dosyaları için: `python scripts/hikaye-txt-to-sql.py dosya.txt -o supabase/seed-yeni.sql`
+Yalnızca SQL üretmek için: `python scripts/gunde5-txt-to-sql.py gunde5.txt` → `supabase/seed-gunde5.sql`
+
+Eski sabit liste: `node scripts/hikaye-ekle.mjs` (`hikayeler` tablosu — yerine gunde5 script kullanın)
 
 ## Arama (podyum)
 
@@ -124,4 +132,4 @@ Canlı Supabase’de sırayla:
 
 Dashboard → Security Advisor → **Rerun**. Kamikaze paneli kullanılmıyorsa **`kamikaze-drop.sql`** (RPC temizliği; aksi halde kamikaze yalnızca `service_role` ile çalışır).
 
-Kamikaze (`/kamikaze`) hata veriyorsa (`hikayeler does not exist`): **`master-kamikaze-itiraf-fix.sql`** — `itiraflar` şeması + anasayfa (index) sayımları.
+Kamikaze (`/kamikaze`) — canlı DB **`itiraflar`** kullanır (`hikayeler` yok). SQL Editor: **`master-kamikaze-panel.sql`** (güncel; `itiraf_cevaplar`, `itiraf_oylar`, `itiraf_sikayetler`). Eski kopya: `master-kamikaze-itiraf-fix.sql` (aynı mantık).

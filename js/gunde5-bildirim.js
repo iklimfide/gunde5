@@ -5,8 +5,10 @@
     'use strict';
 
     var rtKanal = null;
+    var masterRtKanal = null;
     var panelAcik = false;
     var sonListe = [];
+    var masterMi = false;
 
     function db() {
         return global.Gunde5DB;
@@ -77,11 +79,22 @@
     }
 
     function metinSatir(b) {
+        if (b._kaynak === 'master') {
+            return esc(b.metin || b.baslik || '');
+        }
         var ad = esc(b.yapan_username || 'Biri');
         if (b.tip === 'begeni') {
             return ad + ' hikayeni beğendi';
         }
         return ad + ' hikayene yorum yaptı';
+    }
+
+    function baslikSatir(b) {
+        if (b._kaynak === 'master') {
+            return esc(b.baslik || 'Bildirim');
+        }
+        if (b.tip === 'begeni') return '👍 Beğeni';
+        return '💬 Yorum';
     }
 
     function badgeGuncelle(sayi) {
@@ -107,25 +120,75 @@
         }
         el.innerHTML = sonListe.map(function (b) {
             var cls = 'header-bildirim-oge' + (b.okundu ? '' : ' okunmadi');
+            if (b._kaynak === 'master') {
+                return (
+                    '<button type="button" class="' + cls + '" data-mbid="' + esc(b.id) + '"' +
+                    ' data-admin-link="' + esc(b.link_path || '') + '">' +
+                    '<div class="header-bildirim-oge-metin">🔔 ' + baslikSatir(b) + '</div>' +
+                    '<div class="header-bildirim-oge-metin" style="font-weight:500;margin-top:2px;font-size:12px">' +
+                    metinSatir(b) + '</div>' +
+                    '<div class="header-bildirim-oge-zaman">' + esc(zamanMetni(b.created_at)) + '</div>' +
+                    '</button>'
+                );
+            }
             return (
                 '<button type="button" class="' + cls + '" data-bid="' + esc(b.id) + '"' +
                 ' data-iid="' + esc(b.itiraf_id) + '" data-istatus="' + esc(b.itiraf_status || '') + '">' +
-                '<div class="header-bildirim-oge-metin">' + (b.tip === 'begeni' ? '👍 ' : '💬 ') + metinSatir(b) + '</div>' +
+                '<div class="header-bildirim-oge-metin">' + baslikSatir(b) + ' — ' + metinSatir(b) + '</div>' +
                 '<div class="header-bildirim-oge-zaman">' + esc(zamanMetni(b.created_at)) + '</div>' +
                 '</button>'
             );
         }).join('');
     }
 
+    function listeleriBirlestir(uyeListe, masterListe) {
+        var birlesik = [];
+        (uyeListe || []).forEach(function (b) {
+            birlesik.push(Object.assign({ _kaynak: 'uye' }, b));
+        });
+        (masterListe || []).forEach(function (b) {
+            birlesik.push(Object.assign({ _kaynak: 'master' }, b));
+        });
+        birlesik.sort(function (a, b) {
+            var ta = new Date(a.created_at).getTime() || 0;
+            var tb = new Date(b.created_at).getTime() || 0;
+            return tb - ta;
+        });
+        return birlesik.slice(0, 50);
+    }
+
+    async function masterKontrol() {
+        var D = db();
+        if (!D || !D.masterDurum) {
+            masterMi = false;
+            return false;
+        }
+        try {
+            var d = await D.masterDurum();
+            masterMi = !!(d && d.master);
+        } catch (e) {
+            masterMi = false;
+        }
+        return masterMi;
+    }
+
     async function yenile() {
         var D = db();
         if (!D || !D.bildirimleriListele) return;
         try {
+            await masterKontrol();
             var okunmamis = await D.bildirimOkunmamisSayisi();
+            if (masterMi && D.masterBildirimOkunmamisSayisi) {
+                okunmamis += await D.masterBildirimOkunmamisSayisi();
+            }
             badgeGuncelle(okunmamis);
             if (panelAcik) {
                 var liste = await D.bildirimleriListele(40);
-                listeCiz(liste);
+                var masterListe = [];
+                if (masterMi && D.masterBildirimleriListele) {
+                    masterListe = await D.masterBildirimleriListele(30);
+                }
+                listeCiz(listeleriBirlestir(liste, masterListe));
             }
         } catch (e) {
             /* sessiz */
@@ -158,12 +221,24 @@
     }
 
     async function ogeTikla(btn) {
+        var mbid = btn.getAttribute('data-mbid');
+        var adminLink = btn.getAttribute('data-admin-link');
         var bid = btn.getAttribute('data-bid');
         var iid = btn.getAttribute('data-iid');
         var status = btn.getAttribute('data-istatus') || '';
         var D = db();
         var Paylas = global.Gunde5Paylas;
         panelKapat();
+
+        if (mbid && D) {
+            if (D.masterBildirimOkundu) {
+                D.masterBildirimOkundu(parseInt(mbid, 10)).catch(function () { /* */ });
+            }
+            if (adminLink) {
+                global.location.href = adminLink;
+            }
+            return;
+        }
 
         if (bid && D && D.bildirimOkunduIsaretle) {
             D.bildirimOkunduIsaretle(parseInt(bid, 10)).catch(function () { /* */ });
@@ -192,6 +267,9 @@
         if (!D || !D.bildirimTumunuOkundu) return;
         try {
             await D.bildirimTumunuOkundu();
+            if (masterMi && D.masterBildirimTumunuOkundu) {
+                await D.masterBildirimTumunuOkundu();
+            }
             await yenile();
         } catch (e) {
             if (ui() && ui().showToast) ui().showToast(D.hataMesaji ? D.hataMesaji(e) : String(e), 'hata');
@@ -247,7 +325,7 @@
         var liste = document.getElementById('headerBildirimListe');
         if (liste) {
             liste.addEventListener('click', function (e) {
-                var b = e.target.closest('button[data-iid]');
+                var b = e.target.closest('button[data-iid], button[data-mbid]');
                 if (b) ogeTikla(b);
             });
         }
@@ -281,6 +359,10 @@
             } catch (e) { /* */ }
             rtKanal = null;
         }
+        var D = db();
+        if (D && D.masterBildirimAboneligiKapat) {
+            D.masterBildirimAboneligiKapat();
+        }
     }
 
     function abonelikAc(userId) {
@@ -289,6 +371,13 @@
         if (!D || !D.bildirimAboneligiBaslat || !userId) return;
         rtKanal = D.bildirimAboneligiBaslat(userId, function () {
             yenile();
+        });
+        masterKontrol().then(function (m) {
+            if (m && D.masterBildirimAboneligiBaslat) {
+                masterRtKanal = D.masterBildirimAboneligiBaslat(function () {
+                    yenile();
+                });
+            }
         });
     }
 
@@ -309,6 +398,7 @@
     function durdur() {
         gorunurluk(false);
         abonelikKapat();
+        masterMi = false;
     }
 
     function init() {

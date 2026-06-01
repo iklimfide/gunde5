@@ -1,9 +1,9 @@
 import { itirafGetir, metinKisalt } from './_lib/itiraf-fetch.js';
+import { OG_DESCRIPTION, OG_IMAGE_ALT, OG_IMAGE_URL, OG_TITLE } from './_lib/og-brand.js';
 
 export const config = { runtime: 'edge' };
 
 var SITE = 'https://gunde5.com';
-var DEFAULT_IMG = SITE + '/og-share.png';
 
 /** X/Telegram/FB önizleme botları — anında yönlendirme kartı bozar */
 function onizlemeBotu(ua) {
@@ -35,14 +35,12 @@ export default async function handler(req) {
     var row = id ? await itirafGetir(id) : null;
 
     var rumuz = row ? row.username || 'Anonim' : 'gunde5.com';
-    var aciklama = row
-        ? metinKisalt(row.content_short || row.content_full, 160)
-        : 'Her gün halkın içinden harbi insan hikayeleri — reklamsız, ücretsiz.';
-    var baslik = row ? rumuz + ' | gunde5.com' : 'gunde5.com | Günün harbi hikayeleri';
+    var aciklama = row ? metinKisalt(row.content_short || row.content_full, 160) : OG_DESCRIPTION;
+    var baslik = row ? rumuz + ' | gunde5.com' : OG_TITLE;
     var okumaUrl = id ? SITE + '/?itiraf=' + id : SITE + '/';
     var paylasUrl = id ? SITE + '/h/' + id : SITE + '/';
-    var ogImage = id ? SITE + '/og/' + id + '.png' : DEFAULT_IMG;
-    var ogImageAlt = row ? rumuz + ' — gunde5.com' : 'gunde5.com';
+    var ogImage = id ? SITE + '/og/' + id + '.png' : OG_IMAGE_URL;
+    var ogImageAlt = row ? rumuz + ' — gunde5.com' : OG_IMAGE_ALT;
     var bot = onizlemeBotu(req.headers.get('user-agent') || '');
 
     var html =

@@ -1,27 +1,31 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>gunde5.com | Günün 5 Harbi Hikayesi</title>
+    <title>Bugünün 5'i hazır</title>
     <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <meta name="description" content="Her gün halkın içinden 5 harbi insan hikayesi — reklamsız, ücretsiz, üyeliksiz kafa dağıtma istasyonu.">
+    <meta name="description" content="Her sabah 5 yeni anonim hikaye &amp; itiraf. 5 dakikada oku, gül, güne başla 😄">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <link rel="canonical" href="https://gunde5.com/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="gunde5.com">
     <meta property="og:locale" content="tr_TR">
-    <meta property="og:title" content="gunde5.com | Günün 5 Harbi Hikayesi">
-    <meta property="og:description" content="Her gün halkın içinden 5 harbi insan hikayesi — reklamsız, ücretsiz, üyeliksiz.">
+    <meta property="og:title" content="Bugünün 5'i hazır">
+    <meta property="og:description" content="Her sabah 5 yeni anonim hikaye &amp; itiraf. 5 dakikada oku, gül, güne başla 😄">
     <meta property="og:url" content="https://gunde5.com/">
-    <meta property="og:image" content="https://gunde5.com/og-share.png">
+    <meta property="og:image" content="https://gunde5.com/og/anasayfa.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="5 dakikada oku, gül, güne başla">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="https://gunde5.com/og-share.png">
+    <meta name="twitter:title" content="Bugünün 5'i hazır">
+    <meta name="twitter:description" content="Her sabah 5 yeni anonim hikaye &amp; itiraf. 5 dakikada oku, gül, güne başla 😄">
+    <meta name="twitter:image" content="https://gunde5.com/og/anasayfa.png">
+    <meta name="twitter:image:alt" content="5 dakikada oku, gül, güne başla">
     <meta name="theme-color" content="#ffffff">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="css/index.css?v=3">
@@ -30,6 +34,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js" crossorigin></script>
     <script defer src="js/gunde5-db.js?v=25"></script>
     <script defer src="js/gunde5-index.js?v=37"></script>
+    <script defer src="js/gunde5-gonder.js?v=2"></script>
 </head>
 <body>
 
@@ -71,10 +76,10 @@
             <div class="index-siralama-wrap">
                 <span class="index-siralama-etiket" id="indexSiralamaEtiket">SIRALA</span>
                 <select class="index-siralama" id="indexSiralama" aria-labelledby="indexSiralamaEtiket">
-                    <option value="yeni">En yeniler</option>
-                    <option value="eski">En eskiler</option>
-                    <option value="populer">En Popüler</option>
-                    <option value="rastgele">Ortaya karışık</option>
+                    <option value="yeni" selected>📖 Bugünün 5'i</option>
+                    <option value="populer">🔥 Sevilenler</option>
+                    <option value="efsane">🏆 Efsaneler</option>
+                    <option value="rastgele">🎲 Ortaya Karışık</option>
                 </select>
             </div>
             <p class="index-arama-durum" id="indexAramaDurum" aria-live="polite"></p>
@@ -83,9 +88,10 @@
         <div id="indexListe" aria-live="polite"><p class="index-durum" id="indexListeBekle">Yükleniyor…</p></div>
 
         <div class="page-tail">
-            <p class="page-tail-satir">Bir gün burada senin de hikâyen olsun istiyorsan:</p>
-            <p class="page-tail-satir">📩 <button type="button" class="mail-link" data-mail="itiraf@gunde5.com" onclick="mailKopyala(event)">itiraf@gunde5.com</button></p>
+            <p class="page-tail-satir">Senin de anlatmak istediklerin mi var?</p>
+            <button type="button" class="page-tail-cta" id="pageTailGonderBtn">✍️ Hikayeni veya mesajını gönder</button>
             <p class="page-tail-satir"><a href="#" onclick="openModal(event)">Sıkça Sorulan Sorular</a></p>
+            <p class="page-tail-satir page-tail-iletisim">İletişim: <button type="button" class="mail-link" data-mail="itiraf@gunde5.com" onclick="mailKopyala(event)">itiraf@gunde5.com</button></p>
             <p class="page-tail-satir page-tail-satir--kucuk">©️ copyright gunde5.com 2026</p>
         </div>
     </main>
@@ -102,6 +108,12 @@
                     </div>
                 </div>
                 <div class="faq-item">
+                    <button type="button" class="faq-soru" aria-expanded="false">Neden gunde5?</button>
+                    <div class="faq-cevap-wrap">
+                        <p class="faq-cevap">Sitemizde her gün bize gönderilen 5 yeni hikâye yayınlanır. gunde5.com adını buradan alır.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
                     <button type="button" class="faq-soru" aria-expanded="false">Hikâyeler gerçek mi?</button>
                     <div class="faq-cevap-wrap">
                         <p class="faq-cevap">Gönderilen hikâyeler editör kontrolünden geçer ancak doğruluğu garanti edilemez.</p>
@@ -110,7 +122,7 @@
                 <div class="faq-item">
                     <button type="button" class="faq-soru" aria-expanded="false">Hikâye, itiraf gönderebilir miyim?</button>
                     <div class="faq-cevap-wrap">
-                        <p class="faq-cevap">Evet. Hikâyeni veya itirafını <button type="button" class="mail-link" data-mail="itiraf@gunde5.com" onclick="mailKopyala(event)">itiraf@gunde5.com</button> adresine gönderebilirsin.</p>
+                        <p class="faq-cevap">Evet. <button type="button" class="mail-link" id="faqGonderBtn">Buradan hikâyeni veya itirafını</button> anonim gönderebilirsin; editör onayından sonra yayınlanır.</p>
                     </div>
                 </div>
                 <div class="faq-item">

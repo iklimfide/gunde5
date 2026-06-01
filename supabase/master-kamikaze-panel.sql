@@ -1,47 +1,55 @@
--- Master Kamikaze paneli
--- Eski kamikaze_panel token akisini kaldirir; mevcut master hesabiyla calisir.
--- Bu dosya ayni zamanda Kamikaze arama, hikaye detay ve oy yonetim RPC'lerini kurar.
+-- Master Kamikaze paneli (canlı şema: itiraflar, itiraf_cevaplar, itiraf_oylar, itiraf_sikayetler)
+-- Eski hikayeler / hikaye_* tablo adları bu projede kullanılmaz.
+-- SQL Editor'da bir kez çalıştırın.
 
-grant select on public.hikaye_sikayetler to authenticated;
-grant update on public.hikayeler to authenticated;
-grant update, delete on public.hikaye_cevaplar to authenticated;
-grant delete on public.hikaye_oylar to authenticated;
-grant execute on function public.hikaye_puan_guncelle(bigint) to authenticated;
+grant select on public.itiraf_sikayetler to authenticated;
+grant update on public.itiraflar to authenticated;
+grant update, delete on public.itiraf_cevaplar to authenticated;
+grant delete on public.itiraf_oylar to authenticated;
 
-drop policy if exists hikaye_sikayetler_select_master on public.hikaye_sikayetler;
-create policy hikaye_sikayetler_select_master on public.hikaye_sikayetler
+do $$
+begin
+    if to_regprocedure('public.itiraf_puan_guncelle(bigint)') is not null then
+        grant execute on function public.itiraf_puan_guncelle(bigint) to authenticated;
+    elsif to_regprocedure('public.hikaye_puan_guncelle(bigint)') is not null then
+        grant execute on function public.hikaye_puan_guncelle(bigint) to authenticated;
+    end if;
+end $$;
+
+drop policy if exists itiraf_sikayetler_select_master on public.itiraf_sikayetler;
+create policy itiraf_sikayetler_select_master on public.itiraf_sikayetler
     for select to authenticated
     using (public.master_email_eslesir());
 
-drop policy if exists hikaye_oylar_select_master on public.hikaye_oylar;
-create policy hikaye_oylar_select_master on public.hikaye_oylar
+drop policy if exists itiraf_oylar_select_master on public.itiraf_oylar;
+create policy itiraf_oylar_select_master on public.itiraf_oylar
     for select to authenticated
     using (public.master_email_eslesir());
 
-drop policy if exists hikaye_oylar_insert_master on public.hikaye_oylar;
-create policy hikaye_oylar_insert_master on public.hikaye_oylar
+drop policy if exists itiraf_oylar_insert_master on public.itiraf_oylar;
+create policy itiraf_oylar_insert_master on public.itiraf_oylar
     for insert to authenticated
     with check (public.master_email_eslesir());
 
-drop policy if exists hikaye_oylar_update_master on public.hikaye_oylar;
-create policy hikaye_oylar_update_master on public.hikaye_oylar
+drop policy if exists itiraf_oylar_update_master on public.itiraf_oylar;
+create policy itiraf_oylar_update_master on public.itiraf_oylar
     for update to authenticated
     using (public.master_email_eslesir())
     with check (public.master_email_eslesir());
 
-drop policy if exists hikaye_oylar_delete_master on public.hikaye_oylar;
-create policy hikaye_oylar_delete_master on public.hikaye_oylar
+drop policy if exists itiraf_oylar_delete_master on public.itiraf_oylar;
+create policy itiraf_oylar_delete_master on public.itiraf_oylar
     for delete to authenticated
     using (public.master_email_eslesir());
 
-drop policy if exists hikaye_cevaplar_update_master on public.hikaye_cevaplar;
-create policy hikaye_cevaplar_update_master on public.hikaye_cevaplar
+drop policy if exists itiraf_cevaplar_update_master on public.itiraf_cevaplar;
+create policy itiraf_cevaplar_update_master on public.itiraf_cevaplar
     for update to authenticated
     using (public.master_email_eslesir())
     with check (public.master_email_eslesir());
 
-drop policy if exists hikaye_cevaplar_delete_master on public.hikaye_cevaplar;
-create policy hikaye_cevaplar_delete_master on public.hikaye_cevaplar
+drop policy if exists itiraf_cevaplar_delete_master on public.itiraf_cevaplar;
+create policy itiraf_cevaplar_delete_master on public.itiraf_cevaplar
     for delete to authenticated
     using (public.master_email_eslesir());
 
@@ -65,48 +73,56 @@ begin
                 'uye', (select count(*)::int from public.uye),
                 'hikaye_aktif', (
                     select count(*)::int
-                    from public.hikayeler
+                    from public.itiraflar
                     where silindi_at is null
                 ),
-                'kulis', (
+                'index', (
                     select count(*)::int
-                    from public.hikayeler
-                    where status = 'kulis' and silindi_at is null
+                    from public.itiraflar i
+                    where i.silindi_at is null
+                      and i.created_at <= now()
+                ),
+                'planli', (
+                    select count(*)::int
+                    from public.itiraflar i
+                    where i.status = 'kulis'
+                      and i.silindi_at is null
+                      and i.created_at > now()
                 ),
                 'podyum', (
                     select count(*)::int
-                    from public.hikayeler
+                    from public.itiraflar
                     where status = 'podyum' and silindi_at is null
                 ),
                 'silindi', (
                     select count(*)::int
-                    from public.hikayeler
+                    from public.itiraflar
                     where silindi_at is not null
                 ),
                 'gizli', (
                     select count(*)::int
-                    from public.hikayeler
+                    from public.itiraflar
                     where is_gizli = true and silindi_at is null
                 ),
-                'oy', (select count(*)::int from public.hikaye_oylar),
-                'cevap', (select count(*)::int from public.hikaye_cevaplar),
-                'sikayet', (select count(*)::int from public.hikaye_sikayetler),
+                'oy', (select count(*)::int from public.itiraf_oylar),
+                'cevap', (select count(*)::int from public.itiraf_cevaplar),
+                'sikayet', (select count(*)::int from public.itiraf_sikayetler),
                 'sayfa_goruntulenme', (
                     select coalesce(sum(sayfa_goruntulenme), 0)::bigint
-                    from public.hikayeler
+                    from public.itiraflar
                 ),
                 'tekil_goruntulenme', (
                     select coalesce(sum(tekil_goruntulenme), 0)::bigint
-                    from public.hikayeler
+                    from public.itiraflar
                 ),
                 'up_toplam', (
                     select coalesce(sum(up_votes), 0)::bigint
-                    from public.hikayeler
+                    from public.itiraflar
                     where silindi_at is null
                 ),
                 'down_toplam', (
                     select coalesce(sum(down_votes), 0)::bigint
-                    from public.hikayeler
+                    from public.itiraflar
                     where silindi_at is null
                 )
             )
@@ -136,14 +152,14 @@ begin
                     i.podyum_donem as donem,
                     count(*)::int as adet,
                     max(i.podyum_sira)::int as max_sira
-                from public.hikayeler i
+                from public.itiraflar i
                 where i.status = 'podyum'
                   and i.silindi_at is null
                   and i.podyum_donem is not null
                 group by i.podyum_donem
             ) t
         ), '[]'::jsonb),
-        'kulis_lider', coalesce((
+        'index_lider', coalesce((
             select jsonb_agg(row_to_json(t)::jsonb)
             from (
                 select
@@ -152,6 +168,11 @@ begin
                     i.username,
                     i.user_id,
                     u.email as user_email,
+                    i.age,
+                    i.gender,
+                    i.city,
+                    i.yasadigi_yer,
+                    i.yurtdisi_sehir,
                     i.r,
                     i.b,
                     i.up_votes,
@@ -163,7 +184,40 @@ begin
                     i.content_full,
                     left(coalesce(i.content_full, i.content_short, ''), 120) as onizleme,
                     i.created_at
-                from public.hikayeler i
+                from public.itiraflar i
+                left join public.uye u on u.id = i.user_id
+                where i.silindi_at is null
+                  and i.created_at <= now()
+                order by i.r desc nulls last, i.created_at desc
+                limit 20
+            ) t
+        ), '[]'::jsonb),
+        'kulis_lider', coalesce((
+            select jsonb_agg(row_to_json(t)::jsonb)
+            from (
+                select
+                    i.id,
+                    i.status,
+                    i.username,
+                    i.user_id,
+                    u.email as user_email,
+                    i.age,
+                    i.gender,
+                    i.city,
+                    i.yasadigi_yer,
+                    i.yurtdisi_sehir,
+                    i.r,
+                    i.b,
+                    i.up_votes,
+                    i.down_votes,
+                    i.tekil_goruntulenme,
+                    i.sayfa_goruntulenme,
+                    i.is_gizli,
+                    i.silindi_at,
+                    i.content_full,
+                    left(coalesce(i.content_full, i.content_short, ''), 120) as onizleme,
+                    i.created_at
+                from public.itiraflar i
                 left join public.uye u on u.id = i.user_id
                 where i.status = 'kulis'
                   and i.silindi_at is null
@@ -180,20 +234,25 @@ begin
                     i.username,
                     i.user_id,
                     u.email as user_email,
+                    i.age,
+                    i.gender,
+                    i.city,
+                    i.yasadigi_yer,
+                    i.yurtdisi_sehir,
                     i.r,
                     i.b,
                     i.up_votes,
                     i.down_votes,
+                    i.tekil_goruntulenme,
+                    i.sayfa_goruntulenme,
                     i.podyum_donem,
                     i.podyum_sira,
                     i.is_gizli,
                     i.silindi_at,
-                    i.tekil_goruntulenme,
-                    i.sayfa_goruntulenme,
                     i.content_full,
                     left(coalesce(i.content_full, i.content_short, ''), 120) as onizleme,
                     i.created_at
-                from public.hikayeler i
+                from public.itiraflar i
                 left join public.uye u on u.id = i.user_id
                 order by i.created_at desc
                 limit 50
@@ -215,12 +274,12 @@ begin
                     u.created_at,
                     (
                         select count(*)::int
-                        from public.hikayeler i
+                        from public.itiraflar i
                         where i.user_id = u.id and i.silindi_at is null
                     ) as hikaye_sayisi,
                     (
                         select count(*)::int
-                        from public.hikaye_cevaplar c
+                        from public.itiraf_cevaplar c
                         where c.user_id = u.id
                     ) as yorum_sayisi
                 from public.uye u
@@ -233,7 +292,7 @@ begin
             from (
                 select
                     c.id,
-                    c.hikaye_id,
+                    c.itiraf_id as hikaye_id,
                     c.parent_id,
                     c.user_id,
                     c.content,
@@ -243,9 +302,9 @@ begin
                     i.status as hikaye_status,
                     (i.silindi_at is not null) as hikaye_silindi,
                     left(coalesce(i.content_full, i.content_short, ''), 100) as hikaye_onizleme
-                from public.hikaye_cevaplar c
+                from public.itiraf_cevaplar c
                 left join public.uye u on u.id = c.user_id
-                left join public.hikayeler i on i.id = c.hikaye_id
+                left join public.itiraflar i on i.id = c.itiraf_id
                 order by c.created_at desc
                 limit 50
             ) t
@@ -255,15 +314,15 @@ begin
             from (
                 select
                     s.id,
-                    s.hikaye_id,
+                    s.itiraf_id as hikaye_id,
                     s.sebep,
                     left(coalesce(s.aciklama, ''), 200) as aciklama,
                     s.created_at,
                     left(coalesce(i.content_short, i.content_full, ''), 80) as hikaye_onizleme,
                     i.status as hikaye_status,
                     i.username as hikaye_username
-                from public.hikaye_sikayetler s
-                left join public.hikayeler i on i.id = s.hikaye_id
+                from public.itiraf_sikayetler s
+                left join public.itiraflar i on i.id = s.itiraf_id
                 order by s.created_at desc
                 limit 40
             ) t
@@ -277,7 +336,7 @@ begin
                 select
                     to_char(i.created_at at time zone 'Europe/Istanbul', 'YYYY-MM-DD') as gun,
                     count(*)::int as adet
-                from public.hikayeler i
+                from public.itiraflar i
                 where i.created_at >= (now() - interval '14 days')
                 group by 1
             ) g
@@ -354,16 +413,16 @@ begin
             ),
             'hikayeler', (
                 select count(*)::int
-                from public.hikayeler i
+                from public.itiraflar i
                 where (v_id is not null and i.id = v_id)
                    or lower(coalesce(i.content_full, i.content_short, '')) like '%' || v_q || '%'
                    or lower(coalesce(i.username, '')) like '%' || v_q || '%'
             ),
             'yorumlar', (
                 select count(*)::int
-                from public.hikaye_cevaplar c
+                from public.itiraf_cevaplar c
                 left join public.uye u on u.id = c.user_id
-                where (v_id is not null and (c.id = v_id or c.hikaye_id = v_id))
+                where (v_id is not null and (c.id = v_id or c.itiraf_id = v_id))
                    or lower(coalesce(c.content, '')) like '%' || v_q || '%'
                    or lower(coalesce(u.username, '')) like '%' || v_q || '%'
                    or lower(coalesce(u.email, '')) like '%' || v_q || '%'
@@ -385,12 +444,12 @@ begin
                     u.created_at,
                     (
                         select count(*)::int
-                        from public.hikayeler i
+                        from public.itiraflar i
                         where i.user_id = u.id and i.silindi_at is null
                     ) as hikaye_sayisi,
                     (
                         select count(*)::int
-                        from public.hikaye_cevaplar c
+                        from public.itiraf_cevaplar c
                         where c.user_id = u.id
                     ) as yorum_sayisi
                 from public.uye u
@@ -409,18 +468,25 @@ begin
                     i.user_id,
                     i.username,
                     u.email as user_email,
+                    i.age,
+                    i.gender,
+                    i.city,
+                    i.yasadigi_yer,
+                    i.yurtdisi_sehir,
                     i.is_gizli,
                     i.silindi_at,
                     i.r,
                     i.b,
                     i.up_votes,
                     i.down_votes,
+                    i.tekil_goruntulenme,
+                    i.sayfa_goruntulenme,
                     i.podyum_donem,
                     i.podyum_sira,
                     i.created_at,
                     i.content_full,
                     left(coalesce(i.content_full, i.content_short, ''), 200) as onizleme
-                from public.hikayeler i
+                from public.itiraflar i
                 left join public.uye u on u.id = i.user_id
                 where (v_id is not null and i.id = v_id)
                    or lower(coalesce(i.content_full, i.content_short, '')) like '%' || v_q || '%'
@@ -434,7 +500,7 @@ begin
             from (
                 select
                     c.id,
-                    c.hikaye_id,
+                    c.itiraf_id as hikaye_id,
                     c.parent_id,
                     c.user_id,
                     c.content,
@@ -444,10 +510,10 @@ begin
                     i.status as hikaye_status,
                     (i.silindi_at is not null) as hikaye_silindi,
                     left(coalesce(i.content_full, i.content_short, ''), 100) as hikaye_onizleme
-                from public.hikaye_cevaplar c
+                from public.itiraf_cevaplar c
                 left join public.uye u on u.id = c.user_id
-                left join public.hikayeler i on i.id = c.hikaye_id
-                where (v_id is not null and (c.id = v_id or c.hikaye_id = v_id))
+                left join public.itiraflar i on i.id = c.itiraf_id
+                where (v_id is not null and (c.id = v_id or c.itiraf_id = v_id))
                    or lower(coalesce(c.content, '')) like '%' || v_q || '%'
                    or lower(coalesce(u.username, '')) like '%' || v_q || '%'
                    or lower(coalesce(u.email, '')) like '%' || v_q || '%'
@@ -471,7 +537,7 @@ set search_path = public
 as $$
 declare
     v_hikaye_id bigint;
-    v_row public.hikayeler%rowtype;
+    v_row public.itiraflar%rowtype;
 begin
     if not public.master_email_eslesir() then
         return jsonb_build_object('ok', false, 'hata', 'yetkisiz');
@@ -482,7 +548,7 @@ begin
         return jsonb_build_object('ok', false, 'hata', 'hikaye_id gerekli');
     end if;
 
-    select * into v_row from public.hikayeler where id = v_hikaye_id;
+    select * into v_row from public.itiraflar where id = v_hikaye_id;
     if not found then
         return jsonb_build_object('ok', false, 'hata', 'hikaye bulunamadi');
     end if;
@@ -508,10 +574,12 @@ begin
                 'gender', i.gender,
                 'yasadigi_yer', i.yasadigi_yer,
                 'yurtdisi_sehir', i.yurtdisi_sehir,
+                'tekil_goruntulenme', i.tekil_goruntulenme,
+                'sayfa_goruntulenme', i.sayfa_goruntulenme,
                 'content_full', i.content_full,
                 'created_at', i.created_at
             )
-            from public.hikayeler i
+            from public.itiraflar i
             left join public.uye u on u.id = i.user_id
             where i.id = v_hikaye_id
         ),
@@ -520,16 +588,16 @@ begin
             from (
                 select
                     c.id,
-                    c.hikaye_id,
+                    c.itiraf_id as hikaye_id,
                     c.parent_id,
                     c.user_id,
                     c.content,
                     c.created_at,
                     u.username,
                     u.email
-                from public.hikaye_cevaplar c
+                from public.itiraf_cevaplar c
                 left join public.uye u on u.id = c.user_id
-                where c.hikaye_id = v_hikaye_id
+                where c.itiraf_id = v_hikaye_id
                 order by c.created_at desc
                 limit 200
             ) t
@@ -539,15 +607,15 @@ begin
             from (
                 select
                     o.id,
-                    o.hikaye_id,
+                    o.itiraf_id as hikaye_id,
                     o.user_id,
                     o.oy,
                     o.created_at,
                     u.username,
                     u.email
-                from public.hikaye_oylar o
+                from public.itiraf_oylar o
                 left join public.uye u on u.id = o.user_id
-                where o.hikaye_id = v_hikaye_id
+                where o.itiraf_id = v_hikaye_id
                 order by o.created_at desc
                 limit 300
             ) t
@@ -571,8 +639,8 @@ declare
     v_hikaye_id bigint;
     v_uye_id uuid;
     v_oy smallint;
-    v_row public.hikaye_oylar%rowtype;
-    v_hikaye public.hikayeler%rowtype;
+    v_row public.itiraf_oylar%rowtype;
+    v_hikaye public.itiraflar%rowtype;
 begin
     if not public.master_email_eslesir() then
         return jsonb_build_object('ok', false, 'hata', 'yetkisiz');
@@ -592,20 +660,25 @@ begin
         if v_hikaye_id is null or v_uye_id is null or v_oy not in (1, -1) then
             return jsonb_build_object('ok', false, 'hata', 'hikaye_id, uye_id ve oy gerekli');
         end if;
-        insert into public.hikaye_oylar (hikaye_id, user_id, oy)
-        values (v_hikaye_id, v_uye_id, v_oy)
-        on conflict (hikaye_id, user_id)
-        do update set oy = excluded.oy;
+        update public.itiraf_oylar
+        set oy = v_oy
+        where itiraf_id = v_hikaye_id
+          and user_id = v_uye_id;
+
+        if not found then
+            insert into public.itiraf_oylar (itiraf_id, user_id, oy)
+            values (v_hikaye_id, v_uye_id, v_oy);
+        end if;
 
         select * into v_row
-        from public.hikaye_oylar
-        where hikaye_id = v_hikaye_id
+        from public.itiraf_oylar
+        where itiraf_id = v_hikaye_id
           and user_id = v_uye_id;
     elsif v_islem = 'guncelle' then
         if v_oy_id is null or v_oy not in (1, -1) then
             return jsonb_build_object('ok', false, 'hata', 'oy_id ve oy gerekli');
         end if;
-        update public.hikaye_oylar
+        update public.itiraf_oylar
         set oy = v_oy
         where id = v_oy_id;
 
@@ -613,21 +686,27 @@ begin
             return jsonb_build_object('ok', false, 'hata', 'oy bulunamadi');
         end if;
 
-        select * into v_row from public.hikaye_oylar where id = v_oy_id;
-        v_hikaye_id := v_row.hikaye_id;
+        select * into v_row from public.itiraf_oylar where id = v_oy_id;
+        v_hikaye_id := v_row.itiraf_id;
     else
         if v_oy_id is null then
             return jsonb_build_object('ok', false, 'hata', 'oy_id gerekli');
         end if;
-        select * into v_row from public.hikaye_oylar where id = v_oy_id;
+        select * into v_row from public.itiraf_oylar where id = v_oy_id;
         if not found then
             return jsonb_build_object('ok', false, 'hata', 'oy bulunamadi');
         end if;
-        v_hikaye_id := v_row.hikaye_id;
-        delete from public.hikaye_oylar where id = v_oy_id;
+        v_hikaye_id := v_row.itiraf_id;
+        delete from public.itiraf_oylar where id = v_oy_id;
     end if;
 
-    select * into v_hikaye from public.hikayeler where id = v_hikaye_id;
+    if to_regprocedure('public.itiraf_puan_guncelle(bigint)') is not null then
+        perform public.itiraf_puan_guncelle(v_hikaye_id);
+    elsif to_regprocedure('public.hikaye_puan_guncelle(bigint)') is not null then
+        perform public.hikaye_puan_guncelle(v_hikaye_id);
+    end if;
+
+    select * into v_hikaye from public.itiraflar where id = v_hikaye_id;
 
     return jsonb_build_object(
         'ok', true,
@@ -636,7 +715,7 @@ begin
             when v_islem = 'sil' then null
             else jsonb_build_object(
                 'id', v_row.id,
-                'hikaye_id', v_row.hikaye_id,
+                'hikaye_id', v_row.itiraf_id,
                 'user_id', v_row.user_id,
                 'oy', v_row.oy,
                 'created_at', v_row.created_at

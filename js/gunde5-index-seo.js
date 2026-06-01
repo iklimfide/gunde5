@@ -43,7 +43,7 @@
         var rumuz = row.username || 'Anonim';
         var aciklama =
             metinKisalt(row.content_short || row.content_full, 160) ||
-            'Günün harbi hikayeleri — reklamsız, ücretsiz.';
+            "Her sabah 5 yeni anonim hikaye & itiraf. 5 dakikada oku, gül, güne başla 😄";
         var baslik = rumuz + ' | gunde5.com';
         var url = SITE + '/h/' + id;
         var ogImage = SITE + '/og/' + id + '.png';

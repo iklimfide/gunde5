@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sosyal Medya Paylaşım — gunde5.com</title>
+    <link rel="icon" href="favicon.ico" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="description" content="Bugünün 5'i için X ve Instagram paylaşım metni (yönetici).">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#1d9bf0">
+    <style>
+        :root {
+            --bg-main: #f7f7f7;
+            --bg-card: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --female-color: #db2777;
+            --male-color: #2563eb;
+        }
+        body.dark-mode {
+            --bg-main: #0f1419;
+            --bg-card: #0b0f14;
+            --text-main: #e7e9ea;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255,255,255,0.10);
+            --female-color: #f43f5e;
+            --male-color: #1d9bf0;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            padding-bottom: 24px;
+        }
+        header {
+            background-color: #1d9bf0;
+            color: #ffffff;
+            padding: 12px 88px 12px 56px;
+            min-height: 56px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            border-bottom: 1px solid #1a8cd8;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-brand {
+            color: #ffffff;
+            text-decoration: none;
+            display: inline-block;
+            line-height: 1.15;
+        }
+        .header-brand:hover { opacity: 0.92; }
+        .header-brand-red { color: #ef4444; }
+        .header-sol {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 110;
+        }
+        .header-sag {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            z-index: 110;
+        }
+        .header-menu-wrap { position: relative; }
+        .header-menu-btn {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 0;
+        }
+        .header-menu-bar {
+            display: block;
+            width: 18px;
+            height: 2px;
+            background: #ffffff;
+            border-radius: 1px;
+        }
+        .header-menu-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 200px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+            padding: 8px;
+            z-index: 200;
+        }
+        body.dark-mode .header-menu-panel {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+        }
+        .header-menu-nav { display: flex; flex-direction: column; gap: 2px; }
+        .header-menu-link {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #111827;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: left;
+            border: none;
+            background: transparent;
+            width: 100%;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        body.dark-mode .header-menu-link { color: var(--text-main); }
+        .header-menu-link:hover { background: #f3f4f6; }
+        body.dark-mode .header-menu-link:hover { background: #2f3336; }
+        .header-menu-link--master { color: #f59e0b; font-weight: 800; }
+        .header-profil-link {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        .header-profil-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            color: #ffffff;
+            flex-shrink: 0;
+        }
+        .header-profil-link.cins-female .header-profil-avatar:not(.has-foto) { background-color: var(--female-color); }
+        .header-profil-link.cins-male .header-profil-avatar:not(.has-foto) { background-color: var(--male-color); }
+        .header-profil-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        .header-profil-avatar.has-foto {
+            background: transparent !important;
+            overflow: hidden;
+        }
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 18px 16px 28px;
+        }
+        .page-title {
+            font-size: 22px;
+            margin: 10px 0 12px;
+            text-align: center;
+            letter-spacing: -0.02em;
+        }
+        .intro {
+            margin: 0 0 16px;
+            color: var(--text-main);
+            line-height: 1.6;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .intro a {
+            color: #1d9bf0;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .intro a:hover { text-decoration: underline; }
+        .istat-filtre {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 0 0 16px;
+        }
+        .istat-gun-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .sp-btn--birincil {
+            background: #1d9bf0;
+            border-color: #1d9bf0;
+            color: #ffffff;
+        }
+        .istat-yukleniyor {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 24px 0;
+        }
+        .istat-yetkisiz {
+            text-align: center;
+            padding: 32px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+        .istat-yetkisiz-metin {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .istat-giris-btn {
+            border: none;
+            background: #1d9bf0;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .istat-hata {
+            font-size: 13px;
+            font-weight: 600;
+            color: #b91c1c;
+            padding: 8px 0;
+        }
+        body.dark-mode .istat-hata { color: #f87171; }
+        .sp-uyari {
+            font-size: 13px;
+            font-weight: 800;
+            color: #b45309;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.28);
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+            line-height: 1.45;
+        }
+        body.dark-mode .sp-uyari {
+            color: #fbbf24;
+            background: rgba(245, 158, 11, 0.14);
+        }
+        .sp-kart {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+        .sp-kart-baslik {
+            font-size: 15px;
+            font-weight: 900;
+            margin: 0 0 12px;
+            letter-spacing: -0.02em;
+        }
+        .sp-metin {
+            width: 100%;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            min-height: 280px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-main);
+            color: var(--text-main);
+            resize: vertical;
+        }
+        .sp-aksiyonlar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .sp-liste {
+            margin: 0;
+            padding-left: 1.2rem;
+            display: grid;
+            gap: 8px;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+        .sp-saat {
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .sp-sira { margin-right: 4px; }
+        .sp-x-kar {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin: 6px 0 0;
+            text-align: right;
+        }
+        .sp-bolum-etiket {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin: 0 0 8px;
+        }
+        .sp-ig-onizleme-kutu {
+            display: flex;
+            justify-content: center;
+            margin: 12px 0 14px;
+            overflow: hidden;
+        }
+        .sp-ig-onizleme-olcek {
+            transform-origin: top center;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .sp-ig-onizleme-olcek--kare { width: 280px; }
+        .sp-ig-onizleme-olcek--hikaye { width: 280px; }
+        .sp-ig-kart {
+            width: 1080px;
+            box-sizing: border-box;
+            padding: 80px 72px 96px;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(165deg, #1d9bf0 0%, #0c4a6e 48%, #0f172a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        /* Hikâye: üst profil + alt yanıt/beğeni çubuğu için güvenli alan (1080×1920) */
+        .sp-ig-kart--kare {
+            height: 1080px;
+            padding-bottom: 120px;
+        }
+        .sp-ig-kart--hikaye {
+            height: 1920px;
+            padding: 150px 72px 440px;
+        }
+        .sp-ig-kart-govde {
+            flex: 0 0 auto;
+        }
+        .sp-ig-kart-kapanis {
+            flex: 0 0 auto;
+            margin-top: 52px;
+        }
+        .sp-ig-kart--hikaye .sp-ig-kart-kapanis {
+            margin-top: 64px;
+        }
+        .sp-ig-kart-ust {
+            font-size: 64px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            line-height: 1.18;
+            margin-bottom: 44px;
+        }
+        .sp-ig-kart-liste {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 28px;
+        }
+        .sp-ig-kart-liste li {
+            font-size: 44px;
+            font-weight: 800;
+            line-height: 1.32;
+            letter-spacing: -0.02em;
+        }
+        .sp-ig-kart-liste--bos {
+            opacity: 0.85;
+        }
+        .sp-ig-kart-orta {
+            font-size: 38px;
+            font-weight: 700;
+            line-height: 1.4;
+            opacity: 0.95;
+            margin: 0 0 32px;
+        }
+        .sp-ig-kart-alt {
+            font-size: 46px;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 0;
+        }
+        .sp-ig-kart-marka {
+            margin-top: 40px;
+            font-size: 54px;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+        }
+        .sp-ig-kart-marka span { color: #ef4444; }
+        /* html2canvas visibility:hidden öğeyi boş/siyah yakalar — ekran dışına al */
+        .sp-ig-kart-host {
+            position: fixed;
+            left: -12000px;
+            top: 0;
+            width: 1080px;
+            pointer-events: none;
+            z-index: -1;
+            overflow: visible;
+        }
+        .sp-btn--ig {
+            background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af);
+            border-color: transparent;
+            color: #fff;
+        }
+        .sp-btn--ig:hover { filter: brightness(1.06); }
+        .sp-sekme {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .sp-sekme-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .sp-sekme-btn--aktif {
+            background: #1d9bf0;
+            border-color: #1d9bf0;
+            color: #fff;
+        }
+        @media (max-width: 640px) {
+            header {
+                font-size: 22px;
+                padding: 10px 80px 10px 52px;
+                min-height: 52px;
+            }
+            .header-sol { left: 12px; }
+            .header-sag { right: 12px; }
+        }
+    </style>
+    <script src="js/gunde5-shell.js"></script>
+    <script defer src="js/gunde5-perf.js"></script>
+    <script src="js/gunde5-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+    <script src="js/gunde5-profil.js"></script>
+    <script src="js/gunde5-ui.js"></script>
+    <script src="js/gunde5-db.js"></script>
+    <script src="js/gunde5-bildirim.js"></script>
+    <script src="js/gunde5-master.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" crossorigin="anonymous"></script>
+    <script src="js/gunde5-sosyal-paylas.js?v=3"></script>
+</head>
+<body>
+    <header>
+        <div class="header-sol">
+            <div class="header-menu-wrap">
+                <button type="button" class="header-menu-btn" id="headerMenuBtn" aria-label="Menü" aria-expanded="false" aria-controls="headerMenuPanel" onclick="Gunde5UI.toggleHeaderMenu(event)">
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                </button>
+                <div class="header-menu-panel" id="headerMenuPanel" hidden>
+                    <nav class="header-menu-nav" aria-label="Site menüsü"></nav>
+                </div>
+            </div>
+        </div>
+        <a href="/" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <div class="header-sag">
+            <a href="/profil" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+                <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1 class="page-title">📱 Sosyal Medya Paylaşım</h1>
+        <p class="intro">X için metin kopyala; Instagram için aşağıdaki görseli PNG olarak indirip gönderi veya hikâyede paylaşın. Hikâye yönetimi: <a href="/kamikaze">Kamikaze</a>.</p>
+
+        <div id="sosyalPaylasYetkisiz" class="istat-yetkisiz" hidden>
+            <p class="istat-yetkisiz-metin"></p>
+            <button type="button" class="istat-giris-btn" id="sosyalPaylasGirisBtn" hidden>Giriş yap</button>
+        </div>
+
+        <div id="sosyalPaylasAraclar" class="istat-filtre" hidden>
+            <button type="button" class="istat-gun-btn" id="sosyalPaylasYenile">Yenile</button>
+        </div>
+
+        <p id="sosyalPaylasYukleniyor" class="istat-yukleniyor" hidden>Yükleniyor…</p>
+        <div id="sosyalPaylasIcerik" hidden></div>
+    </div>
+
+    <script>
+        function guncelleHeaderOturum() {
+            if (window.Gunde5UI && Gunde5UI.guncelleHeaderOturum) Gunde5UI.guncelleHeaderOturum();
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', guncelleHeaderOturum);
+        } else {
+            guncelleHeaderOturum();
+        }
+    </script>
+</body>
+</html>

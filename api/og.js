@@ -1,10 +1,8 @@
 import { ImageResponse } from '@vercel/og';
 import { itirafGetir, metinKisalt } from './_lib/itiraf-fetch.js';
+import { OG_DESCRIPTION, OG_TITLE } from './_lib/og-brand.js';
 
 export const config = { runtime: 'edge' };
-
-var SITE = 'https://gunde5.com';
-var DEFAULT_PNG = SITE + '/og-share.png';
 
 var FONT =
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -278,18 +276,15 @@ function kart(rumuz, ozet, metaSatir, cins) {
 }
 
 function varsayilanKart() {
-    return kart(
-        'gunde5.com',
-        'Her g\u00fcn halk\u0131n i\u00e7inden 5 harbi insan hikayesi \u2014 reklams\u0131z, \u00fccretsiz.',
-        null,
-        'female'
-    );
+    return kart(OG_TITLE, OG_DESCRIPTION, 'gunde5.com', 'female');
 }
 
 async function varsayilanPng() {
-    var res = await fetch(DEFAULT_PNG);
-    if (!res.ok) throw new Error('og-share.png alinamadi');
-    var buf = await res.arrayBuffer();
+    var img = new ImageResponse(varsayilanKart(), {
+        width: 1200,
+        height: 630
+    });
+    var buf = await img.arrayBuffer();
     return new Response(buf, {
         headers: {
             'Content-Type': 'image/png',
@@ -309,7 +304,7 @@ export default async function handler(req) {
         var rumuz = row ? row.username || 'Anonim' : 'gunde5.com';
         var ozet = row
             ? metinKisalt(row.content_short || row.content_full, 200)
-            : 'G\u00fcn\u00fcn harbi hikayeleri \u2014 reklams\u0131z, \u00fccretsiz.';
+            : OG_DESCRIPTION;
         var meta = [];
         if (row && row.age) meta.push(row.age + ' ya\u015f');
         var yer = row && (row.yasadigi_yer || row.city);

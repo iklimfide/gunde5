@@ -1,6 +1,5 @@
--- Kamikaze paneli: hikayeler → itiraflar + anasayfa (index) verisi
--- Hata: relation "public.hikayeler" does not exist
--- Kurulum: master-kamikaze-panel.sql sonrası veya canlı itiraflar şemasında bir kez Run.
+-- DEPRECATED: master-kamikaze-panel.sql ile birleştirildi (aynı itiraflar şeması).
+-- Yeni kurulumda yalnızca master-kamikaze-panel.sql çalıştırın.
 
 grant select on public.itiraf_sikayetler to authenticated;
 grant update on public.itiraflar to authenticated;
@@ -168,6 +167,10 @@ begin
                     i.username,
                     i.user_id,
                     u.email as user_email,
+                    i.age,
+                    i.gender,
+                    i.yasadigi_yer,
+                    i.yurtdisi_sehir,
                     i.r,
                     i.b,
                     i.up_votes,
@@ -196,6 +199,10 @@ begin
                     i.username,
                     i.user_id,
                     u.email as user_email,
+                    i.age,
+                    i.gender,
+                    i.yasadigi_yer,
+                    i.yurtdisi_sehir,
                     i.r,
                     i.b,
                     i.up_votes,
@@ -425,6 +432,10 @@ begin
                     i.user_id,
                     i.username,
                     u.email as user_email,
+                    i.age,
+                    i.gender,
+                    i.yasadigi_yer,
+                    i.yurtdisi_sehir,
                     i.is_gizli,
                     i.silindi_at,
                     i.r,

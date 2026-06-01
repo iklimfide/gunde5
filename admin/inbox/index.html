@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelen kutusu — gunde5</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#1d9bf0">
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <style>
+        :root { --bg-main:#f7f7f7; --bg-card:#fff; --text-main:#111827; --text-muted:#6b7280; --border-color:#e5e7eb; --female-color:#db2777; --male-color:#2563eb; }
+        body.dark-mode { --bg-main:#0f1419; --bg-card:#0b0f14; --text-main:#e7e9ea; --text-muted:#9ca3af; --border-color:rgba(255,255,255,.1); --female-color:#f43f5e; --male-color:#1d9bf0; }
+        * { box-sizing:border-box; margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+        body { background:var(--bg-main); color:var(--text-main); }
+        header { background:#1d9bf0; color:#fff; padding:16px; text-align:center; font-size:24px; font-weight:900; letter-spacing:-1px; border-bottom:1px solid #1a8cd8; position:sticky; top:0; z-index:100; }
+        .header-brand { color:#fff; text-decoration:none; }
+        .header-brand-red { color:#ef4444; }
+        .header-sol { position:absolute; left:16px; top:50%; transform:translateY(-50%); z-index:110; }
+        .header-sag { position:absolute; right:16px; top:50%; transform:translateY(-50%); display:flex; align-items:center; gap:8px; z-index:110; }
+        .header-menu-wrap { position:relative; }
+        .header-menu-btn { width:38px; height:38px; border:1px solid rgba(255,255,255,.45); background:rgba(255,255,255,.18); border-radius:10px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:0; }
+        .header-menu-bar { display:block; width:18px; height:2px; background:#fff; border-radius:1px; }
+        .header-menu-panel { position:absolute; top:calc(100% + 8px); left:0; min-width:176px; background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 12px 32px rgba(0,0,0,.18); padding:8px; z-index:200; }
+        body.dark-mode .header-menu-panel { background:var(--bg-card); border-color:var(--border-color); }
+        .header-menu-nav { display:flex; flex-direction:column; gap:2px; }
+        .header-menu-link { display:block; padding:10px 12px; border-radius:10px; color:#111827; text-decoration:none; font-size:13px; font-weight:700; }
+        body.dark-mode .header-menu-link { color:var(--text-main); }
+        .header-menu-link:hover { background:#f3f4f6; }
+        body.dark-mode .header-menu-link:hover { background:#2f3336; }
+        .header-profil-link { display:none; align-items:center; padding:4px; border-radius:50%; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); text-decoration:none; }
+        .header-profil-avatar { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; color:#fff; }
+        .header-profil-link.cins-female .header-profil-avatar:not(.has-foto) { background:var(--female-color); }
+        .header-profil-link.cins-male .header-profil-avatar:not(.has-foto) { background:var(--male-color); }
+        .container { width:min(720px,calc(100% - 24px)); margin:12px auto 40px; }
+        .page-title { font-size:clamp(22px,5vw,30px); font-weight:900; letter-spacing:-.03em; margin-bottom:12px; }
+        .adm-sekme { display:flex; gap:8px; margin-bottom:14px; }
+        .adm-sekme-btn { flex:1; padding:12px; border:2px solid var(--border-color); border-radius:12px; background:var(--bg-card); font-size:14px; font-weight:800; cursor:pointer; color:var(--text-main); }
+        .adm-sekme-btn.aktif { border-color:#1d9bf0; background:#eff6ff; color:#1d4ed8; }
+        body.dark-mode .adm-sekme-btn.aktif { background:rgba(29,155,240,.15); color:#7dd3fc; }
+        .adm-panel[hidden] { display:none!important; }
+        .adm-filtre { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+        .adm-filtre button { padding:8px 12px; border:1px solid var(--border-color); border-radius:999px; background:var(--bg-card); cursor:pointer; font-size:13px; font-weight:700; color:var(--text-main); }
+        .adm-filtre button.aktif { background:#1d9bf0; color:#fff; border-color:#1d9bf0; }
+        .adm-kart { background:var(--bg-card); border:1px solid var(--border-color); border-radius:14px; padding:14px; margin-bottom:12px; }
+        .adm-kart-baslik { font-weight:800; font-size:15px; margin-bottom:6px; }
+        .adm-kart-meta { font-size:12px; color:var(--text-muted); margin-bottom:8px; }
+        .adm-kart-metin { font-size:14px; line-height:1.5; white-space:pre-wrap; word-break:break-word; max-height:200px; overflow:auto; }
+        .adm-aksiyon { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+        .adm-aksiyon button { padding:8px 12px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-card); font-size:12px; font-weight:700; cursor:pointer; color:var(--text-main); }
+        .adm-aksiyon .onay { border-color:#22c55e; color:#166534; }
+        .adm-aksiyon .red { border-color:#ef4444; color:#991b1b; }
+        .adm-aksiyon .duzenle { border-color:#1d9bf0; color:#1d9bf0; }
+        .adm-aksiyon .sil { border-color:#b91c1c; color:#b91c1c; }
+        .adm-bos, .adm-hata { text-align:center; padding:24px; color:var(--text-muted); }
+        .adm-hata { color:#b91c1c; }
+        .adm-duzenle-modal { position:fixed; inset:0; z-index:300; display:none; align-items:flex-end; justify-content:center; background:rgba(15,20,25,.55); }
+        .adm-duzenle-modal.acik { display:flex; }
+        @media(min-width:520px){ .adm-duzenle-modal { align-items:center; padding:16px; } }
+        .adm-duzenle-panel { width:100%; max-width:480px; max-height:min(92vh,680px); background:var(--bg-card); border-radius:20px 20px 0 0; padding:16px; overflow-y:auto; }
+        @media(min-width:520px){ .adm-duzenle-panel { border-radius:16px; } }
+        .adm-duzenle-baslik { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .adm-duzenle-baslik h2 { font-size:17px; margin:0; }
+        .adm-duzenle-kapat { width:36px; height:36px; border:none; border-radius:10px; background:var(--bg-main); cursor:pointer; font-size:18px; }
+        .adm-alan { margin-bottom:12px; }
+        .adm-alan label { display:block; font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:6px; }
+        .adm-alan input, .adm-alan textarea { width:100%; padding:10px 12px; border:1px solid var(--border-color); border-radius:10px; font-size:14px; font-family:inherit; background:var(--bg-card); color:var(--text-main); }
+        .adm-alan textarea { min-height:160px; resize:vertical; line-height:1.5; }
+        .adm-rad-grup { display:flex; flex-wrap:wrap; gap:8px; }
+        .adm-rad { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; padding:8px 10px; border:1px solid var(--border-color); border-radius:999px; cursor:pointer; }
+        .adm-duzenle-kaydet { width:100%; padding:12px; border:none; border-radius:12px; background:#1d9bf0; color:#fff; font-size:15px; font-weight:800; cursor:pointer; margin-top:8px; }
+    </style>
+    <script src="/js/gunde5-shell.js"></script>
+    <script src="/js/gunde5-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+    <script src="/js/gunde5-ui.js"></script>
+    <script src="/js/gunde5-db.js?v=27"></script>
+    <script src="/js/gunde5-bildirim.js"></script>
+    <script src="/js/gunde5-master.js"></script>
+    <script src="/js/gunde5-admin-inbox.js?v=1"></script>
+</head>
+<body>
+    <header>
+        <div class="header-sol">
+            <div class="header-menu-wrap">
+                <button type="button" class="header-menu-btn" id="headerMenuBtn" aria-label="Menü" aria-expanded="false" aria-controls="headerMenuPanel" onclick="Gunde5UI.toggleHeaderMenu(event)">
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                    <span class="header-menu-bar" aria-hidden="true"></span>
+                </button>
+                <div class="header-menu-panel" id="headerMenuPanel" hidden>
+                    <nav class="header-menu-nav" aria-label="Site menüsü"></nav>
+                </div>
+            </div>
+        </div>
+        <a href="/" class="header-brand">gunde<span class="header-brand-red">5</span>.com</a>
+        <div class="header-sag">
+            <div id="headerAuthBtns" hidden></div>
+            <a href="/profil" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+                <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1 class="page-title">📥 Gelen kutusu</h1>
+        <div class="adm-sekme" role="tablist">
+            <button type="button" class="adm-sekme-btn aktif" id="admSekmeHikaye" data-tab="hikaye" role="tab" aria-selected="true">✍️ Hikayeler</button>
+            <button type="button" class="adm-sekme-btn" id="admSekmeMesaj" data-tab="mesaj" role="tab" aria-selected="false">💬 Mesajlar</button>
+        </div>
+
+        <div class="adm-panel" id="admPanelHikaye" role="tabpanel">
+            <div class="adm-filtre" id="admFiltreHikaye"></div>
+            <div id="admListeHikaye"><p class="adm-bos">Yükleniyor…</p></div>
+        </div>
+
+        <div class="adm-panel" id="admPanelMesaj" role="tabpanel" hidden>
+            <div class="adm-filtre" id="admFiltreMesaj"></div>
+            <div id="admListeMesaj"><p class="adm-bos">Yükleniyor…</p></div>
+        </div>
+    </main>
+
+    <div class="adm-duzenle-modal" id="admDuzenleModal" hidden>
+        <div class="adm-duzenle-panel" role="dialog" aria-labelledby="admDuzenleBaslik">
+            <div class="adm-duzenle-baslik">
+                <h2 id="admDuzenleBaslik">Hikayeyi düzenle</h2>
+                <button type="button" class="adm-duzenle-kapat" id="admDuzenleKapat" aria-label="Kapat">✕</button>
+            </div>
+            <form id="admDuzenleForm">
+                <input type="hidden" id="admDuzenleId" name="id">
+                <div class="adm-alan">
+                    <label for="admDuzenleBaslikInput">Başlık</label>
+                    <input type="text" id="admDuzenleBaslikInput" name="title" maxlength="120" autocomplete="off">
+                </div>
+                <div class="adm-alan">
+                    <label for="admDuzenleIcerik">Hikaye metni</label>
+                    <textarea id="admDuzenleIcerik" name="content" required minlength="50" maxlength="12000"></textarea>
+                </div>
+                <div class="adm-alan">
+                    <label for="admDuzenleYas">Yaş</label>
+                    <input type="number" id="admDuzenleYas" name="age" min="13" max="120" inputmode="numeric">
+                </div>
+                <div class="adm-alan">
+                    <label for="admDuzenleSehir">Şehir</label>
+                    <input type="text" id="admDuzenleSehir" name="city" maxlength="80" autocomplete="off">
+                </div>
+                <div class="adm-alan">
+                    <label>Cinsiyet</label>
+                    <div class="adm-rad-grup">
+                        <label class="adm-rad"><input type="radio" name="gender" value="Kadın"> Kadın</label>
+                        <label class="adm-rad"><input type="radio" name="gender" value="Erkek"> Erkek</label>
+                        <label class="adm-rad"><input type="radio" name="gender" value="Belirtmek istemiyorum"> Belirtmek istemiyorum</label>
+                    </div>
+                </div>
+                <button type="submit" class="adm-duzenle-kaydet" id="admDuzenleKaydet">Kaydet</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

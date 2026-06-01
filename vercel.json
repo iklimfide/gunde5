@@ -64,6 +64,36 @@
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
       ]
+    },
+    {
+      "source": "/admin/inbox",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/admin/submissions",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/admin/messages",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/sosyal-paylas",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/sosyal-paylas.html",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
     }
   ],
   "redirects": [
@@ -82,13 +112,22 @@
     { "source": "/mudavimler.html", "destination": "/mudavimler", "permanent": true },
     { "source": "/uyeler.html", "destination": "/uyeler", "permanent": true },
     { "source": "/kamikaze.html", "destination": "/kamikaze", "permanent": true },
+    { "source": "/sosyal-paylas.html", "destination": "/sosyal-paylas", "permanent": true },
     { "source": "/hikaye-gonder.html", "destination": "/hikaye-gonder", "permanent": true },
+    { "source": "/admin-submissions.html", "destination": "/admin/inbox?tab=hikaye", "permanent": true },
+    { "source": "/admin-messages.html", "destination": "/admin/inbox?tab=mesaj", "permanent": true },
+    { "source": "/admin/submissions", "destination": "/admin/inbox?tab=hikaye", "permanent": true },
+    { "source": "/admin/messages", "destination": "/admin/inbox?tab=mesaj", "permanent": true },
+    { "source": "/admin/submissions/", "destination": "/admin/inbox?tab=hikaye", "permanent": true },
+    { "source": "/admin/messages/", "destination": "/admin/inbox?tab=mesaj", "permanent": true },
     { "source": "/bulut.html", "destination": "/bulut", "permanent": true },
     { "source": "/404.html", "destination": "/404", "permanent": true },
     { "source": "/itiraf/:id", "destination": "/h/:id", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/admin/inbox", "destination": "/admin/inbox/index.html" },
     { "source": "/h/:id", "destination": "/api/itiraf-share?id=:id" },
+    { "source": "/og/anasayfa.png", "destination": "/api/og" },
     { "source": "/og/:id.png", "destination": "/api/og?id=:id" }
   ]
 }

@@ -176,6 +176,22 @@
         }
         html += bolumKapat();
 
+        html += tabloHtml(
+            'Dün ve bugün — son 10 hikâye',
+            [
+                { etiket: 'Gün', deger: function (r) { return r.gun_etiket || '—'; } },
+                { etiket: 'Yayın', deger: function (r) { return r.yayin_tarihi || '—'; } },
+                { etiket: 'Başlık', deger: function (r) { return kisaMetin(r.baslik, 56); } },
+                { etiket: 'Görülme', deger: function (r) { return fmtSayi(r.goruntulenme); } },
+                { etiket: 'Beğeni', deger: function (r) { return fmtSayi(r.begeni); } },
+                { etiket: 'Beğenmeme', deger: function (r) { return fmtSayi(r.begenmeme); } },
+                { etiket: 'Paylaşım', deger: function (r) { return fmtSayi(r.paylasim); } }
+            ],
+            arrCoz(icerik.son_gun_hikayeler),
+            'Dün veya bugün yayınlanan hikâye yok.',
+            'İstanbul saati · görülme = DB tekil veya analytics impression (büyük olan) · oy/paylaşım analytics (hariç tut filtresine uygun, tüm zaman)'
+        );
+
         kok.innerHTML = html;
     }
 

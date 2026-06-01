@@ -125,12 +125,13 @@
                       ogType: 'website'
                   }
                 : {
-                      title: 'gunde5.com | Günün 5 Harbi Hikayesi',
+                      title: "Bugünün 5'i hazır",
                       description:
-                          'Her gün halkın içinden komik ve eğlenceli gerçek hikayeler — reklamsız, ücretsiz.',
+                          'Her sabah 5 yeni anonim hikaye & itiraf. 5 dakikada oku, gül, güne başla 😄',
                       canonical: SITE_ORIGIN + '/',
                       ogUrl: SITE_ORIGIN + '/',
-                      ogType: 'website'
+                      ogType: 'website',
+                      ogImage: SITE_ORIGIN + '/og/anasayfa.png'
                   };
         apply(varsayilan);
     }

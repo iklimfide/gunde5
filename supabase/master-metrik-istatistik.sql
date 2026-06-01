@@ -31,6 +31,9 @@ declare
     v_en_paylasilan jsonb;
     v_en_begenilmeyen jsonb;
     v_en_gorulen jsonb;
+    v_bugun date;
+    v_dun date;
+    v_son_gun_hikayeler jsonb;
 begin
     perform set_config('statement_timeout', '30000', true);
 
@@ -45,6 +48,8 @@ begin
     end if;
     v_since := now() - (v_gun || ' days')::interval;
     v_master := private.gunde5_master_user_uuid();
+    v_bugun := (now() at time zone 'Europe/Istanbul')::date;
+    v_dun := v_bugun - 1;
 
     with fe as materialized (
         select e.*
@@ -184,6 +189,62 @@ begin
         else 0
     end;
 
+    select coalesce(jsonb_agg(t.row order by t.created_at desc), '[]'::jsonb)
+    into v_son_gun_hikayeler
+    from (
+        with gun_hik as (
+            select
+                i.id,
+                i.created_at,
+                i.tekil_goruntulenme,
+                coalesce(nullif(trim(i.baslik), ''), left(coalesce(i.content_short, i.content_full, ''), 80)) as baslik,
+                case
+                    when (i.created_at at time zone 'Europe/Istanbul')::date = v_bugun then 'Bugün'
+                    else 'Dün'
+                end as gun_etiket,
+                to_char(i.created_at at time zone 'Europe/Istanbul', 'DD/MM/YYYY') as yayin_tarihi
+            from public.itiraflar i
+            where i.silindi_at is null
+              and i.created_at <= now()
+              and (i.created_at at time zone 'Europe/Istanbul')::date in (v_bugun, v_dun)
+            order by i.created_at desc
+            limit 10
+        )
+        select
+            h.created_at,
+            jsonb_build_object(
+                'id', h.id,
+                'baslik', h.baslik,
+                'gun_etiket', h.gun_etiket,
+                'yayin_tarihi', h.yayin_tarihi,
+                'goruntulenme', greatest(
+                    coalesce(h.tekil_goruntulenme, 0),
+                    coalesce(a.goruntulenme, 0)
+                ),
+                'begeni', coalesce(a.begeni, 0),
+                'begenmeme', coalesce(a.begenmeme, 0),
+                'paylasim', coalesce(a.paylasim, 0)
+            ) as row
+        from gun_hik h
+        left join (
+            select
+                e.story_id,
+                count(distinct public.analytics_kimlik(e.user_id, e.visitor_id))
+                    filter (where e.event_type = 'story_impression')::int as goruntulenme,
+                count(*) filter (where e.event_type = 'story_vote' and e.vote_type = 'like')::int as begeni,
+                count(*) filter (where e.event_type = 'story_vote' and e.vote_type = 'dislike')::int as begenmeme,
+                count(*) filter (where e.event_type = 'story_share')::int as paylasim
+            from public.site_analytics_events e
+            where e.story_id in (select id from gun_hik)
+              and (
+                v_haric = 'yok'
+                or (v_haric = 'uyeler' and e.user_id is null)
+                or (v_haric = 'master' and (e.user_id is null or e.user_id is distinct from v_master))
+              )
+            group by e.story_id
+        ) a on a.story_id = h.id
+    ) t;
+
     return jsonb_build_object(
         'ok', true,
         'gun', v_gun,
@@ -224,7 +285,8 @@ begin
             'en_begenilen', coalesce(v_en_begenilen, '[]'::jsonb),
             'en_paylasilan', coalesce(v_en_paylasilan, '[]'::jsonb),
             'en_begenilmeyen', coalesce(v_en_begenilmeyen, '[]'::jsonb),
-            'en_gorulen', case when v_impression_var then coalesce(v_en_gorulen, '[]'::jsonb) else null end
+            'en_gorulen', case when v_impression_var then coalesce(v_en_gorulen, '[]'::jsonb) else null end,
+            'son_gun_hikayeler', coalesce(v_son_gun_hikayeler, '[]'::jsonb)
         )
     );
 end;

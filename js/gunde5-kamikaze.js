@@ -10,6 +10,8 @@
     var tabloDurum = Object.create(null);
     var aramaZamanlayici = null;
     var aramaIstekNo = 0;
+    var kolonFiltreZamanlayici = null;
+    var kolonFiltreOdak = null;
     var modalState = {
         type: '',
         title: '',
@@ -148,7 +150,68 @@
     }
 
     function genderLabel(gender) {
-        return gender === 'male' ? 'Erkek' : 'Kadın';
+        if (gender === 'male') return 'Erkek';
+        if (gender === 'female') return 'Kadın';
+        return '—';
+    }
+
+    function cinsiyetFiltreSecenekleri() {
+        return [
+            { value: 'Erkek', label: 'Erkek' },
+            { value: 'Kadın', label: 'Kadın' },
+            { value: '—', label: 'Belirtilmemiş' }
+        ];
+    }
+
+    function ilFiltreSecenekleri() {
+        var liste = [{ value: '—', label: 'Belirtilmemiş' }];
+        var P = profil();
+        arr(P && P.YER_SECENEKLERI).forEach(function (y) {
+            liste.push({ value: y.label, label: y.label });
+        });
+        return liste;
+    }
+
+    function tabloSelectEslesir(kolon, deger, filtre) {
+        if (deger === filtre) return true;
+        if (kolon.filterSelectPrefix && filtre && deger.indexOf(filtre) === 0) return true;
+        return false;
+    }
+
+    function kolonFiltreOdagiKaydet(el) {
+        if (!el || el.tagName === 'SELECT') return;
+        kolonFiltreOdak = {
+            tablo: el.getAttribute('data-km-filter'),
+            key: el.getAttribute('data-key'),
+            start: el.selectionStart,
+            end: el.selectionEnd
+        };
+    }
+
+    function kolonFiltreOdagiGeriYukle() {
+        if (!kolonFiltreOdak) return;
+        var o = kolonFiltreOdak;
+        var kok = document.getElementById('kamikazeIcerik');
+        if (!kok) return;
+        var el = kok.querySelector('[data-km-filter="' + o.tablo + '"][data-key="' + o.key + '"]');
+        kolonFiltreOdak = null;
+        if (!el || el.tagName === 'SELECT') return;
+        el.focus();
+        if (typeof el.setSelectionRange === 'function' && o.start != null) {
+            try {
+                el.setSelectionRange(o.start, o.end != null ? o.end : o.start);
+            } catch (err) { /* sessiz */ }
+        }
+    }
+
+    function cinsiyetHucre(r) {
+        if (r.gender === 'male') {
+            return '<span class="kamikaze-gender kamikaze-gender--e" title="Erkek">♂ Erkek</span>';
+        }
+        if (r.gender === 'female') {
+            return '<span class="kamikaze-gender kamikaze-gender--k" title="Kadın">♀ Kadın</span>';
+        }
+        return '<span class="kamikaze-muted">—</span>';
     }
 
     function shortUuid(v) {
@@ -156,30 +219,37 @@
     }
 
     function yerGoster(row) {
+        if (!row) return '—';
         var P = profil();
         if (P && P.yasadigiYerGosterim) {
-            return P.yasadigiYerGosterim({
-                yasadigiYer: row && row.yasadigi_yer,
-                yurtdisiSehir: row && row.yurtdisi_sehir
-            }) || '—';
+            var g = P.yasadigiYerGosterim({
+                yasadigiYer: row.yasadigi_yer,
+                yurtdisiSehir: row.yurtdisi_sehir
+            });
+            if (g) return g;
         }
-        if (row && row.yasadigi_yer === 'yurtdisi' && row.yurtdisi_sehir) {
+        if (row.yasadigi_yer === 'yurtdisi' && row.yurtdisi_sehir) {
             return 'Yurtdışı · ' + row.yurtdisi_sehir;
         }
-        return (row && row.yasadigi_yer) || '—';
+        if (row.yasadigi_yer) return row.yasadigi_yer;
+        if (row.city) return String(row.city).trim();
+        return '—';
+    }
+
+    /** Üst çubuk filtresi: index / planlı / podyum (silinen ve gizli listede yok). */
+    function hikayePaneldeGoster(row, filter) {
+        if (!row || row.silindi_at) return false;
+        var kod = hikayeDurumKodu(row);
+        if (kod === 'silindi') return false;
+        if (!filter || filter === 'hepsi') {
+            return kod === 'index' || kod === 'planli' || kod === 'podyum';
+        }
+        return kod === filter;
     }
 
     function hikayeleriFiltrele(rows, filter) {
-        var liste = arr(rows);
-        if (!filter || filter === 'hepsi') return liste;
-        return liste.filter(function (r) {
-            if (filter === 'silindi') return !!r.silindi_at;
-            if (filter === 'gizli') return !!r.is_gizli && !r.silindi_at;
-            if (filter === 'index') return indexYayindaMi(r);
-            if (filter === 'planli') {
-                return r.status === 'kulis' && !r.silindi_at && !indexYayindaMi(r);
-            }
-            return r.status === filter && !r.silindi_at;
+        return arr(rows).filter(function (r) {
+            return hikayePaneldeGoster(r, filter);
         });
     }
 
@@ -218,7 +288,7 @@
             if (!filtre || !kolon.filter) return;
             liste = liste.filter(function (row) {
                 var deger = strNorm(tabloFilterValue(kolon, row));
-                if (kolon.filter === 'select') return deger === filtre;
+                if (kolon.filter === 'select') return tabloSelectEslesir(kolon, deger, filtre);
                 return deger.indexOf(filtre) >= 0;
             });
         });
@@ -281,9 +351,9 @@
             return html;
         }
 
-        html += '<input type="search" class="kamikaze-th-input" data-km-filter="' + esc(tableId) +
+        html += '<input type="text" class="kamikaze-th-input" data-km-filter="' + esc(tableId) +
             '" data-key="' + esc(kolon.key) + '" value="' + esc(state.filters[kolon.key] || '') +
-            '" placeholder="Filtrele">';
+            '" placeholder="Filtrele" autocomplete="off">';
         return html;
     }
 
@@ -294,7 +364,7 @@
         var filtreli = tabloFiltreleVeSirala(id, kolonlar, tumSatirlar);
         var state = tabloState(id);
         var html = '';
-        html += '<section class="kamikaze-section">';
+        html += '<section class="kamikaze-section' + (opts.sectionClass ? ' ' + esc(opts.sectionClass) : '') + '">';
         html += '<div class="kamikaze-section-head">';
         html += '<h2>' + esc(opts.title) + '</h2>';
         html += '<div class="kamikaze-section-meta">' + esc(fmtSayi(filtreli.length)) + ' / ' + esc(fmtSayi(tumSatirlar.length)) + '</div>';
@@ -307,16 +377,20 @@
             return html;
         }
 
-        html += '<div class="kamikaze-table-wrap"><table class="kamikaze-table kamikaze-table--interactive"><thead><tr>';
+        var wrapCls = 'kamikaze-table-wrap' + (opts.wrapClass ? ' ' + opts.wrapClass : '');
+        var tableCls = 'kamikaze-table kamikaze-table--interactive' + (opts.tableClass ? ' ' + opts.tableClass : '');
+        html += '<div class="' + esc(wrapCls) + '"><table class="' + esc(tableCls) + '"><thead><tr>';
         kolonlar.forEach(function (kolon) {
-            html += '<th scope="col">' + renderHeaderControl(id, kolon, state) + '</th>';
+            var thCls = kolon.cellClass ? ' class="' + esc(kolon.cellClass) + '"' : '';
+            html += '<th scope="col"' + thCls + '>' + renderHeaderControl(id, kolon, state) + '</th>';
         });
         html += '</tr></thead><tbody>';
         filtreli.forEach(function (row) {
             html += '<tr>';
             kolonlar.forEach(function (kolon) {
                 var deger = typeof kolon.value === 'function' ? kolon.value(row) : row[kolon.alan];
-                html += '<td>' + (kolon.raw ? deger : esc(deger == null ? '—' : deger)) + '</td>';
+                var tdCls = kolon.cellClass ? ' class="' + esc(kolon.cellClass) + '"' : '';
+                html += '<td' + tdCls + '>' + (kolon.raw ? deger : esc(deger == null ? '—' : deger)) + '</td>';
             });
             html += '</tr>';
         });
@@ -335,7 +409,9 @@
             '.kamikaze-toolbar .kamikaze-btn--ikincil:hover{background:rgba(29,155,240,.08)}' +
             '.kamikaze-section-meta{font-size:12px;font-weight:800;color:#0f5fa8;padding:6px 10px;border-radius:999px;background:rgba(29,155,240,.10);border:1px solid rgba(29,155,240,.16)}' +
             'body.dark-mode .kamikaze-section-meta{color:#7dc5ff;background:rgba(29,155,240,.14);border-color:rgba(29,155,240,.26)}' +
-            '.kamikaze-table--interactive th{min-width:110px}' +
+            '.kamikaze-table--interactive:not(.kamikaze-table--hikayeler) th{min-width:110px}' +
+            '.kamikaze-table--hikayeler .kamikaze-col-islem .kamikaze-th-label,.kamikaze-table--hikayeler .kamikaze-col-islem .kamikaze-th-btn{justify-content:center}' +
+            '.kamikaze-table--hikayeler .kamikaze-col-islem td{text-align:center}' +
             '.kamikaze-th-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border:none;background:none;color:inherit;font:inherit;font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:0;cursor:pointer}' +
             '.kamikaze-th-label{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:inherit;font-weight:900}' +
             '.kamikaze-th-input{margin-top:6px;width:100%;border:1px solid var(--border-color);border-radius:8px;padding:6px 8px;background:var(--bg-card);color:var(--text-main);font-size:11px;font-weight:600}' +
@@ -571,8 +647,6 @@
             { etiket: 'Index', deger: ozet.index != null ? ozet.index : ozet.kulis, cls: 'warn' },
             { etiket: 'Planlı', deger: ozet.planli, cls: 'blue' },
             { etiket: 'Podyum', deger: ozet.podyum, cls: 'ok' },
-            { etiket: 'Silinen', deger: ozet.silindi },
-            { etiket: 'Gizli', deger: ozet.gizli },
             { etiket: 'Oy', deger: ozet.oy, cls: 'blue' },
             { etiket: 'Yorum', deger: ozet.cevap, cls: 'blue' },
             { etiket: 'Şikayet', deger: ozet.sikayet },
@@ -686,6 +760,7 @@
             {
                 key: 'id',
                 etiket: 'ID',
+                cellClass: 'kamikaze-col-id',
                 value: function (r) { return '#' + r.id; },
                 sortValue: function (r) { return num(r.id, 0); },
                 filterValue: function (r) { return r.id; },
@@ -694,55 +769,61 @@
             {
                 key: 'durum',
                 etiket: 'Durum',
+                cellClass: 'kamikaze-col-durum',
                 value: function (r) { return statusBadge(r.status, r.silindi_at, r.created_at); },
                 raw: true,
-                filter: 'select',
-                options: [
-                    { value: 'index', label: 'Index' },
-                    { value: 'planli', label: 'Planlı' },
-                    { value: 'podyum', label: 'Podyum' },
-                    { value: 'silindi', label: 'Silindi' }
-                ],
-                filterValue: hikayeDurumText,
                 sortValue: hikayeDurumText
             },
             {
                 key: 'kullanici',
                 etiket: 'Kullanıcı',
-                value: function (r) { return esc(r.username || '—') + (r.is_gizli ? ' 🔒' : ''); },
+                cellClass: 'kamikaze-col-user',
+                value: function (r) {
+                    return '<span class="kamikaze-user">' + esc(r.username || '—') +
+                        (r.is_gizli ? ' <span class="kamikaze-lock" title="Gizli">🔒</span>' : '') + '</span>';
+                },
                 raw: true,
                 filter: 'text',
                 filterValue: function (r) { return (r.username || '') + ' ' + (r.user_email || ''); },
                 sortValue: function (r) { return r.username || ''; }
             },
             {
-                key: 'oy',
-                etiket: 'Oy',
-                value: function (r) { return fmtSayi(r.up_votes) + '/' + fmtSayi(r.down_votes); },
+                key: 'yas',
+                etiket: 'Yaş',
+                cellClass: 'kamikaze-col-yas',
+                value: function (r) { return r.age != null && r.age !== '' ? esc(String(r.age)) : '—'; },
                 filter: 'text',
-                filterValue: function (r) { return String(num(r.up_votes, 0)) + ' ' + String(num(r.down_votes, 0)); },
-                sortValue: function (r) { return num(r.up_votes, 0) - num(r.down_votes, 0); }
+                filterValue: function (r) { return r.age != null ? String(r.age) : ''; },
+                sortValue: function (r) { return num(r.age, -1); }
             },
             {
-                key: 'tekil',
-                etiket: 'Tekil',
-                value: function (r) { return fmtSayi(r.tekil_goruntulenme); },
-                filter: 'text',
-                filterValue: function (r) { return String(num(r.tekil_goruntulenme, 0)); },
-                sortValue: function (r) { return num(r.tekil_goruntulenme, 0); }
+                key: 'cinsiyet',
+                etiket: 'Cinsiyet',
+                cellClass: 'kamikaze-col-cinsiyet',
+                value: cinsiyetHucre,
+                raw: true,
+                filter: 'select',
+                options: cinsiyetFiltreSecenekleri(),
+                filterValue: function (r) { return genderLabel(r.gender); },
+                sortValue: function (r) { return genderLabel(r.gender); }
             },
             {
-                key: 'cogul',
-                etiket: 'Çoğul',
-                value: function (r) { return fmtSayi(r.sayfa_goruntulenme); },
-                filter: 'text',
-                filterValue: function (r) { return String(num(r.sayfa_goruntulenme, 0)); },
-                sortValue: function (r) { return num(r.sayfa_goruntulenme, 0); }
+                key: 'il',
+                etiket: 'İl',
+                cellClass: 'kamikaze-col-il',
+                value: function (r) { return '<span class="kamikaze-il">' + esc(yerGoster(r)) + '</span>'; },
+                raw: true,
+                filter: 'select',
+                filterSelectPrefix: true,
+                options: ilFiltreSecenekleri(),
+                filterValue: function (r) { return yerGoster(r); },
+                sortValue: function (r) { return yerGoster(r); }
             },
             {
                 key: 'icerik',
                 etiket: 'İçerik',
-                value: function (r) { return kisaMetin(r.content_full || r.onizleme, 120); },
+                cellClass: 'kamikaze-col-icerik',
+                value: function (r) { return '<span class="kamikaze-icerik">' + kisaMetin(r.content_full || r.onizleme, 160) + '</span>'; },
                 raw: true,
                 filter: 'text',
                 filterValue: function (r) { return r.content_full || r.onizleme || ''; },
@@ -751,6 +832,7 @@
             {
                 key: 'tarih',
                 etiket: 'Tarih',
+                cellClass: 'kamikaze-col-tarih',
                 value: function (r) { return fmtTarih(r.created_at); },
                 sortValue: function (r) { return new Date(r.created_at || 0).getTime(); },
                 filterValue: function (r) { return fmtTarih(r.created_at); },
@@ -759,9 +841,11 @@
             {
                 key: 'aksiyon',
                 etiket: 'İşlem',
+                cellClass: 'kamikaze-col-islem',
                 value: hikayeActionHtml,
                 raw: true,
-                sortable: false
+                sortable: false,
+                filter: false
             }
         ];
     }
@@ -921,6 +1005,9 @@
             title: 'Aranan hikayeler',
             rows: arr(aramaData.hikayeler),
             columns: hikayeKolonlari(),
+            wrapClass: 'kamikaze-table-wrap--pc',
+            tableClass: 'kamikaze-table--hikayeler',
+            sectionClass: 'kamikaze-section--wide',
             empty: 'Hikaye sonucu yok.'
         });
         html += renderTableSection({
@@ -962,7 +1049,9 @@
             title: 'Hikayeler',
             rows: hikayeler,
             columns: hikayeKolonlari(),
-            note: 'Durum filtresi üst çubuktan; sütun başlıkları ayrıca filtrelenebilir.',
+            wrapClass: 'kamikaze-table-wrap--pc',
+            tableClass: 'kamikaze-table--hikayeler',
+            sectionClass: 'kamikaze-section--wide',
             empty: 'Bu filtrede hikaye yok.'
         });
         html += renderTableSection({
@@ -970,11 +1059,15 @@
             title: 'Index liderlik (r sırası)',
             rows: arr(veri.index_lider || veri.kulis_lider),
             columns: hikayeKolonlari(),
+            wrapClass: 'kamikaze-table-wrap--pc',
+            tableClass: 'kamikaze-table--hikayeler',
+            sectionClass: 'kamikaze-section--wide',
             empty: 'Anasayfada hikaye yok.'
         });
-        html += '<p class="kamikaze-note">Arama, sütun filtreleri ve hikaye modalı üzerinden yönetim.</p>';
+        html += '<p class="kamikaze-note">Durum üst çubuktan; cinsiyet ve il listeden seçilir, diğer sütunlarda yazarak filtreleyebilirsiniz.</p>';
 
         kok.innerHTML = html;
+        kolonFiltreOdagiGeriYukle();
         if (meta) meta.textContent = 'Son güncelleme: ' + fmtTarih(veri.zaman);
     }
 
@@ -1838,6 +1931,9 @@
         if (sec) {
             sec.addEventListener('change', function () {
                 aktifFiltre = sec.value || 'hepsi';
+                if (tabloDurum.hikayeler && tabloDurum.hikayeler.filters) {
+                    delete tabloDurum.hikayeler.filters.durum;
+                }
                 renderCurrent();
             });
         }
@@ -1914,11 +2010,16 @@
 
             icerik.addEventListener('input', function (e) {
                 var filtre = e.target.closest('[data-km-filter]');
-                if (!filtre) return;
+                if (!filtre || filtre.tagName === 'SELECT') return;
                 var tablo = filtre.getAttribute('data-km-filter');
                 var key = filtre.getAttribute('data-key');
                 tabloState(tablo).filters[key] = filtre.value || '';
-                renderCurrent();
+                kolonFiltreOdagiKaydet(filtre);
+                if (kolonFiltreZamanlayici) clearTimeout(kolonFiltreZamanlayici);
+                kolonFiltreZamanlayici = setTimeout(function () {
+                    kolonFiltreZamanlayici = null;
+                    renderCurrent();
+                }, 200);
             });
 
             icerik.addEventListener('change', function (e) {
@@ -1927,6 +2028,11 @@
                 var tablo = filtre.getAttribute('data-km-filter');
                 var key = filtre.getAttribute('data-key');
                 tabloState(tablo).filters[key] = filtre.value || '';
+                if (kolonFiltreZamanlayici) {
+                    clearTimeout(kolonFiltreZamanlayici);
+                    kolonFiltreZamanlayici = null;
+                }
+                kolonFiltreOdak = null;
                 renderCurrent();
             });
         }

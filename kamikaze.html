@@ -191,6 +191,9 @@
             width: min(1180px, calc(100% - 24px));
             margin: 18px auto 40px;
         }
+        .kamikaze-page {
+            width: min(1440px, calc(100% - 32px));
+        }
         .page-title {
             font-size: clamp(28px, 5vw, 42px);
             line-height: 1.05;
@@ -366,11 +369,18 @@
             overflow-x: auto;
             border: 1px solid var(--border-color);
             border-radius: 14px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .kamikaze-table-wrap--pc {
+            background: var(--bg-card);
         }
         .kamikaze-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 12px;
+        }
+        .kamikaze-table--hikayeler {
+            min-width: 1080px;
         }
         .kamikaze-table th,
         .kamikaze-table td {
@@ -379,6 +389,82 @@
             border-bottom: 1px solid var(--border-color);
             vertical-align: top;
             font-weight: 600;
+        }
+        .kamikaze-gender {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .kamikaze-gender--e { color: var(--male-color); }
+        .kamikaze-gender--k { color: var(--female-color); }
+        .kamikaze-user {
+            font-weight: 800;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+        .kamikaze-il {
+            display: block;
+            font-size: 12px;
+            line-height: 1.35;
+            color: var(--text-muted);
+        }
+        .kamikaze-icerik {
+            display: block;
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .kamikaze-muted { color: var(--text-muted); }
+        .kamikaze-col-yas,
+        .kamikaze-col-metrik {
+            text-align: center;
+        }
+        .kamikaze-col-metrik {
+            font-variant-numeric: tabular-nums;
+            font-size: 11px;
+        }
+        @media (min-width: 1024px) {
+            .kamikaze-table-wrap--pc {
+                overflow-x: visible;
+            }
+            .kamikaze-table--hikayeler {
+                table-layout: fixed;
+                min-width: 0;
+            }
+            .kamikaze-table--hikayeler thead th {
+                position: sticky;
+                top: 0;
+                z-index: 2;
+            }
+            .kamikaze-table--hikayeler tbody tr:hover td {
+                background: rgba(29, 155, 240, 0.06);
+            }
+            body.dark-mode .kamikaze-table--hikayeler tbody tr:hover td {
+                background: rgba(29, 155, 240, 0.10);
+            }
+            .kamikaze-col-id { width: 3.25rem; }
+            .kamikaze-col-durum { width: 4.75rem; }
+            .kamikaze-col-user { width: 7.5rem; }
+            .kamikaze-col-yas { width: 2.75rem; }
+            .kamikaze-col-cinsiyet { width: 5.5rem; }
+            .kamikaze-col-il { width: 7rem; }
+            .kamikaze-col-metrik { width: 3.25rem; }
+            .kamikaze-col-tarih { width: 8.5rem; white-space: nowrap; }
+            .kamikaze-col-islem { width: 4.5rem; }
+            .kamikaze-col-icerik { width: auto; }
+            .kamikaze-table--hikayeler th,
+            .kamikaze-table--hikayeler td {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+            .kamikaze-table--hikayeler .kamikaze-th-input {
+                font-size: 11px;
+                padding: 5px 7px;
+            }
         }
         .kamikaze-table th {
             background: linear-gradient(180deg, rgba(29, 155, 240, 0.14) 0%, rgba(29, 155, 240, 0.08) 100%);
@@ -464,7 +550,7 @@
     <script src="js/gunde5-db.js"></script>
     <script src="js/gunde5-bildirim.js"></script>
     <script src="js/gunde5-master.js"></script>
-    <script src="js/gunde5-kamikaze.js"></script>
+    <script src="js/gunde5-kamikaze.js?v=4"></script>
 </head>
 <body>
     <header>
@@ -488,9 +574,9 @@
         </div>
     </header>
 
-    <main class="container">
+    <main class="container kamikaze-page">
         <h1 class="page-title">☄️ Kamikaze</h1>
-        <p class="intro">Master hesap için anasayfa hikayelerini arayıp yönetebileceğin panel. Planlı yayınlar «Hikayeler: Planlı» filtresinde.</p>
+        <p class="intro">Master hesap için anasayfa hikayelerini arayıp yönetebileceğin panel. Durum filtresi üst çubuktan (Tümü, Index, Planlı, Podyum).</p>
 
         <div id="kamikazeYetkisiz" class="kamikaze-yetkisiz" hidden>
             <p id="kamikazeYetkisizMetin"></p>
@@ -500,13 +586,11 @@
         </div>
 
         <div id="kamikazeAraclar" class="kamikaze-toolbar" hidden>
-            <select id="kamikazeHikayeFilter" class="kamikaze-select" aria-label="Hikaye filtresi">
-                <option value="hepsi">Hikayeler: Hepsi</option>
-                <option value="index">Hikayeler: Index</option>
-                <option value="planli">Hikayeler: Planlı</option>
-                <option value="podyum">Hikayeler: Podyum</option>
-                <option value="gizli">Hikayeler: Gizli</option>
-                <option value="silindi">Hikayeler: Silinen</option>
+            <select id="kamikazeHikayeFilter" class="kamikaze-select" aria-label="Hikaye durumu">
+                <option value="hepsi">Tümü</option>
+                <option value="index">Index</option>
+                <option value="planli">Planlı</option>
+                <option value="podyum">Podyum</option>
             </select>
             <button type="button" class="kamikaze-btn" id="kamikazeYenile">Yenile</button>
             <div class="kamikaze-meta" id="kamikazeSonMeta">—</div>

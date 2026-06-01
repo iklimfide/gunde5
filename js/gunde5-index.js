@@ -499,6 +499,7 @@
             );
             if (
                 !state.bugunBilgiGosterildi &&
+                state.siralama === 'yeni' &&
                 !state.aramaAktif &&
                 !hedefIdOku() &&
                 el.querySelectorAll('.story-card').length + frag.querySelectorAll('.story-card').length === 1

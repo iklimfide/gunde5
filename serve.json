@@ -16,9 +16,14 @@
     { "source": "/mudavimler.html", "destination": "/mudavimler" },
     { "source": "/uyeler.html", "destination": "/uyeler" },
     { "source": "/kamikaze.html", "destination": "/kamikaze" },
-    { "source": "/404.html", "destination": "/404" }
+    { "source": "/404.html", "destination": "/404" },
+    { "source": "/admin-submissions.html", "destination": "/admin/inbox?tab=hikaye" },
+    { "source": "/admin-messages.html", "destination": "/admin/inbox?tab=mesaj" },
+    { "source": "/admin/submissions", "destination": "/admin/inbox?tab=hikaye" },
+    { "source": "/admin/messages", "destination": "/admin/inbox?tab=mesaj" }
   ],
   "rewrites": [
+    { "source": "/admin/inbox", "destination": "/admin/inbox/index.html" },
     { "source": "/itiraf", "destination": "/itiraf/index.html" },
     { "source": "/itiraf/:id", "destination": "/itiraf/index.html" },
     { "source": "/h/:id", "destination": "/itiraf/index.html" }

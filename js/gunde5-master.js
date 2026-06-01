@@ -91,9 +91,11 @@
             profilModTemizle();
             menuGuncelle();
             menuHikayeGonderGuncelle();
+            menuAdminGonderimGuncelle();
             menuIstatistikGuncelle();
             menuUyelerGuncelle();
             menuKamikazeGuncelle();
+            menuSosyalPaylasGuncelle();
             return;
         }
         try {
@@ -106,9 +108,11 @@
         document.body.classList.remove('master-mod-aktif');
         menuGuncelle();
         menuHikayeGonderGuncelle();
+        menuAdminGonderimGuncelle();
         menuIstatistikGuncelle();
         menuUyelerGuncelle();
         menuKamikazeGuncelle();
+        menuSosyalPaylasGuncelle();
         temizleKartlar();
         profilModTemizle();
     }
@@ -165,6 +169,33 @@
         }
     }
 
+    function menuAdminGonderimKaldir() {
+        var link = document.getElementById('headerMenuAdminInbox');
+        if (link && link.parentNode) link.parentNode.removeChild(link);
+        var eski = ['headerMenuAdminSubmissions', 'headerMenuAdminMessages'];
+        eski.forEach(function (id) {
+            var n = document.getElementById(id);
+            if (n && n.parentNode) n.parentNode.removeChild(n);
+        });
+    }
+
+    function menuAdminGonderimGuncelle() {
+        if (!masterMi) {
+            menuAdminGonderimKaldir();
+            return;
+        }
+        menuAdminGonderimKaldir();
+        var nav = document.querySelector('.header-menu-nav');
+        if (!nav) return;
+        if (document.getElementById('headerMenuAdminInbox')) return;
+        var link = document.createElement('a');
+        link.href = '/admin/inbox';
+        link.className = 'header-menu-link header-menu-link--master';
+        link.id = 'headerMenuAdminInbox';
+        link.textContent = '📥 Gelen kutusu';
+        masterMenuNavEkle(link, 'headerMenuHikayeGonder');
+    }
+
     function menuIstatistikKaldir() {
         var link = document.getElementById('headerMenuIstatistik');
         if (link && link.parentNode) link.parentNode.removeChild(link);
@@ -190,11 +221,35 @@
         link.id = 'headerMenuKamikaze';
         link.textContent = '☄️ Kamikaze';
         masterMenuNavEkle(link, 'headerMenuMudavim');
+        menuSosyalPaylasGuncelle();
+    }
+
+    function menuSosyalPaylasKaldir() {
+        var link = document.getElementById('headerMenuSosyalPaylas');
+        if (link && link.parentNode) link.parentNode.removeChild(link);
+    }
+
+    function menuSosyalPaylasGuncelle() {
+        if (!masterMi) {
+            menuSosyalPaylasKaldir();
+            return;
+        }
+        var link = document.getElementById('headerMenuSosyalPaylas');
+        if (link) return;
+        var nav = document.querySelector('.header-menu-nav');
+        if (!nav) return;
+        link = document.createElement('a');
+        link.href = '/sosyal-paylas';
+        link.className = 'header-menu-link header-menu-link--master';
+        link.id = 'headerMenuSosyalPaylas';
+        link.textContent = '📱 Sosyal Medya Paylaşım';
+        masterMenuNavEkle(link, 'headerMenuKamikaze');
     }
 
     function menuIstatistikGuncelle() {
         if (!masterMi) {
             menuHikayeGonderKaldir();
+            menuAdminGonderimKaldir();
             menuIstatistikKaldir();
             menuMetrikKaldir();
             menuMudavimKaldir();

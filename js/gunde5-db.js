@@ -199,6 +199,12 @@
             msg.indexOf('gecersiz yayin tarihi') >= 0) {
             return 'Yayın tarihi geçersiz. Tarih/saat alanını temizleyip tekrar seçin.';
         }
+        if ((msg.indexOf('footer_gonder_') >= 0 || msg.indexOf('master_submissions') >= 0 ||
+                msg.indexOf('master_submission_guncelle') >= 0 ||
+                msg.indexOf('master_messages') >= 0 || msg.indexOf('master_bildirim') >= 0) &&
+            (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
+            return 'Footer gönderim kurulumu eksik. Supabase SQL Editor\'da supabase/footer-submissions.sql dosyasını çalıştırın.';
+        }
         if (msg.indexOf('master_') >= 0 && (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
             return 'Master yönetim yok. Supabase SQL Editor\'da supabase/master-admin.sql dosyasını çalıştırın.';
         }
@@ -451,7 +457,7 @@
         return q.lte('created_at', new Date().toISOString()).is('silindi_at', null);
     }
 
-    /** @param {'yeni'|'eski'|'populer'} sort */
+    /** @param {'yeni'|'populer'|'efsane'} sort */
     async function indexHikayeListeleSayfa(offset, limit, sort) {
         var sb = getClient();
         if (!sb) return [];
@@ -460,10 +466,26 @@
         var s = sort || 'yeni';
         var q = indexYayindaFiltre(sb.from('itiraflar').select(INDEX_ITIRAF_SELECT));
 
-        if (s === 'eski') {
-            q = q.order('created_at', { ascending: true });
-        } else if (s === 'populer') {
+        if (s === 'populer') {
             q = q.order('r', { ascending: false }).order('created_at', { ascending: false });
+        } else if (s === 'efsane') {
+            try {
+                var efsRes = await sb.rpc('index_itiraf_listele_efsane', {
+                    p_offset: off,
+                    p_limit: lim
+                });
+                if (!efsRes.error && efsRes.data != null) {
+                    var efsRows = efsRes.data;
+                    if (typeof efsRows === 'string') {
+                        try { efsRows = JSON.parse(efsRows); } catch (eParse) { efsRows = []; }
+                    }
+                    return Array.isArray(efsRows) ? efsRows : [];
+                }
+            } catch (eEfs) { /* RPC yoksa DB sırasına düş */ }
+            q = q
+                .order('tekil_goruntulenme', { ascending: false })
+                .order('sayfa_goruntulenme', { ascending: false })
+                .order('created_at', { ascending: false });
         } else {
             q = q.order('created_at', { ascending: false });
         }
@@ -1614,6 +1636,110 @@
         return goruntulenmeMapOlustur(res.data);
     }
 
+    async function footerGonderRpc(rpcAdi, payload) {
+        var sb = getClient();
+        if (!sb) return { ok: false, hata: 'Veritabanı yapılandırılmadı.' };
+        var body = Object.assign({}, payload || {}, {
+            user_agent: (global.navigator && global.navigator.userAgent) || ''
+        });
+        var res = await sb.rpc(rpcAdi, { p_body: body });
+        if (res.error) {
+            return { ok: false, hata: hataMesaji(res.error) };
+        }
+        var data = res.data;
+        if (typeof data === 'string') {
+            try {
+                data = JSON.parse(data);
+            } catch (e) { /* */ }
+        }
+        return data || { ok: false, hata: 'Yanıt alınamadı.' };
+    }
+
+    async function masterSubmissionsListele(opts) {
+        return masterRpc('master_submissions_listele', opts || {});
+    }
+
+    async function masterSubmissionIslem(id, action) {
+        return masterRpc('master_submission_islem', { id: id, action: action });
+    }
+
+    async function masterSubmissionGuncelle(body) {
+        return masterRpc('master_submission_guncelle', body || {});
+    }
+
+    async function masterMessagesListele(opts) {
+        return masterRpc('master_messages_listele', opts || {});
+    }
+
+    async function masterMessageIslem(id, action) {
+        return masterRpc('master_message_islem', { id: id, action: action });
+    }
+
+    var masterBildirimRtKanal = null;
+
+    async function masterBildirimleriListele(limit) {
+        var sb = getClient();
+        if (!sb) return [];
+        var lim = Math.max(1, Math.min(parseInt(limit, 10) || 30, 80));
+        var res = await sb.rpc('master_bildirimleri_listele', { p_limit: lim });
+        if (res.error) throw res.error;
+        return res.data || [];
+    }
+
+    async function masterBildirimOkunmamisSayisi() {
+        var sb = getClient();
+        if (!sb) return 0;
+        var res = await sb.rpc('master_bildirim_okunmamis_sayisi');
+        if (res.error) throw res.error;
+        return parseInt(res.data, 10) || 0;
+    }
+
+    async function masterBildirimOkundu(bildirimId) {
+        var sb = getClient();
+        if (!sb) return;
+        var id = parseInt(bildirimId, 10);
+        if (!id) return;
+        var res = await sb.rpc('master_bildirim_okundu', { p_id: id });
+        if (res.error) throw res.error;
+    }
+
+    async function masterBildirimTumunuOkundu() {
+        var sb = getClient();
+        if (!sb) return;
+        var res = await sb.rpc('master_bildirim_tumunu_okundu');
+        if (res.error) throw res.error;
+    }
+
+    function masterBildirimAboneligiBaslat(onYeni) {
+        var sb = getClient();
+        if (!sb) return null;
+        if (masterBildirimRtKanal) {
+            try {
+                sb.removeChannel(masterBildirimRtKanal);
+            } catch (e) { /* */ }
+        }
+        var ch = sb.channel('g5_master_bildirim_' + Date.now());
+        ch.on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'master_bildirimler' },
+            function () {
+                if (typeof onYeni === 'function') onYeni();
+            }
+        );
+        ch.subscribe();
+        masterBildirimRtKanal = ch;
+        return ch;
+    }
+
+    function masterBildirimAboneligiKapat() {
+        if (!masterBildirimRtKanal) return;
+        try {
+            var sb = getClient();
+            if (sb) sb.removeChannel(masterBildirimRtKanal);
+        } catch (e) { /* */ }
+        masterBildirimRtKanal = null;
+    }
+
     var bildirimRtKanal = null;
 
     async function bildirimleriListele(limit) {
@@ -2072,6 +2198,18 @@
         bildirimTumunuOkundu: bildirimTumunuOkundu,
         bildirimAboneligiBaslat: bildirimAboneligiBaslat,
         bildirimAboneligiKapat: bildirimAboneligiKapat,
+        footerGonderRpc: footerGonderRpc,
+        masterSubmissionsListele: masterSubmissionsListele,
+        masterSubmissionIslem: masterSubmissionIslem,
+        masterSubmissionGuncelle: masterSubmissionGuncelle,
+        masterMessagesListele: masterMessagesListele,
+        masterMessageIslem: masterMessageIslem,
+        masterBildirimleriListele: masterBildirimleriListele,
+        masterBildirimOkunmamisSayisi: masterBildirimOkunmamisSayisi,
+        masterBildirimOkundu: masterBildirimOkundu,
+        masterBildirimTumunuOkundu: masterBildirimTumunuOkundu,
+        masterBildirimAboneligiBaslat: masterBildirimAboneligiBaslat,
+        masterBildirimAboneligiKapat: masterBildirimAboneligiKapat,
         kayitOl: kayitOl,
         girisYap: girisYap,
         cikisYap: cikisYap,
