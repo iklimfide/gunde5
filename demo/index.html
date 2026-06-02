@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC tasarım demoları — gunde5</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="../favicon.ico">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f4f6f8;
+            color: #111827;
+            padding: 32px 20px 48px;
+            line-height: 1.5;
+        }
+        .wrap { max-width: 720px; margin: 0 auto; }
+        h1 { font-size: 28px; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 8px; }
+        .sub { color: #6b7280; font-size: 14px; font-weight: 600; margin-bottom: 24px; }
+        .warn {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #78350f;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        .kartlar { display: grid; gap: 14px; }
+        .kart {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 20px;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .kart:hover {
+            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .kart h2 { font-size: 18px; font-weight: 900; margin-bottom: 6px; }
+        .kart p { font-size: 14px; color: #4b5563; font-weight: 600; }
+        .kart .etiket {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #1d9bf0;
+        }
+        .istat {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 700;
+        }
+        .geri { margin-top: 28px; font-size: 14px; }
+        .geri a { color: #1d9bf0; font-weight: 800; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>PC tasarım demoları</h1>
+        <p class="sub">Geçici önizleme — karar verince silinecek. Masaüstü tarayıcıda (≥1024px) açın.</p>
+        <p class="warn">⚠️ Canlı siteye bağlı değil; örnek metin ve düzen. Mobil tasarım aynı kalır.</p>
+
+        <div class="kartlar">
+            <a class="kart" href="pc-tasarim-a.html">
+                <h2>A — Okuma odaklı</h2>
+                <p>Geniş tipografi, tek ana sütun, ince yan menü. “Kahveni al, 5 dakika oku” hissi.</p>
+                <span class="etiket">Dergi / odak modu</span>
+            </a>
+            <a class="kart" href="pc-tasarim-b.html">
+                <h2>B — Dashboard (v2)</h2>
+                <p>Okuma ilerlemesi, Bugünün 5 navigasyonu, etiket filtresi, sıralama, ritüel paneli.</p>
+                <span class="etiket">Panel / keşif · güncellendi</span>
+            </a>
+        </div>
+
+        <p class="istat">Metrik notu: mobil ~%95, masaüstü ~%5 — yine de ~470 oturum/ay PC deneyimi hak ediyor.</p>
+        <p class="geri"><a href="/">← Canlı anasayfaya dön</a></p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,425 @@
+/* gunde5 — PC katmanı (mobil bozulmasın) */
+@media (min-width: 1024px) {
+    /* Üst bar (hamburger + gunde5.com) kaymasın */
+    .page-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 300;
+        padding: 10px 8px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.92);
+        border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+        backdrop-filter: blur(10px);
+    }
+
+    body.dark-mode .page-topbar,
+    [data-theme="dark"] .page-topbar {
+        background: rgba(21, 24, 28, 0.92);
+        border-bottom-color: rgba(255, 255, 255, 0.10);
+    }
+
+    body {
+        padding: 0 0 48px;
+        background: #f4f6f8;
+    }
+
+    main {
+        max-width: 1280px;
+        padding: 0 20px 24px;
+    }
+
+    /* Mobilde 500px sınırlıydı, PC’de genişlet */
+    .pc-shell {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 760px) 320px;
+        gap: 22px;
+        align-items: start;
+        margin-top: 10px;
+    }
+
+    .pc-only { display: block; }
+
+    .pc-left,
+    .pc-right {
+        position: sticky;
+        top: 84px; /* sticky topbar altında */
+        align-self: start;
+    }
+
+    .pc-center {
+        min-width: 0;
+    }
+
+    /* Hero (demo B-v2 hissi) */
+    .pc-hero {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px 18px;
+        align-items: start;
+        border-radius: 18px;
+        padding: 18px 18px;
+        margin: 6px 0 14px;
+        color: #fff;
+        background: radial-gradient(900px 260px at 18% 12%, rgba(255, 255, 255, 0.35), rgba(255,255,255,0) 58%),
+            linear-gradient(135deg, #1d9bf0 0%, #0e7490 55%, #0f172a 100%);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+    }
+    .pc-hero-baslik {
+        font-size: 26px;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        margin-bottom: 6px;
+        line-height: 1.15;
+    }
+    .pc-hero-alt {
+        font-size: 15px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        opacity: 0.96;
+    }
+    .pc-hero-kucuk {
+        font-size: 13px;
+        font-weight: 700;
+        opacity: 0.88;
+        margin-bottom: 12px;
+    }
+    .pc-hero-cta {
+        border: none;
+        background: rgba(255, 255, 255, 0.92);
+        color: #0c4a6e;
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        font-family: inherit;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+        margin: 0 0 12px;
+    }
+    .pc-hero-cta:hover { filter: brightness(1.03); }
+    .pc-hero-ilerleme {
+        height: 8px;
+        background: rgba(255, 255, 255, 0.25);
+        border-radius: 999px;
+        overflow: hidden;
+        max-width: 320px;
+    }
+    .pc-hero-ilerleme-dolgu {
+        height: 100%;
+        width: 0%;
+        background: #fff;
+        border-radius: 999px;
+        transition: width 0.35s ease;
+    }
+    .pc-hero-ilerleme-metin {
+        margin-top: 6px;
+        font-size: 11px;
+        font-weight: 800;
+        opacity: 0.92;
+    }
+    .pc-hero-sag {
+        text-align: right;
+        min-width: 140px;
+    }
+    .pc-hero-sag-etiket {
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.85;
+        margin-bottom: 6px;
+    }
+    .pc-hero-sag-sayi {
+        font-size: 30px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        line-height: 1;
+    }
+    .pc-hero-sag-sayi span {
+        font-size: 14px;
+        font-weight: 800;
+        opacity: 0.85;
+    }
+
+    .pc-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 12px;
+    }
+    .pc-pill {
+        border: 1px solid rgba(17, 24, 39, 0.10);
+        background: rgba(255,255,255,0.75);
+        color: rgba(17, 24, 39, 0.88);
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+        font-family: inherit;
+        max-width: 190px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pc-pill:hover { border-color: rgba(29,155,240,0.35); }
+    .pc-pill--aktif {
+        background: rgba(29,155,240,0.14);
+        border-color: rgba(29,155,240,0.35);
+        color: #0c4a6e;
+    }
+    .pc-pill--okundu { opacity: 0.65; }
+
+    /* İstenmeyen bloklar (PC): pill bar + sıralama seçici */
+    #pcPills { display: none !important; }
+    .index-siralama-wrap { display: none !important; }
+
+    /* Sol kutular */
+    .pc-left-kutu,
+    .pc-right-kutu {
+        background: var(--bg-card);
+        border: 1px solid rgba(17, 24, 39, 0.08);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.06);
+    }
+
+    .pc-left-kutu--rituel {
+        background: radial-gradient(900px 240px at 20% 10%, rgba(255,255,255,0.55), rgba(255,255,255,0) 60%),
+            linear-gradient(135deg, rgba(29,155,240,0.18), rgba(245,158,11,0.12));
+        border-color: rgba(29, 155, 240, 0.16);
+    }
+
+    .pc-left-etiket {
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(17, 24, 39, 0.6);
+        margin-bottom: 8px;
+    }
+    .pc-left-baslik {
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        margin-bottom: 8px;
+        color: var(--text-main);
+    }
+    .pc-left-alt {
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.5;
+        color: rgba(17, 24, 39, 0.72);
+        margin-bottom: 12px;
+    }
+    .pc-left-cta {
+        width: 100%;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 12px;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        font-family: inherit;
+        background: rgba(255,255,255,0.92);
+        color: #0c4a6e;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.14);
+    }
+    .pc-left-cta:hover { filter: brightness(1.03); }
+
+    .pc-left-link {
+        width: 100%;
+        text-align: left;
+        border: 1px solid transparent;
+        background: transparent;
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        font-family: inherit;
+        color: var(--text-main);
+        margin-top: 6px;
+    }
+    .pc-left-link:hover {
+        background: rgba(29,155,240,0.08);
+        border-color: rgba(29,155,240,0.16);
+    }
+    .pc-left-link--aktif {
+        background: rgba(29,155,240,0.10);
+        border-color: rgba(29,155,240,0.22);
+        color: #0c4a6e;
+    }
+
+    /* Sağ taraf */
+    .pc-right-kutu--vurgu {
+        border-color: rgba(29,155,240,0.22);
+        background: linear-gradient(180deg, rgba(29,155,240,0.06), var(--bg-card));
+    }
+    .pc-right-baslik {
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        margin-bottom: 10px;
+        color: var(--text-main);
+    }
+    .pc-right-metin {
+        font-size: 14px;
+        font-weight: 700;
+        color: rgba(17, 24, 39, 0.86);
+        line-height: 1.5;
+    }
+    .pc-right-metin strong { color: var(--accent); font-weight: 900; }
+    .pc-right-note {
+        margin-top: 6px;
+        font-size: 11px;
+        font-weight: 800;
+        color: rgba(17, 24, 39, 0.55);
+        line-height: 1.35;
+    }
+
+    .pc-right-liste {
+        list-style: none;
+        display: grid;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+    }
+    .pc-right-liste a {
+        display: block;
+        padding: 8px 10px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        color: var(--text-main);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pc-right-liste a:hover {
+        background: rgba(29,155,240,0.08);
+        border-color: rgba(29,155,240,0.16);
+        text-decoration: none;
+    }
+
+    .pc-right-cta {
+        width: 100%;
+        margin-top: 10px;
+        border: 1px solid rgba(29,155,240,0.22);
+        background: rgba(29,155,240,0.10);
+        color: #0c4a6e;
+        padding: 10px 12px;
+        border-radius: 14px;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        font-family: inherit;
+    }
+    .pc-right-cta:hover {
+        border-color: rgba(29,155,240,0.40);
+        background: rgba(29,155,240,0.14);
+    }
+
+    .pc-favori strong {
+        display: block;
+        font-size: 13px;
+        font-weight: 900;
+        margin-bottom: 6px;
+        line-height: 1.25;
+        color: var(--text-main);
+    }
+    .pc-favori span {
+        font-size: 11px;
+        font-weight: 800;
+        color: rgba(17, 24, 39, 0.6);
+    }
+    .pc-favori-link {
+        display: block;
+        text-decoration: none;
+        padding: 10px 10px;
+        border-radius: 14px;
+        border: 1px solid transparent;
+        background: rgba(255,255,255,0.55);
+    }
+    .pc-favori-link:hover {
+        border-color: rgba(29,155,240,0.20);
+        background: rgba(29,155,240,0.06);
+        text-decoration: none;
+    }
+
+    .pc-rastgele {
+        position: relative;
+    }
+    .pc-rastgele-link {
+        display: block;
+        text-decoration: none;
+        border-radius: 16px;
+    }
+    .pc-rastgele-link:hover .pc-rastgele-metin {
+        border-color: rgba(29,155,240,0.22);
+        background: rgba(29,155,240,0.06);
+    }
+    .pc-rastgele-btn {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        border: 1px solid rgba(17, 24, 39, 0.10);
+        background: rgba(255, 255, 255, 0.82);
+        border-radius: 10px;
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: 900;
+        cursor: pointer;
+        font-family: inherit;
+        color: rgba(17, 24, 39, 0.66);
+    }
+    .pc-rastgele-btn:hover { color: #0c4a6e; border-color: rgba(29,155,240,0.25); }
+    .pc-rastgele-metin {
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.5;
+        font-style: italic;
+        padding: 12px 12px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.65);
+        border: 1px dashed rgba(17, 24, 39, 0.12);
+        color: rgba(17, 24, 39, 0.86);
+        margin: 8px 0 0;
+    }
+    .pc-rastgele-kaynak {
+        display: block;
+        margin-top: 8px;
+        font-size: 11px;
+        font-weight: 900;
+        color: rgba(17, 24, 39, 0.6);
+    }
+
+    /* PC’de headline/toolbar biraz nefes alsın */
+    .index-tagline {
+        margin: 10px 0 18px;
+        text-align: center;
+    }
+
+    /* Sıralama kalkınca arama kutusu tam genişlik */
+    .index-toolbar {
+        justify-content: center;
+    }
+    .index-toolbar .index-arama-kutu {
+        flex: 1;
+        max-width: 640px;
+    }
+
+    /* Hash ile inince header altında kalmasın */
+    #indexListe .story-card {
+        scroll-margin-top: 96px;
+    }
+}
+
+/* Mobilde PC kolonları görünmesin */
+@media (max-width: 1023px) {
+    .pc-only { display: none !important; }
+}
+

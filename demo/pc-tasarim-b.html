@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC Demo B-v2 — Masaüstü ritüel tasarımı | gunde5</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="pc-demo-shared.css">
+    <link rel="stylesheet" href="pc-dashboard.css">
+</head>
+<body class="demo-bv2">
+    <div class="demo-banner">
+        <strong>GEÇİCİ DEMO B-v2 — Masaüstü ritüel tasarımı</strong> · Silinecek
+        <nav class="demo-banner-nav" aria-label="Demo gezinme">
+            <a href="index.html">Karşılaştırma</a>
+            <a class="demo-banner-nav--aktif" href="pc-tasarim-b.html">B-v2 — Ritüel</a>
+            <a href="pc-tasarim-a.html">A — Okuma</a>
+            <a href="/">Canlı site</a>
+        </nav>
+    </div>
+
+    <p class="demo-mobil-uyari">PC demosu — geniş ekranda açın. <a href="index.html">Demo listesi</a></p>
+
+    <header class="demo-header demo-header--b demo-pc-only">
+        <div class="demo-header-inner">
+            <a href="/" class="demo-brand">gunde<span>5</span>.com</a>
+            <label class="demo-header-arama">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.75"/><path d="M15.75 15.75L20 20"/></svg>
+                <input type="search" id="demoArama" placeholder="Hikâye, rumuz veya kelime ara…" autocomplete="off">
+            </label>
+            <div class="demo-header-aksiyon">
+                <button type="button" class="demo-btn demo-btn--ikon demo-btn-dot" aria-label="Bildirimler">🔔</button>
+                <button type="button" class="demo-btn" id="themeToggle" aria-label="Tema">🌙</button>
+                <button type="button" class="demo-btn demo-btn--birincil">✍️ Gönder</button>
+                <button type="button" class="demo-header-profil" aria-label="Profil">
+                    <span class="demo-header-profil-avatar">M</span>
+                    <span>Master</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="demo-b-shell demo-pc-only">
+        <p class="demo-b-not">b-v2: masaüstünde “günlük 5 hikâye” ritüeli — panel değil, kahve molası hissi (demo).</p>
+
+        <div class="demo-b-nav-wrap">
+            <div class="demo-b-nav-marka">
+                <span class="demo-etiket">Günde5</span>
+                <p>Her sabah 5 kısa hikâye.</p>
+            </div>
+            <div class="demo-b-rituel-kutu">
+                <strong>☕ Sabah ritüeli</strong>
+                <span>Her gün 5 hikâye · ~5 dk · Kahven hazırsa başla.</span>
+            </div>
+            <nav class="demo-b-nav" aria-label="Ana menü">
+                <div class="demo-b-nav-grup">Keşfet</div>
+                <button type="button" class="aktif" data-demo-nav="bugun">📖 Bugünün 5'i <span class="demo-b-nav-badge">5</span></button>
+                <button type="button" data-demo-nav="sevilen">🔥 Sevilenler</button>
+                <button type="button" data-demo-nav="efsane">🏆 Efsaneler</button>
+                <button type="button" data-demo-nav="rastgele">🎲 Rastgele</button>
+                <button type="button" data-demo-nav="yaz">✍️ Hikaye Yaz</button>
+            </nav>
+
+            <div class="demo-sidebar-kutu">
+                <h3>🔥 Dünün favorisi</h3>
+                <div class="demo-b-favori-kart">
+                    <strong>Komşunun kedisi kapıda</strong>
+                    <span>👍 312 · 💬 88 · dün 18:20</span>
+                </div>
+            </div>
+
+            <div class="demo-sidebar-kutu demo-b-rastgele-kutu">
+                <h3>🎲 Rastgele satır</h3>
+                <button type="button" class="demo-b-yenile" id="demoRastgeleBtn">Yenile</button>
+                <blockquote class="demo-b-rastgele" id="demoRastgeleMetin">“Üç durak boyunca açıklama yaptım.”</blockquote>
+                <span class="demo-b-rastgele-kaynak" id="demoRastgeleKaynak">— Maltepe Avcısı</span>
+            </div>
+        </div>
+
+        <div class="demo-b-main">
+            <div class="demo-b-main-arkaplan">
+                <div class="demo-b-hero">
+                    <div class="demo-b-hero-sol">
+                        <h1>☕ Günaydın</h1>
+                        <p class="demo-b-hero-altbaslik">Bugünün 5 hikayesi hazır.</p>
+                        <p class="demo-b-hero-kucuk">Kahveni al, birkaç dakikada oku.</p>
+                        <button type="button" class="demo-b-hero-cta" id="demoBaslaBtn">Bugünün 5'ine başla</button>
+                        <div class="demo-b-ilerleme" aria-hidden="true">
+                            <div class="demo-b-ilerleme-dolgu" id="demoIlerleme"></div>
+                        </div>
+                        <p class="demo-b-ilerleme-metin" id="demoIlerlemeMetin">Bugünün 5'inden 2 tanesini okudun.</p>
+                    </div>
+                    <div class="demo-b-hero-sag">
+                        <p class="demo-b-hero-saat">Bugün</p>
+                        <p class="demo-b-hero-sayi">5 <span>hikâye</span></p>
+                    </div>
+                </div>
+
+                <div class="demo-b-pills" id="demoPills" role="tablist" aria-label="Bugünün 5'i">
+                    <button type="button" class="demo-b-pill aktif" data-demo-hikaye="1">1️⃣ Türk Kahvesi</button>
+                    <button type="button" class="demo-b-pill" data-demo-hikaye="2">2️⃣ Malzeme</button>
+                    <button type="button" class="demo-b-pill demo-b-pill--okundu" data-demo-hikaye="3">3️⃣ Pisuvar</button>
+                    <button type="button" class="demo-b-pill demo-b-pill--okundu" data-demo-hikaye="4">4️⃣ Maltepe</button>
+                    <button type="button" class="demo-b-pill" data-demo-hikaye="5">5️⃣ Malezya</button>
+                </div>
+
+                <div class="demo-b-toolbar">
+                    <input type="search" id="demoFeedArama" placeholder="Bugünün 5'inde ara…" autocomplete="off">
+                    <select id="demoSiralama" aria-label="Sıralama">
+                        <option value="yeni">📖 Yayın sırası</option>
+                        <option value="populer">🔥 En çok oy</option>
+                        <option value="yorum">💬 En çok yorum</option>
+                    </select>
+                </div>
+
+                <div class="demo-b-feed" id="demoFeed">
+                    <article class="demo-kart demo-b-kart female" data-demo-id="1" data-demo-etiket="komik kahve" data-demo-oy="142">
+                        <div class="demo-kart-sira">1</div>
+                        <div class="demo-kart-icerik">
+                            <div class="demo-kart-ust">
+                                <div class="demo-avatar">♀</div>
+                                <div class="demo-kart-meta">Kadın · 28 · İstanbul Anadolu · <span class="demo-kart-dk">2 dk</span></div>
+                            </div>
+                            <h2 class="demo-kart-baslik">☕ Türk Kahvesi Kazandı</h2>
+                            <p class="demo-kart-ozet">Falda çıkan isimle gerçek hayattaki kişinin çakışması… Telve değil, kader mi bilemedim. Ofiste herkes güldü.</p>
+                            <div class="demo-kart-alt"><span>👍 <b class="demo-oy-sayi">142</b> · 💬 38 · 🕐 08:12</span></div>
+                        </div>
+                        <div class="demo-kart-aksiyon">
+                            <span class="demo-b-kart-ribbon">Yeni</span>
+                            <div class="demo-b-oy-grup">
+                                <button type="button" class="demo-b-oy-btn" data-demo-oy="up" aria-label="Beğen">👍</button>
+                                <button type="button" class="demo-b-oy-btn" data-demo-oy="dn" aria-label="Beğenme">👎</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="demo-kart demo-b-kart male okundu" data-demo-id="2" data-demo-etiket="iş ev" data-demo-oy="89">
+                        <div class="demo-kart-sira">2</div>
+                        <div class="demo-kart-icerik">
+                            <div class="demo-kart-ust">
+                                <div class="demo-avatar">♂</div>
+                                <div class="demo-kart-meta">Erkek · 34 · Ankara · <span class="demo-kart-dk">3 dk</span></div>
+                            </div>
+                            <h2 class="demo-kart-baslik">Malzeme Meselesi</h2>
+                            <p class="demo-kart-ozet">Ev arkadaşımla bulaşık deterjanı kavgası üç gün sürdü. Sonunda etiketi okumadığımızı fark ettik.</p>
+                            <div class="demo-kart-alt"><span>👍 <b class="demo-oy-sayi">89</b> · 💬 21 · 🕐 09:04</span></div>
+                        </div>
+                        <div class="demo-kart-aksiyon">
+                            <span class="demo-b-kart-ribbon demo-b-kart-ribbon--cins">Erkek</span>
+                            <div class="demo-b-oy-grup">
+                                <button type="button" class="demo-b-oy-btn" data-demo-oy="up">👍</button>
+                                <button type="button" class="demo-b-oy-btn" data-demo-oy="dn">👎</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="demo-kart demo-b-kart male okundu" data-demo-id="3" data-demo-etiket="iş komik" data-demo-oy="201">
+                        <div class="demo-kart-sira">3</div>
+                        <div class="demo-kart-icerik">
+                            <div class="demo-kart-ust">
+                                <div class="demo-avatar">♂</div>
+                                <div class="demo-kart-meta">Erkek · 41 · İzmir · <span class="demo-kart-dk">2 dk</span></div>
+                            </div>
+                            <h2 class="demo-kart-baslik">Pisuvar Paradoksu</h2>
+                            <p class="demo-kart-ozet">İş yerinde “temizlik turnuvası” diye şaka yaptık, HR ciddiye aldı. Ödül: hijyen sertifikası.</p>
+                            <div class="demo-kart-alt"><span>👍 <b class="demo-oy-sayi">201</b> · 💬 56 · 🕐 10:18</span></div>
+                        </div>
+                        <div class="demo-kart-aksiyon">
+                            <span class="demo-b-kart-ribbon">🔥 Popüler</span>
+                            <div class="demo-b-oy-grup">
+                                <button type="button" class="demo-b-oy-btn" data-demo-oy="up">👍</button>
+                                <button type="button" class="demo-b-oy-btn" data-demo-oy="dn">👎</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="demo-kart demo-b-kart female" data-demo-id="4" data-demo-etiket="aşk şehir" data-demo-oy="67">
+                        <div class="demo-kart-sira">4</div>
+                        <div class="demo-kart-icerik">
+                            <div class="demo-kart-ust">
+                                <div class="demo-avatar">♀</div>
+                                <div class="demo-kart-meta">Kadın · 26 · İstanbul · <span class="demo-kart-dk">2 dk</span></div>
+                            </div>
+                            <h2 class="demo-kart-baslik">Maltepe Avcısı</h2>
+                            <p class="demo-kart-ozet">Metroda tanımadığım biri “seni Maltepe’de gördüm” dedi. Ben Kadıköy’de yaşıyorum.</p>
+                            <div class="demo-kart-alt"><span>👍 <b class="demo-oy-sayi">67</b> · 💬 14 · 🕐 11:02</span></div>
+                        </div>
+                        <div class="demo-kart-aksiyon">
+                            <span class="demo-b-kart-ribbon demo-b-kart-ribbon--cins">Kadın</span>
+                            <div class="demo-b-oy-grup">
+                                <button type="button" class="demo-b-oy-btn" data-demo-oy="up">👍</button>
+                                <button type="button" class="demo-b-oy-btn" data-demo-oy="dn">👎</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="demo-kart demo-b-kart male" data-demo-id="5" data-demo-etiket="aile komik" data-demo-oy="118">
+                        <div class="demo-kart-sira">5</div>
+                        <div class="demo-kart-icerik">
+                            <div class="demo-kart-ust">
+                                <div class="demo-avatar">♂</div>
+                                <div class="demo-kart-meta">Erkek · 29 · Yurtdışı · <span class="demo-kart-dk">3 dk</span></div>
+                            </div>
+                            <h2 class="demo-kart-baslik">Malezya diye bir yer</h2>
+                            <p class="demo-kart-ozet">Annem haritada Malezya’yı “memleket sandığımız köy” sanıyor. Akrabalar uçak bileti araştırdı.</p>
+                            <div class="demo-kart-alt"><span>👍 <b class="demo-oy-sayi">118</b> · 💬 29 · 🕐 12:40</span></div>
+                        </div>
+                        <div class="demo-kart-aksiyon">
+                            <span class="demo-b-kart-ribbon">Son hikâye</span>
+                            <div class="demo-b-oy-grup">
+                                <button type="button" class="demo-b-oy-btn" data-demo-oy="up">👍</button>
+                                <button type="button" class="demo-b-oy-btn" data-demo-oy="dn">👎</button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <p id="demoFeedBos" class="demo-etiket" style="display:none;text-align:center;padding:24px 0">Eşleşen hikâye yok (demo filtresi).</p>
+            </div>
+        </div>
+
+        <aside class="demo-b-sidebar">
+            <div class="demo-sidebar-kutu demo-sidebar-kutu--vurgu">
+                <h3>📍 Bugünün 5'i</h3>
+                <ul class="demo-b-bes-liste" id="demoBesListe">
+                    <li><button type="button" class="aktif" data-demo-scroll="1"><span class="demo-b-bes-no">1</span><span class="demo-b-bes-baslik">Türk Kahvesi Kazandı</span></button></li>
+                    <li><button type="button" data-demo-scroll="2"><span class="demo-b-bes-no">2</span><span class="demo-b-bes-baslik">Malzeme Meselesi</span></button></li>
+                    <li><button type="button" data-demo-scroll="3"><span class="demo-b-bes-no">3</span><span class="demo-b-bes-baslik">Pisuvar Paradoksu</span></button></li>
+                    <li><button type="button" data-demo-scroll="4"><span class="demo-b-bes-no">4</span><span class="demo-b-bes-baslik">Maltepe Avcısı</span></button></li>
+                    <li><button type="button" data-demo-scroll="5"><span class="demo-b-bes-no">5</span><span class="demo-b-bes-baslik">Malezya diye bir yer</span></button></li>
+                </ul>
+            </div>
+
+            <div class="demo-sidebar-kutu">
+                <h3>☕ Bugün kahvesini alanlar</h3>
+                <p class="demo-b-topluluk-metin"><strong>327 kişi</strong> bugünün 5'ine başladı.</p>
+            </div>
+
+            <div class="demo-sidebar-kutu">
+                <h3>📖 5'ini tamamlayanlar</h3>
+                <p class="demo-b-topluluk-metin"><strong>84 kişi</strong> bugünün 5 hikâyesini bitirdi.</p>
+            </div>
+
+            <div class="demo-sidebar-kutu">
+                <button type="button" class="demo-b-cta-gonder">✍️ Hikâyeni veya mesajını gönder</button>
+            </div>
+        </aside>
+    </div>
+
+    <script src="pc-dashboard-demo.js"></script>
+</body>
+</html>

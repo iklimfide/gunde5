@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC Demo A — Okuma odaklı | gunde5</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="pc-demo-shared.css">
+    <style>
+        .demo-a-hero {
+            max-width: var(--read-col);
+            margin: 0 auto 28px;
+            padding: 28px 0 8px;
+        }
+        .demo-a-hero .tarih {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 8px;
+        }
+        .demo-a-hero h1 {
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            line-height: 1.12;
+            margin-bottom: 12px;
+        }
+        .demo-a-hero .rituel {
+            font-size: 17px;
+            color: var(--text-muted);
+            font-weight: 600;
+            max-width: 52ch;
+        }
+        .demo-a-layout {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px 48px;
+            display: grid;
+            grid-template-columns: minmax(0, var(--read-col)) var(--sidebar-w);
+            gap: 40px;
+            align-items: start;
+        }
+        .demo-a-feed { min-width: 0; }
+        .demo-a-sidebar {
+            position: sticky;
+            top: 88px;
+        }
+        .demo-a-sidebar .demo-sidebar-kutu--bugun {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(29, 155, 240, 0.15);
+        }
+        .demo-a-arama {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+        .demo-a-not {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+        .demo-a-kart-sira {
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            letter-spacing: 0.04em;
+        }
+        @media (max-width: 1100px) {
+            .demo-a-layout {
+                grid-template-columns: 1fr;
+            }
+            .demo-a-sidebar { position: static; }
+            .demo-a-hero { padding-left: 0; padding-right: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-banner">
+        <strong>GEÇİCİ DEMO A</strong> — Okuma odaklı PC tasarımı · Silinecek
+        <nav class="demo-banner-nav" aria-label="Demo gezinme">
+            <a href="index.html">Karşılaştırma</a>
+            <a href="pc-tasarim-b.html">B — Dashboard</a>
+            <a href="/">Canlı site</a>
+            <a class="demo-banner-nav--aktif" href="pc-tasarim-a.html">A — Okuma</a>
+        </nav>
+    </div>
+
+    <p class="demo-mobil-uyari">Bu sayfa PC demosu. En iyi görünüm için geniş ekranda açın veya <a href="index.html">demo listesine</a> dönün.</p>
+
+    <header class="demo-header demo-pc-only">
+        <div class="demo-header-inner">
+            <a href="/" class="demo-brand">gunde<span>5</span>.com</a>
+            <div class="demo-header-aksiyon">
+                <button type="button" class="demo-btn" id="themeToggle" aria-label="Tema">🌙</button>
+                <button type="button" class="demo-btn">🔔</button>
+                <button type="button" class="demo-btn demo-btn--birincil">Profil</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="demo-pc-only">
+        <div class="demo-a-hero">
+            <p class="tarih">2 Haziran 2026 · İstanbul</p>
+            <h1>Bugünün 5'i</h1>
+            <p class="rituel">Her sabah 5 gerçek hikâye. Kahveni al, 5 dakika ayır — sonra güne devam.</p>
+        </div>
+
+        <p class="demo-a-not">Ana sütun ~720px okuma genişliği · Yan panel sabit · Mobilde mevcut tek sütun tasarım kalır.</p>
+
+        <div class="demo-a-layout">
+            <div class="demo-a-feed">
+                <article class="demo-kart female" id="h1">
+                    <p class="demo-a-kart-sira">1 / 5</p>
+                    <div class="demo-kart-ust">
+                        <div class="demo-avatar" aria-hidden="true">♀</div>
+                        <div>
+                            <div class="demo-kart-meta">Kadın · 28 · İstanbul Anadolu · ~2 dk okuma</div>
+                        </div>
+                    </div>
+                    <h2 class="demo-kart-baslik">☕ Türk Kahvesi Kazandı</h2>
+                    <p class="demo-kart-ozet">Falda çıkan isimle gerçek hayattaki kişinin çakışması… Telve değil, kader mi bilemedim. Ofiste herkes güldü, ben hâlâ utanıyorum.</p>
+                    <div class="demo-kart-alt">
+                        <span>👍 142 · 💬 38</span>
+                        <span class="demo-kart-oku">Devamını oku →</span>
+                    </div>
+                </article>
+
+                <article class="demo-kart male" id="h2">
+                    <p class="demo-a-kart-sira">2 / 5</p>
+                    <div class="demo-kart-ust">
+                        <div class="demo-avatar">♂</div>
+                        <div class="demo-kart-meta">Erkek · 34 · Ankara · ~3 dk okuma</div>
+                    </div>
+                    <h2 class="demo-kart-baslik">Malzeme Meselesi</h2>
+                    <p class="demo-kart-ozet">Ev arkadaşımla bulaşık deterjanı kavgası üç gün sürdü. Sonunda etiketi okumadığımızı fark ettik — ikimiz de yanlış kabı doldurmuşuz.</p>
+                    <div class="demo-kart-alt">
+                        <span>👍 89 · 💬 21</span>
+                        <span class="demo-kart-oku">Devamını oku →</span>
+                    </div>
+                </article>
+
+                <article class="demo-kart male" id="h3">
+                    <p class="demo-a-kart-sira">3 / 5</p>
+                    <div class="demo-kart-ust">
+                        <div class="demo-avatar">♂</div>
+                        <div class="demo-kart-meta">Erkek · 41 · İzmir · ~2 dk okuma</div>
+                    </div>
+                    <h2 class="demo-kart-baslik">Pisuvar Paradoksu</h2>
+                    <p class="demo-kart-ozet">İş yerinde “temizlik turnuvası” diye şaka yaptık, HR ciddiye aldı. Ödül: hijyen sertifikası. Paradoks burada başlıyor.</p>
+                    <div class="demo-kart-alt">
+                        <span>👍 201 · 💬 56</span>
+                        <span class="demo-kart-oku">Devamını oku →</span>
+                    </div>
+                </article>
+
+                <article class="demo-kart female" id="h4">
+                    <p class="demo-a-kart-sira">4 / 5</p>
+                    <div class="demo-kart-ust">
+                        <div class="demo-avatar">♀</div>
+                        <div class="demo-kart-meta">Kadın · 26 · İstanbul Avrupa · ~2 dk okuma</div>
+                    </div>
+                    <h2 class="demo-kart-baslik">Maltepe Avcısı</h2>
+                    <p class="demo-kart-ozet">Metroda tanımadığım biri “seni Maltepe’de gördüm” dedi. Ben Kadıköy’de yaşıyorum. Üç durak boyunca açıklama yaptım.</p>
+                    <div class="demo-kart-alt">
+                        <span>👍 67 · 💬 14</span>
+                        <span class="demo-kart-oku">Devamını oku →</span>
+                    </div>
+                </article>
+
+                <article class="demo-kart male" id="h5">
+                    <p class="demo-a-kart-sira">5 / 5</p>
+                    <div class="demo-kart-ust">
+                        <div class="demo-avatar">♂</div>
+                        <div class="demo-kart-meta">Erkek · 29 · Yurtdışı · ~3 dk okuma</div>
+                    </div>
+                    <h2 class="demo-kart-baslik">Malezya diye bir yer</h2>
+                    <p class="demo-kart-ozet">Annem haritada Malezya’yı “memleket sandığımız köy” sanıyor. WhatsApp grubuna yanlış konum attı, akrabalar uçak bileti araştırdı.</p>
+                    <div class="demo-kart-alt">
+                        <span>👍 118 · 💬 29</span>
+                        <span class="demo-kart-oku">Devamını oku →</span>
+                    </div>
+                </article>
+            </div>
+
+            <aside class="demo-a-sidebar">
+                <div class="demo-sidebar-kutu demo-sidebar-kutu--bugun">
+                    <h3>☕ Bugünün 5'i</h3>
+                    <ol class="demo-mini-liste">
+                        <li><a href="#h1">1️⃣ Türk Kahvesi Kazandı</a></li>
+                        <li><a href="#h2">2️⃣ Malzeme Meselesi</a></li>
+                        <li><a href="#h3">3️⃣ Pisuvar Paradoksu</a></li>
+                        <li><a href="#h4">4️⃣ Maltepe Avcısı</a></li>
+                        <li><a href="#h5">5️⃣ Malezya diye bir yer</a></li>
+                    </ol>
+                </div>
+                <div class="demo-sidebar-kutu">
+                    <h3>Ara</h3>
+                    <input type="search" class="demo-a-arama" placeholder="Hikâye veya itiraf ara…" disabled>
+                    <p class="demo-etiket">Demo — işlevsiz</p>
+                </div>
+                <div class="demo-sidebar-kutu">
+                    <h3>Sıralama</h3>
+                    <p style="font-size:13px;font-weight:700;color:var(--text-muted);">📖 Bugünün 5'i (aktif)</p>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var btn = document.getElementById('themeToggle');
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+                document.body.classList.toggle('demo-dark');
+                btn.textContent = document.body.classList.contains('demo-dark') ? '☀️' : '🌙';
+            });
+        })();
+    </script>
+</body>
+</html>

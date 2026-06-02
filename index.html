@@ -29,11 +29,13 @@
     <meta name="theme-color" content="#ffffff">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="css/index.css?v=3">
+    <link rel="stylesheet" href="css/index-pc.css?v=1">
     <script src="js/gunde5-shell.js"></script>
     <script defer src="js/gunde5-config.js?v=17"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js" crossorigin></script>
     <script defer src="js/gunde5-db.js?v=25"></script>
     <script defer src="js/gunde5-index.js?v=37"></script>
+    <script defer src="js/gunde5-index-pc.js?v=1"></script>
     <script defer src="js/gunde5-gonder.js?v=2"></script>
 </head>
 <body>
@@ -58,41 +60,103 @@
             <button type="button" class="theme-fab" onclick="toggleTheme()" id="themeBtn" aria-label="Tema değiştir">🌙</button>
         </header>
 
-        <p class="index-tagline">
-            <span class="index-tagline-ust">İnsanların anlatamadıklarını anlattığı yer.</span>
-            <span class="index-tagline-alt">Anonim itiraflar ve gerçek hikâyeler.</span>
-        </p>
+        <div class="pc-shell">
+            <aside class="pc-only pc-left" aria-label="Masaüstü menü">
+                <div class="pc-left-kutu pc-left-kutu--rituel">
+                    <div class="pc-left-etiket">Günde5</div>
+                    <div class="pc-left-baslik">☕ Günaydın</div>
+                    <div class="pc-left-alt">Bugünün 5 hikayesi hazır. Kahveni al, birkaç dakikada oku.</div>
+                    <button type="button" class="pc-left-cta" id="pcBaslaBtn">Bugünün 5'ine başla</button>
+                </div>
+                <div class="pc-left-kutu">
+                    <div class="pc-left-etiket">Keşfet</div>
+                    <button type="button" class="pc-left-link pc-left-link--aktif" data-pc-sort="yeni">📖 Bugünün 5'i</button>
+                    <button type="button" class="pc-left-link" data-pc-sort="populer">🔥 Sevilenler</button>
+                    <button type="button" class="pc-left-link" data-pc-sort="efsane">🏆 Efsaneler</button>
+                    <button type="button" class="pc-left-link" data-pc-sort="rastgele">🎲 Ortaya Karışık</button>
+                </div>
+            </aside>
 
-        <div class="index-toolbar" id="indexToolbar">
-            <label class="index-arama-kutu" for="indexAramaInput">
-                <input type="search" class="index-arama-input" id="indexAramaInput" placeholder="Hikaye veya itiraf ara" autocomplete="off" enterkeyhint="search">
-                <span class="index-arama-ikon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" role="img">
-                        <circle cx="10.5" cy="10.5" r="6.75"/>
-                        <path d="M15.75 15.75L20 20"/>
-                    </svg>
-                </span>
-            </label>
-            <div class="index-siralama-wrap">
-                <span class="index-siralama-etiket" id="indexSiralamaEtiket">SIRALA</span>
-                <select class="index-siralama" id="indexSiralama" aria-labelledby="indexSiralamaEtiket">
-                    <option value="yeni" selected>📖 Bugünün 5'i</option>
-                    <option value="populer">🔥 Sevilenler</option>
-                    <option value="efsane">🏆 Efsaneler</option>
-                    <option value="rastgele">🎲 Ortaya Karışık</option>
-                </select>
-            </div>
-            <p class="index-arama-durum" id="indexAramaDurum" aria-live="polite"></p>
-        </div>
+            <section class="pc-center">
+                <section class="pc-hero" aria-label="Bugünün 5'i ritüeli">
+                    <div class="pc-hero-sol">
+                        <h1 class="pc-hero-baslik">☕ Günaydın</h1>
+                        <p class="pc-hero-alt">Bugünün 5 hikayesi hazır.</p>
+                        <p class="pc-hero-kucuk">Kahveni al, birkaç dakikada oku.</p>
+                        <button type="button" class="pc-hero-cta" id="pcHeroBaslaBtn">Bugünün 5'ine başla</button>
+                        <div class="pc-hero-ilerleme" aria-hidden="true">
+                            <div class="pc-hero-ilerleme-dolgu" id="pcIlerlemeBar"></div>
+                        </div>
+                        <p class="pc-hero-ilerleme-metin" id="pcIlerlemeMetin">Bugünün 5'inden 0 tanesini okudun.</p>
+                    </div>
+                    <div class="pc-hero-sag" aria-hidden="true">
+                        <div class="pc-hero-sag-etiket">Bugün</div>
+                        <div class="pc-hero-sag-sayi">5 <span>hikâye</span></div>
+                    </div>
+                </section>
 
-        <div id="indexListe" aria-live="polite"><p class="index-durum" id="indexListeBekle">Yükleniyor…</p></div>
+                <div class="pc-pills" id="pcPills" aria-label="Bugünün 5'i hızlı geçiş"></div>
 
-        <div class="page-tail">
-            <p class="page-tail-satir">Senin de anlatmak istediklerin mi var?</p>
-            <button type="button" class="page-tail-cta" id="pageTailGonderBtn">✍️ Hikayeni veya mesajını gönder</button>
-            <p class="page-tail-satir"><a href="#" onclick="openModal(event)">Sıkça Sorulan Sorular</a></p>
-            <p class="page-tail-satir page-tail-iletisim">İletişim: <button type="button" class="mail-link" data-mail="itiraf@gunde5.com" onclick="mailKopyala(event)">itiraf@gunde5.com</button></p>
-            <p class="page-tail-satir page-tail-satir--kucuk">©️ copyright gunde5.com 2026</p>
+                <p class="index-tagline">
+                    <span class="index-tagline-ust">İnsanların anlatamadıklarını anlattığı yer.</span>
+                    <span class="index-tagline-alt">Anonim itiraflar ve gerçek hikâyeler.</span>
+                </p>
+
+                <div class="index-toolbar" id="indexToolbar">
+                    <label class="index-arama-kutu" for="indexAramaInput">
+                        <input type="search" class="index-arama-input" id="indexAramaInput" placeholder="Hikaye veya itiraf ara" autocomplete="off" enterkeyhint="search">
+                        <span class="index-arama-ikon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" role="img">
+                                <circle cx="10.5" cy="10.5" r="6.75"/>
+                                <path d="M15.75 15.75L20 20"/>
+                            </svg>
+                        </span>
+                    </label>
+                    <div class="index-siralama-wrap">
+                        <span class="index-siralama-etiket" id="indexSiralamaEtiket">SIRALA</span>
+                        <select class="index-siralama" id="indexSiralama" aria-labelledby="indexSiralamaEtiket">
+                            <option value="yeni" selected>📖 Bugünün 5'i</option>
+                            <option value="populer">🔥 Sevilenler</option>
+                            <option value="efsane">🏆 Efsaneler</option>
+                            <option value="rastgele">🎲 Ortaya Karışık</option>
+                        </select>
+                    </div>
+                    <p class="index-arama-durum" id="indexAramaDurum" aria-live="polite"></p>
+                </div>
+
+                <div id="indexListe" aria-live="polite"><p class="index-durum" id="indexListeBekle">Yükleniyor…</p></div>
+
+                <div class="page-tail">
+                    <p class="page-tail-satir">Senin de anlatmak istediklerin mi var?</p>
+                    <button type="button" class="page-tail-cta" id="pageTailGonderBtn">✍️ Hikayeni veya mesajını gönder</button>
+                    <p class="page-tail-satir"><a href="#" onclick="openModal(event)">Sıkça Sorulan Sorular</a></p>
+                    <p class="page-tail-satir page-tail-iletisim">İletişim: <button type="button" class="mail-link" data-mail="itiraf@gunde5.com" onclick="mailKopyala(event)">itiraf@gunde5.com</button></p>
+                    <p class="page-tail-satir page-tail-satir--kucuk">©️ copyright gunde5.com 2026</p>
+                </div>
+            </section>
+
+            <aside class="pc-only pc-right" aria-label="Dünün 5'i">
+                <div class="pc-right-kutu pc-right-kutu--vurgu">
+                    <div class="pc-right-baslik">📚 Dün kaçırdın mı?</div>
+                    <ol class="pc-right-liste" id="pcDunun5List"></ol>
+                    <button type="button" class="pc-right-cta" id="pcDunun5OkuBtn">Dünün 5'ini oku</button>
+                </div>
+                <div class="pc-right-kutu">
+                    <div class="pc-right-baslik">🔥 Dünün favorisi</div>
+                    <a class="pc-favori pc-favori-link" id="pcDununFavorisiLink" href="#">
+                        <strong id="pcDununFavorisiBaslik">Komşunun kedisi kapıda</strong>
+                        <span id="pcDununFavorisiMeta">👍 312 · 💬 88 · dün 18:20</span>
+                    </a>
+                </div>
+                <div class="pc-right-kutu pc-rastgele">
+                    <div class="pc-right-baslik">🎲 Rastgele satır</div>
+                    <button type="button" class="pc-rastgele-btn" id="pcRastgeleBtn">Yenile</button>
+                    <a class="pc-rastgele-link" id="pcRastgeleLink" href="#">
+                        <blockquote class="pc-rastgele-metin" id="pcRastgeleMetin">“…”</blockquote>
+                        <span class="pc-rastgele-kaynak" id="pcRastgeleKaynak">—</span>
+                    </a>
+                </div>
+            </aside>
         </div>
     </main>
 
