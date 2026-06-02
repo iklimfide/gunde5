@@ -145,7 +145,6 @@
     }
 
     function observerKur() {
-        if (!pcAktifMi()) return;
         var cards = ilk5Kartlar();
         if (!cards.length || !window.IntersectionObserver) return;
         var io = new IntersectionObserver(function (entries) {

@@ -1,4 +1,112 @@
-/* gunde5 — PC katmanı (mobil bozulmasın) */
+/* gunde5 — index hero (mobil + PC, demo B-v2) */
+.pc-hero {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px 14px;
+    align-items: start;
+    border-radius: 18px;
+    padding: 16px 16px;
+    margin: 0 0 12px;
+    color: #fff;
+    background: radial-gradient(900px 260px at 18% 12%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 58%),
+        linear-gradient(135deg, #1d9bf0 0%, #0e7490 55%, #0f172a 100%);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+.pc-hero-baslik {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    margin-bottom: 6px;
+    line-height: 1.15;
+}
+.pc-hero-alt {
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    opacity: 0.96;
+}
+.pc-hero-kucuk {
+    font-size: 13px;
+    font-weight: 700;
+    opacity: 0.88;
+    margin-bottom: 12px;
+}
+.pc-hero-cta {
+    border: none;
+    background: rgba(255, 255, 255, 0.92);
+    color: #0c4a6e;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+    margin: 0 0 12px;
+}
+.pc-hero-cta:hover { filter: brightness(1.03); }
+.pc-hero-cta:active { transform: translateY(1px); }
+.pc-hero-ilerleme {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    overflow: hidden;
+    max-width: 100%;
+}
+.pc-hero-ilerleme-dolgu {
+    height: 100%;
+    width: 0%;
+    background: #fff;
+    border-radius: 999px;
+    transition: width 0.35s ease;
+}
+.pc-hero-ilerleme-metin {
+    margin-top: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    opacity: 0.92;
+}
+.pc-hero-sag {
+    text-align: right;
+    min-width: 88px;
+    align-self: start;
+}
+.pc-hero-sag-etiket {
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+    margin-bottom: 4px;
+}
+.pc-hero-sag-sayi {
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1;
+}
+.pc-hero-sag-sayi span {
+    font-size: 13px;
+    font-weight: 800;
+    opacity: 0.85;
+}
+
+/* Mobilde pill bar ve yan kolonlar yok */
+@media (max-width: 1023px) {
+    .pc-only { display: none !important; }
+    #pcPills { display: none !important; }
+    .pc-hero {
+        margin: 4px 0 10px;
+        padding: 16px 14px;
+    }
+    .pc-hero-baslik { font-size: 22px; }
+    .pc-hero-sag-sayi { font-size: 24px; }
+    .index-tagline {
+        margin: 4px auto 14px;
+    }
+}
+
+/* gunde5 — PC katmanı (≥1024px) */
 @media (min-width: 1024px) {
     /* Üst bar (hamburger + gunde5.com) kaymasın */
     .page-topbar {
@@ -50,96 +158,18 @@
         min-width: 0;
     }
 
-    /* Hero (demo B-v2 hissi) */
     .pc-hero {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 14px 18px;
-        align-items: start;
-        border-radius: 18px;
         padding: 18px 18px;
         margin: 6px 0 14px;
-        color: #fff;
-        background: radial-gradient(900px 260px at 18% 12%, rgba(255, 255, 255, 0.35), rgba(255,255,255,0) 58%),
-            linear-gradient(135deg, #1d9bf0 0%, #0e7490 55%, #0f172a 100%);
-        box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+        gap: 14px 18px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
     }
-    .pc-hero-baslik {
-        font-size: 26px;
-        font-weight: 900;
-        letter-spacing: -0.03em;
-        margin-bottom: 6px;
-        line-height: 1.15;
-    }
-    .pc-hero-alt {
-        font-size: 15px;
-        font-weight: 800;
-        margin-bottom: 4px;
-        opacity: 0.96;
-    }
-    .pc-hero-kucuk {
-        font-size: 13px;
-        font-weight: 700;
-        opacity: 0.88;
-        margin-bottom: 12px;
-    }
-    .pc-hero-cta {
-        border: none;
-        background: rgba(255, 255, 255, 0.92);
-        color: #0c4a6e;
-        padding: 10px 14px;
-        border-radius: 999px;
-        font-size: 13px;
-        font-weight: 900;
-        cursor: pointer;
-        font-family: inherit;
-        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
-        margin: 0 0 12px;
-    }
-    .pc-hero-cta:hover { filter: brightness(1.03); }
-    .pc-hero-ilerleme {
-        height: 8px;
-        background: rgba(255, 255, 255, 0.25);
-        border-radius: 999px;
-        overflow: hidden;
-        max-width: 320px;
-    }
-    .pc-hero-ilerleme-dolgu {
-        height: 100%;
-        width: 0%;
-        background: #fff;
-        border-radius: 999px;
-        transition: width 0.35s ease;
-    }
-    .pc-hero-ilerleme-metin {
-        margin-top: 6px;
-        font-size: 11px;
-        font-weight: 800;
-        opacity: 0.92;
-    }
-    .pc-hero-sag {
-        text-align: right;
-        min-width: 140px;
-    }
-    .pc-hero-sag-etiket {
-        font-size: 11px;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        opacity: 0.85;
-        margin-bottom: 6px;
-    }
-    .pc-hero-sag-sayi {
-        font-size: 30px;
-        font-weight: 900;
-        letter-spacing: -0.04em;
-        line-height: 1;
-    }
-    .pc-hero-sag-sayi span {
-        font-size: 14px;
-        font-weight: 800;
-        opacity: 0.85;
-    }
+    .pc-hero-baslik { font-size: 26px; }
+    .pc-hero-ilerleme { max-width: 320px; }
+    .pc-hero-sag { min-width: 140px; }
+    .pc-hero-sag-etiket { margin-bottom: 6px; }
+    .pc-hero-sag-sayi { font-size: 30px; }
+    .pc-hero-sag-sayi span { font-size: 14px; }
 
     .pc-pills {
         display: flex;
@@ -416,10 +446,5 @@
     #indexListe .story-card {
         scroll-margin-top: 96px;
     }
-}
-
-/* Mobilde PC kolonları görünmesin */
-@media (max-width: 1023px) {
-    .pc-only { display: none !important; }
 }
 

@@ -15,7 +15,6 @@ ROUTE_TO_HTML = {
     "/": "/index.html",
     "/podyum": "/podyum.html",
     "/kulis": "/index.html",
-    "/profil": "/profil.html",
     "/hakkinda": "/hakkinda.html",
     "/iletisim": "/iletisim.html",
     "/kvkk": "/kvkk.html",
@@ -80,7 +79,7 @@ class Gunde5Handler(SimpleHTTPRequestHandler):
         if raw == "/index.html":
             return "/" + query
 
-        if raw in ("/profil", "/profil/", "/profil.html"):
+        if raw in ("/profil", "/profil.html", "/profil/"):
             return "/" + query
 
         if raw in ("/podyum/",):

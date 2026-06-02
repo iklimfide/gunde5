@@ -1436,3 +1436,99 @@
             color: #fca5a5;
             background: rgba(69, 10, 10, 0.65);
         }
+
+        /* Günaydın hero — mobil (index-pc.css üretimde yalnızca ≥1024px stilliyor) */
+        @media (max-width: 1023px) {
+        .pc-hero {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px 14px;
+            align-items: start;
+            border-radius: 18px;
+            padding: 16px 14px;
+            margin: 4px 0 10px;
+            color: #fff;
+            background: radial-gradient(900px 260px at 18% 12%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 58%),
+                linear-gradient(135deg, #1d9bf0 0%, #0e7490 55%, #0f172a 100%);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+        }
+        .pc-hero-baslik {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 6px;
+            line-height: 1.15;
+        }
+        .pc-hero-alt {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            opacity: 0.96;
+        }
+        .pc-hero-kucuk {
+            font-size: 13px;
+            font-weight: 700;
+            opacity: 0.88;
+            margin-bottom: 12px;
+        }
+        .pc-hero-cta {
+            border: none;
+            background: rgba(255, 255, 255, 0.92);
+            color: #0c4a6e;
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 900;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+            margin: 0 0 12px;
+        }
+        .pc-hero-cta:active { transform: translateY(1px); }
+        .pc-hero-ilerleme {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 999px;
+            overflow: hidden;
+            max-width: 100%;
+        }
+        .pc-hero-ilerleme-dolgu {
+            height: 100%;
+            width: 0%;
+            background: #fff;
+            border-radius: 999px;
+            transition: width 0.35s ease;
+        }
+        .pc-hero-ilerleme-metin {
+            margin-top: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            opacity: 0.92;
+        }
+        .pc-hero-sag {
+            text-align: right;
+            min-width: 88px;
+            align-self: start;
+        }
+        .pc-hero-sag-etiket {
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.85;
+            margin-bottom: 4px;
+        }
+        .pc-hero-sag-sayi {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            line-height: 1;
+        }
+        .pc-hero-sag-sayi span {
+            font-size: 13px;
+            font-weight: 800;
+            opacity: 0.85;
+        }
+        #pcPills { display: none !important; }
+        .pc-only { display: none !important; }
+        }
