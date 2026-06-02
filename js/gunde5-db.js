@@ -132,6 +132,11 @@
 
     function hataMesaji(err) {
         if (!err) return 'Bir hata oluştu.';
+        var http403 = err.status === 403 || err.statusCode === 403 ||
+            String(err.message || '').indexOf('403') >= 0;
+        if (http403 && err.code !== '42501') {
+            return 'Master panel erişimi reddedildi (403). Master hesabıyla giriş yapın; Supabase SQL Editor\'da supabase/master-panel-canli-403-fix.sql dosyasını çalıştırın. Eksik RPC için sırayla: master-kamikaze-panel.sql, master-metrik-istatistik.sql, master-mudavim-istatistik.sql, index-analytics.sql.';
+        }
         if (err.code === '42501') {
             var yetkiMsg = err.message || '';
             if (yetkiMsg.indexOf('profil_uye_guncelle') >= 0 || yetkiMsg.indexOf('profil_uye_ensure') >= 0) {
@@ -156,6 +161,14 @@
                 yetkiMsg.indexOf('analytics_kayit_dahil') >= 0 ||
                 yetkiMsg.indexOf('site_analytics_') >= 0) {
                 return 'İstatistik izni eksik. Supabase SQL Editor\'da supabase/index-analytics.sql dosyasını bir kez çalıştırın, sonra sayfayı yenileyin.';
+            }
+            if (yetkiMsg.indexOf('goruntulenme_kaydet') >= 0 ||
+                yetkiMsg.indexOf('itiraf_goruntulenmeler') >= 0 ||
+                yetkiMsg.indexOf('itiraflar_goruntulenme') >= 0) {
+                return 'Görüntülenme sayacı izni eksik. Supabase SQL Editor\'da supabase/itiraf-goruntulenme-42501-fix.sql dosyasını bir kez çalıştırın, sonra sayfayı yenileyin.';
+            }
+            if (yetkiMsg.indexOf('master_') >= 0) {
+                return 'Master panel izni eksik. Supabase SQL Editor\'da supabase/master-panel-canli-403-fix.sql dosyasını çalıştırın; ardından eksik RPC dosyalarını (kamikaze, metrik, müdavim) Run edin.';
             }
             return 'Veritabanı izni eksik (42501). İlgili SQL kurulum dosyasını tekrar çalıştırıp sayfayı yenileyin.';
         }
@@ -1557,8 +1570,19 @@
         return masterTrafikIstatistik(gun, haric);
     }
 
+    function goruntulenmeRpcKapaliMi() {
+        try { return sessionStorage.getItem('g5_goruntulenme_rpc') === '0'; }
+        catch (e) { return false; }
+    }
+
+    function goruntulenmeRpcKapat() {
+        try { sessionStorage.setItem('g5_goruntulenme_rpc', '0'); }
+        catch (e) { /* */ }
+    }
+
     /** Kart görüntülenmesi — canlı şema: public.itiraflar + itiraf_goruntulenme_kaydet */
     async function goruntulenmeKaydet(itirafId) {
+        if (goruntulenmeRpcKapaliMi()) return null;
         var sb = getClient();
         if (!sb) return null;
         var id = parseInt(itirafId, 10);
@@ -1568,7 +1592,14 @@
                 p_itiraf_id: id,
                 p_viewer_key: getViewerKey()
             });
-            if (res.error) return null;
+            if (res.error) {
+                var kod = res.error.code || '';
+                var msg = String(res.error.message || '');
+                if (kod === 'PGRST202' || msg.indexOf('404') >= 0 || msg.indexOf('403') >= 0) {
+                    goruntulenmeRpcKapat();
+                }
+                return null;
+            }
             return res.data;
         } catch (e) {
             return null;

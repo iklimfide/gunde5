@@ -12,6 +12,9 @@
             --male-color: #2563eb;
             --male-bg: #eff6ff;
             --male-border: #bfdbfe;
+            --brand-purple: #7c3aed;
+            --brand-purple-dark: #6d28d9;
+            --topbar-fg: #ffffff;
         }
 
         body.dark-mode,
@@ -29,6 +32,9 @@
             --male-color: #1d9bf0;
             --male-bg: #0e1924;
             --male-border: #1d354b;
+            --brand-purple: #6d28d9;
+            --brand-purple-dark: #5b21b6;
+            --topbar-fg: #ffffff;
         }
 
         * {
@@ -76,8 +82,18 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            margin-bottom: 8px;
-            min-height: 44px;
+            margin: -12px -12px 10px;
+            padding: 10px 12px;
+            min-height: 52px;
+            position: sticky;
+            top: 0;
+            z-index: 300;
+            color: var(--topbar-fg);
+            background: linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-purple-dark) 100%);
+            border: none;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 8px 24px rgba(91, 33, 182, 0.22);
         }
 
         .page-topbar-sol {
@@ -96,23 +112,27 @@
             width: 44px;
             height: 44px;
             padding: 0;
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.35);
             border-radius: 12px;
-            background: var(--bg-card);
+            background: rgba(255, 255, 255, 0.14);
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 4px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .topbar-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.22);
         }
 
         .topbar-menu-bar {
             display: block;
             width: 18px;
             height: 2px;
-            background: var(--text-main);
+            background: var(--topbar-fg);
             border-radius: 1px;
         }
 
@@ -162,6 +182,11 @@
         .page-topbar .brand {
             flex: 1;
             min-width: 0;
+            color: var(--topbar-fg);
+        }
+
+        .page-topbar .brand-five {
+            color: #fecaca;
         }
 
         #indexSiteHeader[hidden] {
@@ -375,7 +400,6 @@
             font-size: 26px;
             font-weight: 800;
             letter-spacing: -1px;
-            color: var(--text-main);
             text-decoration: none;
             line-height: 1;
         }
@@ -385,18 +409,26 @@
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            border: 1px solid var(--border-color);
-            background: var(--bg-card);
-            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.14);
+            color: var(--topbar-fg);
             font-size: 20px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
             display: grid;
             place-items: center;
         }
 
+        .page-topbar .theme-fab:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
         .brand-five {
             color: #ef4444;
+        }
+
+        .page-topbar .brand-five {
+            color: #fecaca;
         }
 
         .story-card {
@@ -1437,69 +1469,13 @@
             background: rgba(69, 10, 10, 0.65);
         }
 
-        /* Günaydın hero — kompakt mobil */
+        /* Mobilde Günaydın kartı yok; tagline eski düzen */
         @media (max-width: 1023px) {
-        .pc-hero-baslik-mobil { display: block; }
-        .pc-hero-baslik-pc { display: none; }
-        .pc-hero-only-pc { display: none !important; }
-        .pc-hero-only-mobil { display: flex; }
-
         .pc-hero {
-            display: block;
-            border-radius: 14px;
-            padding: 10px 12px;
-            margin: 2px 0 6px;
-            color: #fff;
-            background: radial-gradient(700px 180px at 18% 8%, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 55%),
-                linear-gradient(135deg, #1d9bf0 0%, #0e7490 55%, #0f172a 100%);
-            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
-        }
-        .pc-hero-baslik {
-            font-size: 17px;
-            font-weight: 900;
-            letter-spacing: -0.02em;
-            margin-bottom: 2px;
-            line-height: 1.2;
-        }
-        .pc-hero-kucuk {
-            font-size: 12px;
-            font-weight: 700;
-            opacity: 0.9;
-            margin-bottom: 6px;
-            line-height: 1.35;
-        }
-        .pc-hero-dots {
-            align-items: center;
-            gap: 5px;
-            margin: 0 0 4px;
-        }
-        .pc-hero-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.32);
-            flex-shrink: 0;
-        }
-        .pc-hero-dot--ok {
-            background: #fff;
-            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.45);
-        }
-        .pc-hero-ilerleme-metin {
-            margin: 0;
-            font-size: 11px;
-            font-weight: 800;
-            opacity: 0.9;
-            letter-spacing: 0.01em;
+            display: none !important;
         }
         .index-tagline {
-            margin: 2px auto 8px;
-        }
-        .index-tagline-ust {
-            font-size: 14px;
-            line-height: 1.3;
-        }
-        .index-tagline-alt {
-            display: none;
+            margin: 4px auto 14px;
         }
         #pcPills { display: none !important; }
         .pc-only { display: none !important; }

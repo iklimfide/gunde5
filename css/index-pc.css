@@ -91,15 +91,7 @@
     opacity: 0.85;
 }
 
-.pc-hero-baslik-mobil,
-.pc-hero-only-mobil {
-    display: none;
-}
-.pc-hero-baslik-pc {
-    display: inline;
-}
-
-/* Mobilde pill bar ve yan kolonlar yok (kompakt hero: index.css) */
+/* Mobilde pill bar ve yan kolonlar yok (hero: index.css display:none) */
 @media (max-width: 1023px) {
     .pc-only { display: none !important; }
     #pcPills { display: none !important; }
@@ -109,20 +101,10 @@
 @media (min-width: 1024px) {
     /* Üst bar (hamburger + gunde5.com) kaymasın */
     .page-topbar {
-        position: sticky;
-        top: 0;
-        z-index: 300;
-        padding: 10px 8px;
-        margin-bottom: 10px;
-        background: rgba(255, 255, 255, 0.92);
-        border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+        margin: 0 -20px 10px;
+        padding: 10px 20px;
+        border-radius: 0 0 10px 10px;
         backdrop-filter: blur(10px);
-    }
-
-    body.dark-mode .page-topbar,
-    [data-theme="dark"] .page-topbar {
-        background: rgba(21, 24, 28, 0.92);
-        border-bottom-color: rgba(255, 255, 255, 0.10);
     }
 
     body {

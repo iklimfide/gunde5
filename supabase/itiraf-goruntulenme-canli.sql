@@ -44,6 +44,9 @@ create policy itiraf_goruntulenmeler_insert on public.itiraf_goruntulenmeler
 
 grant insert on public.itiraf_goruntulenmeler to anon, authenticated;
 
+-- anon: yalnızca sayaç sütunları (42501 önlemi; RLS ile kısıtlı)
+grant update (sayfa_goruntulenme, tekil_goruntulenme) on public.itiraflar to anon;
+
 -- 3) Asıl RPC (404 bunun için: REST /rpc/itiraf_goruntulenme_kaydet)
 create or replace function public.itiraf_goruntulenme_kaydet(
     p_itiraf_id bigint,

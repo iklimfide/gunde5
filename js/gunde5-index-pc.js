@@ -131,31 +131,13 @@
     }
 
     var okunan = Object.create(null);
-    function mobilHeroMi() {
-        try { return window.matchMedia && window.matchMedia('(max-width: 1023px)').matches; }
-        catch (e) { return false; }
-    }
-
     function setIlerleme() {
         var bar = qs('#pcIlerlemeBar');
         var metin = qs('#pcIlerlemeMetin');
-        var dots = qs('#pcIlerlemeDots');
         var toplam = 5;
         var n = Object.keys(okunan).length;
         if (bar) bar.style.width = Math.round((n / toplam) * 100) + '%';
-        if (metin) {
-            metin.textContent = mobilHeroMi()
-                ? (n + ' / ' + toplam + ' okundu')
-                : ("Bugünün 5'inden " + n + " tanesini okudun.");
-        }
-        if (dots) {
-            var html = '';
-            var i;
-            for (i = 0; i < toplam; i++) {
-                html += '<span class="pc-hero-dot' + (i < n ? ' pc-hero-dot--ok' : '') + '"></span>';
-            }
-            dots.innerHTML = html;
-        }
+        if (metin) metin.textContent = "Bugünün 5'inden " + n + " tanesini okudun.";
         qsa('.pc-pill').forEach(function (b) {
             var id = b.getAttribute('data-pc-pill');
             b.classList.toggle('pc-pill--okundu', !!okunan[id]);
@@ -304,7 +286,6 @@
                     renderPills();
                     observerKur();
                     rastgeleYenile();
-                    setIlerleme();
                 });
             } catch (e2) { /* safari */ }
         }

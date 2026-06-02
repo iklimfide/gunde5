@@ -28,14 +28,14 @@
     <meta name="twitter:image:alt" content="5 dakikada oku, gül, güne başla">
     <meta name="theme-color" content="#ffffff">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="stylesheet" href="css/index.css?v=5">
-    <link rel="stylesheet" href="css/index-pc.css?v=4">
+    <link rel="stylesheet" href="css/index.css?v=9">
+    <link rel="stylesheet" href="css/index-pc.css?v=7">
     <script src="js/gunde5-shell.js"></script>
     <script defer src="js/gunde5-config.js?v=17"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js" crossorigin></script>
-    <script defer src="js/gunde5-db.js?v=25"></script>
+    <script defer src="js/gunde5-db.js?v=28"></script>
     <script defer src="js/gunde5-index.js?v=37"></script>
-    <script defer src="js/gunde5-index-pc.js?v=3"></script>
+    <script defer src="js/gunde5-index-pc.js?v=4"></script>
     <script defer src="js/gunde5-gonder.js?v=2"></script>
 </head>
 <body>
@@ -80,20 +80,16 @@
             <section class="pc-center">
                 <section class="pc-hero" aria-label="Bugünün 5'i ritüeli">
                     <div class="pc-hero-sol">
-                        <h1 class="pc-hero-baslik">
-                            <span class="pc-hero-baslik-mobil">☕ Bugünün 5'i hazır</span>
-                            <span class="pc-hero-baslik-pc">☕ Günaydın</span>
-                        </h1>
-                        <p class="pc-hero-alt pc-hero-only-pc">Bugünün 5 hikayesi hazır.</p>
+                        <h1 class="pc-hero-baslik">☕ Günaydın</h1>
+                        <p class="pc-hero-alt">Bugünün 5 hikayesi hazır.</p>
                         <p class="pc-hero-kucuk">Kahveni al, birkaç dakikada oku.</p>
-                        <button type="button" class="pc-hero-cta pc-hero-only-pc" id="pcHeroBaslaBtn">Bugünün 5'ine başla</button>
-                        <div class="pc-hero-dots pc-hero-only-mobil" id="pcIlerlemeDots" aria-hidden="true"></div>
-                        <div class="pc-hero-ilerleme pc-hero-only-pc" aria-hidden="true">
+                        <button type="button" class="pc-hero-cta" id="pcHeroBaslaBtn">Bugünün 5'ine başla</button>
+                        <div class="pc-hero-ilerleme" aria-hidden="true">
                             <div class="pc-hero-ilerleme-dolgu" id="pcIlerlemeBar"></div>
                         </div>
-                        <p class="pc-hero-ilerleme-metin" id="pcIlerlemeMetin">0 / 5 okundu</p>
+                        <p class="pc-hero-ilerleme-metin" id="pcIlerlemeMetin">Bugünün 5'inden 0 tanesini okudun.</p>
                     </div>
-                    <div class="pc-hero-sag pc-hero-only-pc" aria-hidden="true">
+                    <div class="pc-hero-sag" aria-hidden="true">
                         <div class="pc-hero-sag-etiket">Bugün</div>
                         <div class="pc-hero-sag-sayi">5 <span>hikâye</span></div>
                     </div>
