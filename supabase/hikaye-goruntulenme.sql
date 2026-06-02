@@ -1,5 +1,6 @@
+-- ESKİ ŞEMA: public.hikayeler (canlı itiraflar kurulumunda ÇALIŞTIRMAYIN)
+-- Görüntülenme için: supabase/itiraf-goruntulenme.sql
 -- İtiraf görüntülenme: tekil ziyaret + sayfa görüntülenmesi (pageview)
--- Supabase SQL Editor'da bir kez çalıştırın.
 
 alter table public.hikayeler
     add column if not exists tekil_goruntulenme int not null default 0,

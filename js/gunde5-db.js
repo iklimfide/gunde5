@@ -1557,29 +1557,21 @@
         return masterTrafikIstatistik(gun, haric);
     }
 
-    async function goruntulenmeKaydet(hikayeId) {
+    /** Kart görüntülenmesi — canlı şema: public.itiraflar + itiraf_goruntulenme_kaydet */
+    async function goruntulenmeKaydet(itirafId) {
         var sb = getClient();
         if (!sb) return null;
-        var id = parseInt(hikayeId, 10);
+        var id = parseInt(itirafId, 10);
         if (!id) return null;
         try {
-            var res = await rpcIlk(['itiraf_goruntulenme_kaydet', 'hikaye_goruntulenme_kaydet'], {
+            var res = await sb.rpc('itiraf_goruntulenme_kaydet', {
                 p_itiraf_id: id,
-                p_hikaye_id: id,
                 p_viewer_key: getViewerKey()
             });
+            if (res.error) return null;
             return res.data;
-        } catch (e1) {
-            try {
-                var res2 = await sb.rpc('hikaye_goruntulenme_kaydet', {
-                    p_hikaye_id: id,
-                    p_viewer_key: getViewerKey()
-                });
-                if (res2.error) return null;
-                return res2.data;
-            } catch (e2) {
-                return null;
-            }
+        } catch (e) {
+            return null;
         }
     }
 

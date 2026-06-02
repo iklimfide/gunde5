@@ -1,10 +1,13 @@
--- itiraflar görüntülenme sayaçları + RPC (canlı şema: public.itiraflar)
--- SQL Editor'da bir kez Run.
+-- Canlı şema: public.itiraflar + itiraf_goruntulenmeler (hikayeler YOK)
+-- Supabase SQL Editor → tek sefer Run.
+-- Sonra: Settings → API → "Reload schema" veya birkaç sn bekleyin.
 
+-- 1) Sayaç sütunları (şemanızda zaten var; güvenli)
 alter table public.itiraflar
-    add column if not exists tekil_goruntulenme int not null default 0,
-    add column if not exists sayfa_goruntulenme int not null default 0;
+    add column if not exists tekil_goruntulenme integer not null default 0,
+    add column if not exists sayfa_goruntulenme integer not null default 0;
 
+-- 2) Tekil ziyaretçi tablosu (şemanızda zaten var; eksikse oluşturur)
 create table if not exists public.itiraf_goruntulenmeler (
     itiraf_id bigint not null references public.itiraflar (id) on delete cascade,
     viewer_key text not null,
@@ -19,6 +22,7 @@ alter table public.itiraf_goruntulenmeler enable row level security;
 
 revoke all on public.itiraf_goruntulenmeler from public, anon, authenticated;
 
+-- itiraflar: yalnızca RPC sayaç güncellemesi (app.goruntulenme bayrağı)
 drop policy if exists itiraflar_goruntulenme_sayac on public.itiraflar;
 create policy itiraflar_goruntulenme_sayac on public.itiraflar
     for update to anon, authenticated
@@ -40,7 +44,11 @@ create policy itiraf_goruntulenmeler_insert on public.itiraf_goruntulenmeler
 
 grant insert on public.itiraf_goruntulenmeler to anon, authenticated;
 
-create or replace function public.itiraf_goruntulenme_kaydet(p_itiraf_id bigint, p_viewer_key text)
+-- 3) Asıl RPC (404 bunun için: REST /rpc/itiraf_goruntulenme_kaydet)
+create or replace function public.itiraf_goruntulenme_kaydet(
+    p_itiraf_id bigint,
+    p_viewer_key text
+)
 returns json
 language plpgsql
 security invoker
@@ -53,11 +61,16 @@ begin
     if p_itiraf_id is null then
         return null;
     end if;
+
     v_key := left(trim(coalesce(p_viewer_key, '')), 128);
     if length(v_key) < 8 then
         return null;
     end if;
-    if not exists (select 1 from public.itiraflar i where i.id = p_itiraf_id and i.silindi_at is null) then
+
+    if not exists (
+        select 1 from public.itiraflar i
+        where i.id = p_itiraf_id and i.silindi_at is null
+    ) then
         return null;
     end if;
 
@@ -95,8 +108,11 @@ $$;
 revoke all on function public.itiraf_goruntulenme_kaydet(bigint, text) from public;
 grant execute on function public.itiraf_goruntulenme_kaydet(bigint, text) to anon, authenticated;
 
--- Eski JS: hikaye_goruntulenme_kaydet → itiraflar (hikayeler tablosu yok)
-create or replace function public.hikaye_goruntulenme_kaydet(p_hikaye_id bigint, p_viewer_key text)
+-- 4) Eski frontend (hikaye_* RPC adı) — hikayeler tablosu olmadan aynı iş
+create or replace function public.hikaye_goruntulenme_kaydet(
+    p_hikaye_id bigint,
+    p_viewer_key text
+)
 returns json
 language plpgsql
 security invoker
@@ -110,52 +126,11 @@ $$;
 revoke all on function public.hikaye_goruntulenme_kaydet(bigint, text) from public;
 grant execute on function public.hikaye_goruntulenme_kaydet(bigint, text) to anon, authenticated;
 
--- Kamikaze: itiraflar + analytics impression birleşimi (master)
-create or replace function public.master_hikaye_goruntulenme_toplu(p_ids bigint[])
-returns jsonb
-language plpgsql
-security invoker
-stable
-set search_path = public
-as $$
-begin
-    if not public.master_email_eslesir() then
-        return '[]'::jsonb;
-    end if;
-    if p_ids is null or cardinality(p_ids) = 0 then
-        return '[]'::jsonb;
-    end if;
-
-    return coalesce((
-        select jsonb_agg(
-            jsonb_build_object(
-                'id', i.id,
-                'tekil_goruntulenme', greatest(
-                    coalesce(i.tekil_goruntulenme, 0),
-                    coalesce(a.tekil, 0)
-                ),
-                'sayfa_goruntulenme', greatest(
-                    coalesce(i.sayfa_goruntulenme, 0),
-                    coalesce(a.cogul, 0)
-                )
-            )
-            order by i.id
-        )
-        from public.itiraflar i
-        left join lateral (
-            select
-                count(*) filter (where e.event_type = 'story_impression')::int as cogul,
-                count(distinct public.analytics_kimlik(e.user_id, e.visitor_id))
-                    filter (where e.event_type = 'story_impression')::int as tekil
-            from public.site_analytics_events e
-            where e.story_id = i.id
-        ) a on true
-        where i.id = any (p_ids)
-    ), '[]'::jsonb);
-end;
-$$;
-
-revoke all on function public.master_hikaye_goruntulenme_toplu(bigint[]) from public, anon;
-grant execute on function public.master_hikaye_goruntulenme_toplu(bigint[]) to authenticated;
-
+-- PostgREST şema önbelleği
 notify pgrst, 'reload schema';
+
+-- Doğrulama (Editor sonuç panelinde 1 satır dönmeli):
+-- select proname from pg_proc p
+-- join pg_namespace n on n.oid = p.pronamespace
+-- where n.nspname = 'public'
+--   and proname in ('itiraf_goruntulenme_kaydet', 'hikaye_goruntulenme_kaydet');

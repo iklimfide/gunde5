@@ -91,19 +91,18 @@
     opacity: 0.85;
 }
 
-/* Mobilde pill bar ve yan kolonlar yok */
+.pc-hero-baslik-mobil,
+.pc-hero-only-mobil {
+    display: none;
+}
+.pc-hero-baslik-pc {
+    display: inline;
+}
+
+/* Mobilde pill bar ve yan kolonlar yok (kompakt hero: index.css) */
 @media (max-width: 1023px) {
     .pc-only { display: none !important; }
     #pcPills { display: none !important; }
-    .pc-hero {
-        margin: 4px 0 10px;
-        padding: 16px 14px;
-    }
-    .pc-hero-baslik { font-size: 22px; }
-    .pc-hero-sag-sayi { font-size: 24px; }
-    .index-tagline {
-        margin: 4px auto 14px;
-    }
 }
 
 /* gunde5 — PC katmanı (≥1024px) */
