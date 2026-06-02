@@ -80,6 +80,9 @@ class Gunde5Handler(SimpleHTTPRequestHandler):
         if raw == "/index.html":
             return "/" + query
 
+        if raw in ("/profil", "/profil/", "/profil.html"):
+            return "/" + query
+
         if raw in ("/podyum/",):
             return "/podyum" + query
 
