@@ -43,6 +43,16 @@
         (doc.head || doc.documentElement).appendChild(link);
     }
 
+    function ensureViewportFit() {
+        var doc = w.document;
+        if (!doc) return;
+        var meta = doc.querySelector('meta[name="viewport"]');
+        if (!meta) return;
+        var c = meta.getAttribute('content') || '';
+        if (c.indexOf('viewport-fit') >= 0) return;
+        meta.setAttribute('content', c + (c ? ', ' : '') + 'viewport-fit=cover');
+    }
+
     function injectStyles() {
         var doc = w.document;
         if (!doc || doc.getElementById(STYLE_ID)) return;
@@ -113,6 +123,7 @@
     function applyShell() {
         var doc = w.document;
         if (!doc || !doc.documentElement) return;
+        ensureViewportFit();
         injectStyles();
         var html = doc.documentElement;
         var u = readUser();
