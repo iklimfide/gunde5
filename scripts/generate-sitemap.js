@@ -14,11 +14,21 @@ var SAYFALAR = [
     { path: '/kvkk', changefreq: 'monthly', priority: '0.4' }
 ];
 
-var satirlar = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'];
+function bugunIso() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+var lastmod = bugunIso();
+var satirlar = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<!-- gunde5 sitemap — clean URL, .html yok; uretim: ' + lastmod + ' -->',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+];
 
 SAYFALAR.forEach(function (s) {
     satirlar.push('  <url>');
     satirlar.push('    <loc>' + BASE + s.path + '</loc>');
+    satirlar.push('    <lastmod>' + lastmod + '</lastmod>');
     satirlar.push('    <changefreq>' + s.changefreq + '</changefreq>');
     satirlar.push('    <priority>' + s.priority + '</priority>');
     satirlar.push('  </url>');
@@ -29,4 +39,4 @@ satirlar.push('');
 
 var out = path.join(__dirname, '..', 'sitemap.xml');
 fs.writeFileSync(out, satirlar.join('\n'), 'utf8');
-console.log('sitemap.xml yazıldı (' + SAYFALAR.length + ' URL).');
+console.log('sitemap.xml yazildi (' + SAYFALAR.length + ' URL, lastmod ' + lastmod + ').');
