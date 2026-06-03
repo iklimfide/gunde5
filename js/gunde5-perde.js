@@ -34,7 +34,9 @@
         'anal', 'oral', 'orgazm', 'orgasm',
         'onlyfans',
         'ananı', 'anani', 'bacını', 'bacini',
-        'götlek', 'gotlek', 'oç', 'oc'
+        'götlek', 'gotlek', 'oç', 'oc',
+        'sıçmak', 'sicmak', 'sıçmış', 'sicmis', 'sıçtım', 'sictim', 'sıçtı', 'sicti',
+        'sıçıyor', 'siciyor', 'sıçan', 'sican', 'sıçar', 'sicar', 'sıç', 'sic'
     ];
 
     KELIMELER.sort(function (a, b) {

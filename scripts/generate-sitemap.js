@@ -36,3 +36,5 @@ satirlar.push('');
 var out = path.join(__dirname, '..', 'sitemap.xml');
 fs.writeFileSync(out, satirlar.join('\n'), 'utf8');
 console.log('sitemap.xml yazildi (' + SAYFALAR.length + ' URL, lastmod ' + lastmod + ').');
+
+require('./generate-robots.js');

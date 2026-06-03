@@ -90,14 +90,28 @@
     }
 
     function ymdDun() {
-        var d = new Date();
-        d.setDate(d.getDate() - 1);
-        return ymdTr(d);
+        var bugun = ymdTr(new Date());
+        if (!bugun) return null;
+        var p = bugun.split('-');
+        var d = new Date(Date.UTC(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)));
+        d.setUTCDate(d.getUTCDate() - 1);
+        var y = d.getUTCFullYear();
+        var m = d.getUTCMonth() + 1;
+        var g = d.getUTCDate();
+        return y + '-' + (m < 10 ? '0' : '') + m + '-' + (g < 10 ? '0' : '') + g;
     }
 
     async function dunun5Getir() {
         var D = window.Gunde5DB;
-        if (!D || !D.indexHikayeListeleSayfa) return [];
+        if (!D) return [];
+        if (D.init) await D.init();
+        if (D.indexDunun5Getir) {
+            try {
+                var dogrudan = await D.indexDunun5Getir();
+                if (dogrudan && dogrudan.length) return dogrudan;
+            } catch (eDun) { /* taramaya düş */ }
+        }
+        if (!D.indexHikayeListeleSayfa) return [];
         var dun = ymdDun();
         if (!dun) return [];
         var rows = await D.indexHikayeListeleSayfa(0, 80, 'yeni');
@@ -118,7 +132,7 @@
         var list = qs('#pcDunun5List');
         if (!list) return;
         if (!dun5Cache) {
-            list.innerHTML = '<li><span style="font-size:12px;font-weight:800;color:rgba(17,24,39,.62)">Yükleniyor…</span></li>';
+            list.innerHTML = '<li><span class="pc-side-muted">Yükleniyor…</span></li>';
             try {
                 dun5Cache = await dunun5Getir();
             } catch (e) {
@@ -128,7 +142,7 @@
 
         var rows = Array.isArray(dun5Cache) ? dun5Cache : [];
         if (!rows.length) {
-            list.innerHTML = '<li><span style="font-size:12px;font-weight:800;color:rgba(17,24,39,.62)">Dün için kayıt bulunamadı.</span></li>';
+            list.innerHTML = '<li><span class="pc-side-muted">Dün için kayıt bulunamadı.</span></li>';
             renderDununFavorisi();
             return;
         }
@@ -266,6 +280,42 @@
             .replace(/"/g, '&quot;');
     }
 
+    function pcToast(msg) {
+        var toast = document.getElementById('toast');
+        if (!toast) return;
+        toast.textContent = msg;
+        toast.classList.add('show');
+        global.setTimeout(function () {
+            toast.classList.remove('show');
+        }, 3200);
+    }
+
+    var pcDunTiklaniyor = false;
+
+    async function pcDunun5OkuTikla() {
+        if (!pcAktifMi()) return;
+        var idx = window.Gunde5Index;
+        if (!idx || typeof idx.dunHikayelerineGit !== 'function') {
+            pcToast('Liste henüz hazır değil, bir saniye sonra tekrar dene.');
+            return;
+        }
+        if (!dun5Cache) {
+            try {
+                dun5Cache = await dunun5Getir();
+            } catch (e) {
+                dun5Cache = [];
+            }
+        }
+        var rows = Array.isArray(dun5Cache) ? dun5Cache : [];
+        var opts = rows.length
+            ? {
+                rows: rows,
+                ids: rows.map(function (r) { return String(r && r.id != null ? r.id : ''); }).filter(Boolean)
+            }
+            : undefined;
+        await idx.dunHikayelerineGit(opts);
+    }
+
     function bagla() {
         var sol = qs('.pc-left');
         if (sol) {
@@ -307,16 +357,19 @@
         var rbtn = qs('#pcRastgeleBtn');
         if (rbtn) rbtn.addEventListener('click', rastgeleYenile);
 
-        var dunBtn = qs('#pcDunun5OkuBtn');
-        if (dunBtn) {
-            dunBtn.addEventListener('click', function () {
-                if (Array.isArray(dun5Cache) && dun5Cache.length) {
-                    location.href = '/itiraf/' + String(dun5Cache[0].id);
-                    return;
-                }
-                /* veri yoksa fallback: bugünün ilkine git */
-                var first = qs('#indexListe .story-card[data-id]');
-                if (first && first.id) location.hash = '#' + first.id;
+        var dunOku = qs('#pcDunun5OkuBtn');
+        if (dunOku && dunOku.getAttribute('data-bound') !== '1') {
+            dunOku.setAttribute('data-bound', '1');
+            dunOku.addEventListener('click', function () {
+                if (pcDunTiklaniyor) return;
+                pcDunTiklaniyor = true;
+                pcDunun5OkuTikla().catch(function (err) {
+                    var D = window.Gunde5DB;
+                    var msg = D && D.hataMesaji ? D.hataMesaji(err) : (err && err.message ? err.message : String(err));
+                    pcToast(msg);
+                }).finally(function () {
+                    pcDunTiklaniyor = false;
+                });
             });
         }
 

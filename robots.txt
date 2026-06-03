@@ -1,14 +1,38 @@
+# gunde5.com — otomatik uretim; yayinda: yalnizca anasayfa
 User-agent: *
 Allow: /
-Disallow: /profil.html
+
+Disallow: /podyum
+Disallow: /podyum.html
+Disallow: /kvkk
+Disallow: /kvkk.html
+Disallow: /hakkinda
+Disallow: /hakkinda.html
+Disallow: /iletisim
+Disallow: /iletisim.html
 Disallow: /profil
+Disallow: /profil.html
+Disallow: /istatistikler
 Disallow: /istatistikler.html
+Disallow: /metrikler
+Disallow: /metrikler.html
 Disallow: /mudavimler
 Disallow: /mudavimler.html
+Disallow: /uyeler
 Disallow: /uyeler.html
 Disallow: /bulut
 Disallow: /bulut.html
 Disallow: /hikaye-gonder
 Disallow: /hikaye-gonder.html
+Disallow: /kamikaze
+Disallow: /kamikaze.html
+Disallow: /sosyal-paylas
+Disallow: /sosyal-paylas.html
+Disallow: /admin/
+Disallow: /h/
+Disallow: /itiraf/
+Disallow: /demo/
+Disallow: /404
+Disallow: /404.html
 
 Sitemap: https://gunde5.com/sitemap.xml

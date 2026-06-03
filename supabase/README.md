@@ -65,7 +65,8 @@ $env:SUPABASE_SERVICE_ROLE_KEY = "eyJ..."
 python scripts/gunde5-txt-to-sql.py "C:\Users\iklim\Downloads\gunde5.txt" --ekle
 ```
 
-Yalnızca SQL üretmek için: `python scripts/gunde5-txt-to-sql.py gunde5.txt` → `supabase/seed-gunde5.sql`
+Yalnızca SQL üretmek için: `python scripts/gunde5-txt-to-sql.py gunde5.txt` → `supabase/seed-gunde5.sql`  
+Dosyada `TARİH: 06-06-2026 07:04` varsa o saatler kullanılır (ör. `seed-gunde5-2026-06-06-08.sql`).
 
 Eski sabit liste: `node scripts/hikaye-ekle.mjs` (`hikayeler` tablosu — yerine gunde5 script kullanın)
 

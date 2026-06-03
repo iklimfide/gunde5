@@ -1,0 +1,25 @@
+/* gunde5 — site geneli mor üst bar (index .page-topbar ile uyumlu) */
+header,
+.page-topbar,
+#indexSiteHeader {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
+    box-shadow: 0 8px 24px rgba(91, 33, 182, 0.22);
+}
+
+body.dark-mode header,
+body.dark-mode .page-topbar,
+body.dark-mode #indexSiteHeader,
+[data-theme="dark"] header,
+[data-theme="dark"] .page-topbar,
+[data-theme="dark"] #indexSiteHeader {
+    background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%) !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+header .header-brand,
+header a.header-brand,
+.page-topbar .brand {
+    color: #ffffff !important;
+}

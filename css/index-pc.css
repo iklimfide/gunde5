@@ -109,7 +109,14 @@
 
     body {
         padding: 0 0 48px;
-        background: #f4f6f8;
+        background-color: #f4f6f8;
+        color: var(--text-main);
+    }
+
+    body.dark-mode,
+    [data-theme="dark"] body {
+        background-color: var(--bg-main);
+        color: var(--text-main);
     }
 
     main {
@@ -185,6 +192,29 @@
     #pcPills { display: none !important; }
     .index-siralama { display: none !important; }
 
+    /* Yan kolon tipografi (başlık / içerik ayrımı) */
+    .pc-left,
+    .pc-right {
+        --pc-etiket: #6d28d9;
+        --pc-baslik: #0f172a;
+        --pc-metin: #475569;
+        --pc-metin-muted: #64748b;
+        --pc-vurgu-mavi: #0c4a6e;
+        --pc-vurgu-turuncu: #b45309;
+    }
+
+    body.dark-mode .pc-left,
+    body.dark-mode .pc-right,
+    [data-theme="dark"] .pc-left,
+    [data-theme="dark"] .pc-right {
+        --pc-etiket: #a78bfa;
+        --pc-baslik: #f1f5f9;
+        --pc-metin: #cbd5e1;
+        --pc-metin-muted: #94a3b8;
+        --pc-vurgu-mavi: #7dd3fc;
+        --pc-vurgu-turuncu: #fbbf24;
+    }
+
     /* Sol kutular */
     .pc-left-kutu,
     .pc-right-kutu {
@@ -196,10 +226,33 @@
         box-shadow: 0 10px 26px rgba(0, 0, 0, 0.06);
     }
 
+    body.dark-mode .pc-left-kutu,
+    body.dark-mode .pc-right-kutu,
+    [data-theme="dark"] .pc-left-kutu,
+    [data-theme="dark"] .pc-right-kutu {
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+    }
+
     .pc-left-kutu--rituel {
         background: radial-gradient(900px 240px at 20% 10%, rgba(255,255,255,0.55), rgba(255,255,255,0) 60%),
             linear-gradient(135deg, rgba(29,155,240,0.18), rgba(245,158,11,0.12));
-        border-color: rgba(29, 155, 240, 0.16);
+        border-color: rgba(109, 40, 217, 0.22);
+    }
+
+    body.dark-mode .pc-left-kutu--rituel,
+    [data-theme="dark"] .pc-left-kutu--rituel {
+        background: radial-gradient(900px 240px at 20% 10%, rgba(109,40,217,0.15), rgba(0,0,0,0) 60%),
+            linear-gradient(135deg, rgba(29,155,240,0.12), rgba(15,23,42,0.9));
+        border-color: rgba(167, 139, 250, 0.28);
+    }
+
+    .pc-left-kutu--rituel .pc-left-etiket {
+        color: var(--pc-etiket);
+    }
+
+    .pc-left-kutu--rituel .pc-left-baslik {
+        color: var(--pc-baslik);
     }
 
     .pc-left-etiket {
@@ -207,7 +260,7 @@
         font-weight: 900;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: rgba(17, 24, 39, 0.6);
+        color: var(--pc-vurgu-turuncu);
         margin-bottom: 8px;
     }
     .pc-left-baslik {
@@ -215,13 +268,14 @@
         font-weight: 900;
         letter-spacing: -0.03em;
         margin-bottom: 8px;
-        color: var(--text-main);
+        color: var(--pc-baslik);
+        line-height: 1.2;
     }
     .pc-left-alt {
         font-size: 13px;
-        font-weight: 700;
-        line-height: 1.5;
-        color: rgba(17, 24, 39, 0.72);
+        font-weight: 600;
+        line-height: 1.55;
+        color: var(--pc-metin);
         margin-bottom: 12px;
     }
     .pc-left-cta {
@@ -247,47 +301,107 @@
         padding: 10px 12px;
         border-radius: 12px;
         font-size: 13px;
-        font-weight: 800;
+        font-weight: 700;
         cursor: pointer;
         font-family: inherit;
-        color: var(--text-main);
+        color: var(--pc-metin);
         margin-top: 6px;
     }
     .pc-left-link:hover {
         background: rgba(29,155,240,0.08);
         border-color: rgba(29,155,240,0.16);
+        color: var(--pc-vurgu-mavi);
     }
     .pc-left-link--aktif {
         background: rgba(29,155,240,0.10);
         border-color: rgba(29,155,240,0.22);
-        color: #0c4a6e;
+        color: var(--pc-vurgu-mavi);
+    }
+
+    body.dark-mode .pc-left-link--aktif,
+    [data-theme="dark"] .pc-left-link--aktif {
+        background: rgba(29,155,240,0.14);
+        border-color: rgba(29,155,240,0.35);
     }
 
     /* Sağ taraf */
     .pc-right-kutu--vurgu {
-        border-color: rgba(29,155,240,0.22);
-        background: linear-gradient(180deg, rgba(29,155,240,0.06), var(--bg-card));
+        border-color: rgba(29,155,240,0.28);
+        background: linear-gradient(180deg, rgba(29,155,240,0.08), var(--bg-card));
     }
+
+    body.dark-mode .pc-right-kutu--vurgu,
+    [data-theme="dark"] .pc-right-kutu--vurgu {
+        background: linear-gradient(180deg, rgba(29,155,240,0.1), var(--bg-card));
+        border-color: rgba(56, 189, 248, 0.3);
+    }
+
     .pc-right-baslik {
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 900;
         letter-spacing: -0.02em;
         margin-bottom: 10px;
-        color: var(--text-main);
+        padding-left: 10px;
+        border-left: 3px solid #38bdf8;
+        color: var(--pc-vurgu-mavi);
+        line-height: 1.3;
     }
+
+    .pc-right-kutu--vurgu .pc-right-baslik {
+        border-left-color: #0ea5e9;
+        color: #0369a1;
+    }
+
+    .pc-right-kutu:not(.pc-right-kutu--vurgu):not(.pc-rastgele) .pc-right-baslik {
+        border-left-color: #f59e0b;
+        color: #c2410c;
+    }
+
+    body.dark-mode .pc-right-kutu--vurgu .pc-right-baslik,
+    [data-theme="dark"] .pc-right-kutu--vurgu .pc-right-baslik {
+        color: var(--pc-vurgu-mavi);
+        border-left-color: #38bdf8;
+    }
+
+    body.dark-mode .pc-right-kutu:not(.pc-right-kutu--vurgu):not(.pc-rastgele) .pc-right-baslik,
+    [data-theme="dark"] .pc-right-kutu:not(.pc-right-kutu--vurgu):not(.pc-rastgele) .pc-right-baslik {
+        color: #fb923c;
+        border-left-color: #fbbf24;
+    }
+
+    .pc-rastgele .pc-right-baslik {
+        border-left-color: #8b5cf6;
+        color: #6d28d9;
+    }
+
+    body.dark-mode .pc-rastgele .pc-right-baslik,
+    [data-theme="dark"] .pc-rastgele .pc-right-baslik {
+        color: #c4b5fd;
+        border-left-color: #a78bfa;
+    }
+
     .pc-right-metin {
         font-size: 14px;
-        font-weight: 700;
-        color: rgba(17, 24, 39, 0.86);
+        font-weight: 600;
+        color: var(--pc-metin);
         line-height: 1.5;
     }
-    .pc-right-metin strong { color: var(--accent); font-weight: 900; }
+    .pc-right-metin strong {
+        color: var(--pc-baslik);
+        font-weight: 800;
+    }
     .pc-right-note {
         margin-top: 6px;
         font-size: 11px;
-        font-weight: 800;
-        color: rgba(17, 24, 39, 0.55);
+        font-weight: 700;
+        color: var(--pc-metin-muted);
         line-height: 1.35;
+    }
+
+    .pc-side-muted {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--pc-metin-muted);
     }
 
     .pc-right-liste {
@@ -302,10 +416,10 @@
         padding: 8px 10px;
         border-radius: 12px;
         border: 1px solid transparent;
-        color: var(--text-main);
+        color: var(--pc-baslik);
         text-decoration: none;
         font-size: 13px;
-        font-weight: 800;
+        font-weight: 700;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -319,9 +433,9 @@
     .pc-right-cta {
         width: 100%;
         margin-top: 10px;
-        border: 1px solid rgba(29,155,240,0.22);
-        background: rgba(29,155,240,0.10);
-        color: #0c4a6e;
+        border: 1px solid rgba(29,155,240,0.28);
+        background: rgba(29,155,240,0.12);
+        color: var(--pc-vurgu-mavi);
         padding: 10px 12px;
         border-radius: 14px;
         font-size: 13px;
@@ -337,15 +451,15 @@
     .pc-favori strong {
         display: block;
         font-size: 13px;
-        font-weight: 900;
+        font-weight: 800;
         margin-bottom: 6px;
-        line-height: 1.25;
-        color: var(--text-main);
+        line-height: 1.35;
+        color: var(--pc-baslik);
     }
     .pc-favori span {
         font-size: 11px;
-        font-weight: 800;
-        color: rgba(17, 24, 39, 0.6);
+        font-weight: 600;
+        color: var(--pc-metin-muted);
     }
     .pc-favori-link {
         display: block;
@@ -390,22 +504,30 @@
     .pc-rastgele-btn:hover { color: #0c4a6e; border-color: rgba(29,155,240,0.25); }
     .pc-rastgele-metin {
         font-size: 13px;
-        font-weight: 800;
-        line-height: 1.5;
+        font-weight: 600;
+        line-height: 1.55;
         font-style: italic;
         padding: 12px 12px;
         border-radius: 14px;
         background: rgba(255,255,255,0.65);
-        border: 1px dashed rgba(17, 24, 39, 0.12);
-        color: rgba(17, 24, 39, 0.86);
+        border: 1px dashed rgba(109, 40, 217, 0.2);
+        color: var(--pc-metin);
         margin: 8px 0 0;
     }
+
+    body.dark-mode .pc-rastgele-metin,
+    [data-theme="dark"] .pc-rastgele-metin {
+        background: rgba(15, 23, 42, 0.6);
+        border-color: rgba(167, 139, 250, 0.25);
+        color: var(--pc-metin);
+    }
+
     .pc-rastgele-kaynak {
         display: block;
         margin-top: 8px;
         font-size: 11px;
-        font-weight: 900;
-        color: rgba(17, 24, 39, 0.6);
+        font-weight: 700;
+        color: var(--pc-metin-muted);
     }
 
     /* PC’de headline/toolbar biraz nefes alsın */
@@ -426,6 +548,127 @@
     /* Hash ile inince header altında kalmasın */
     #indexListe .story-card {
         scroll-margin-top: 96px;
+    }
+
+    /* —— PC gece modu (yalnızca ≥1024px; mobil index.css’te) —— */
+    body.dark-mode .ss-watermark,
+    [data-theme="dark"] .ss-watermark {
+        color: rgba(255, 255, 255, 0.07);
+    }
+
+    body.dark-mode .pc-hero,
+    [data-theme="dark"] .pc-hero {
+        background:
+            radial-gradient(900px 260px at 18% 12%, rgba(109, 40, 217, 0.22), rgba(0, 0, 0, 0) 58%),
+            linear-gradient(135deg, #1e3a5f 0%, #0f172a 52%, #020617 100%);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+        color: #f1f5f9;
+    }
+
+    body.dark-mode .pc-hero-cta,
+    [data-theme="dark"] .pc-hero-cta {
+        background: rgba(30, 41, 59, 0.92);
+        color: #7dd3fc;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    body.dark-mode .pc-pill,
+    [data-theme="dark"] .pc-pill {
+        border-color: rgba(255, 255, 255, 0.12);
+        background: rgba(21, 24, 28, 0.85);
+        color: #e2e8f0;
+    }
+
+    body.dark-mode .pc-pill--aktif,
+    [data-theme="dark"] .pc-pill--aktif {
+        background: rgba(29, 155, 240, 0.2);
+        border-color: rgba(56, 189, 248, 0.4);
+        color: #7dd3fc;
+    }
+
+    body.dark-mode .pc-left-cta,
+    [data-theme="dark"] .pc-left-cta {
+        background: rgba(30, 41, 59, 0.95);
+        color: #7dd3fc;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    body.dark-mode .pc-left-link:hover,
+    [data-theme="dark"] .pc-left-link:hover {
+        background: rgba(29, 155, 240, 0.12);
+        border-color: rgba(56, 189, 248, 0.28);
+    }
+
+    body.dark-mode .pc-right-liste a:hover,
+    [data-theme="dark"] .pc-right-liste a:hover {
+        background: rgba(29, 155, 240, 0.12);
+        border-color: rgba(56, 189, 248, 0.22);
+    }
+
+    body.dark-mode .pc-right-cta,
+    [data-theme="dark"] .pc-right-cta {
+        border-color: rgba(56, 189, 248, 0.35);
+        background: rgba(29, 155, 240, 0.16);
+        color: #7dd3fc;
+    }
+
+    body.dark-mode .pc-right-cta:hover,
+    [data-theme="dark"] .pc-right-cta:hover {
+        border-color: rgba(56, 189, 248, 0.5);
+        background: rgba(29, 155, 240, 0.22);
+    }
+
+    body.dark-mode .pc-favori-link,
+    [data-theme="dark"] .pc-favori-link {
+        background: rgba(21, 24, 28, 0.75);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    body.dark-mode .pc-favori-link:hover,
+    [data-theme="dark"] .pc-favori-link:hover {
+        border-color: rgba(56, 189, 248, 0.28);
+        background: rgba(29, 155, 240, 0.1);
+    }
+
+    body.dark-mode .pc-rastgele-btn,
+    [data-theme="dark"] .pc-rastgele-btn {
+        border-color: rgba(255, 255, 255, 0.14);
+        background: rgba(21, 24, 28, 0.9);
+        color: #cbd5e1;
+    }
+
+    body.dark-mode .pc-rastgele-btn:hover,
+    [data-theme="dark"] .pc-rastgele-btn:hover {
+        color: #7dd3fc;
+        border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    body.dark-mode .pc-rastgele-link:hover .pc-rastgele-metin,
+    [data-theme="dark"] .pc-rastgele-link:hover .pc-rastgele-metin {
+        border-color: rgba(56, 189, 248, 0.3);
+        background: rgba(29, 155, 240, 0.1);
+    }
+
+    body.dark-mode #indexListe .story-card,
+    [data-theme="dark"] #indexListe .story-card {
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.38);
+    }
+
+    body.dark-mode .index-tagline,
+    [data-theme="dark"] .index-tagline {
+        color: var(--text-muted);
+    }
+
+    body.dark-mode .page-tail-satir,
+    body.dark-mode .page-tail-satir a,
+    [data-theme="dark"] .page-tail-satir,
+    [data-theme="dark"] .page-tail-satir a {
+        color: var(--text-muted);
+    }
+
+    body.dark-mode .index-durum,
+    [data-theme="dark"] .index-durum {
+        color: var(--text-muted);
     }
 }
 

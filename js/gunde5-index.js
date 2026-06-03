@@ -9,6 +9,8 @@
     var CACHE_TTL_MS = 5 * 60 * 1000;
     var ARAMA_DEBOUNCE = 320;
     var ARAMA_MIN = 2;
+    /** Önbellekten gösterim sonrası arka plan feed yenilemesi (Dünkü 5 ile yarışmasın). */
+    var arkaplanIlkSayfaTamam = Promise.resolve();
     var state = {
         offset: 0,
         yukleniyor: false,
@@ -196,6 +198,14 @@
 
     function icerikMetni(row) {
         return row.content_full || row.content_short || '';
+    }
+
+    function icerikGoster(row) {
+        var t = icerikMetni(row);
+        if (global.Gunde5Perde && global.Gunde5Perde.metinPerdele) {
+            t = global.Gunde5Perde.metinPerdele(t);
+        }
+        return esc(t);
     }
 
     function listeEl() {
@@ -441,6 +451,19 @@
     async function ilkSayfayiYenidenCiz(rows) {
         var el = listeEl();
         if (!el) return;
+        if (el.querySelector('.index-dun-bolum-baslik')) {
+            var i;
+            for (i = 0; i < rows.length; i++) {
+                kartOySayilariniGuncelle(
+                    document.getElementById('h-' + rows[i].id),
+                    rows[i]
+                );
+            }
+            state.offset = rows.length;
+            state.bitti = rows.length < SAYFA;
+            cacheYaz(rows, state.offset, state.bitti);
+            return;
+        }
         el.innerHTML = '';
         state.yuklenenIdler = {};
         state.offset = rows.length;
@@ -483,7 +506,7 @@
             '</div>' +
             '<div class="card-body">' +
                 (baslik ? '<span class="kart-baslik">' + esc(baslik) + '</span>' : '') +
-                '<span class="short-text">' + esc(icerikMetni(row)) + '</span></div>' +
+                '<span class="short-text">' + icerikGoster(row) + '</span></div>' +
             '<div class="card-footer story-actions">' +
                 '<div class="vote-box">' +
                     '<button type="button" class="vote-btn' + (voted === 'up' ? ' applauded' : '') +
@@ -601,8 +624,25 @@
         }
     }
 
-    async function sonrakiPart(btn) {
+    async function sonrakiPart(btn, partOpts) {
+        var skipHedefKaydir = partOpts && partOpts.skipHedefKaydir;
+        var kullaniciLoadMore = !!(btn && !skipHedefKaydir);
+
+        if (kullaniciLoadMore) {
+            await feedIlkYuklemeBekle();
+            var bekleLm = 0;
+            while (state.yukleniyor && bekleLm < 150) {
+                bekleLm += 1;
+                await new Promise(function (resolve) {
+                    global.setTimeout(resolve, 40);
+                });
+            }
+        }
+
         if (state.yukleniyor || state.bitti) return;
+
+        var dunIlkYukleme = kullaniciLoadMore && !state.loadMoreMetinGenel;
+
         if (btn && btn.closest) {
             var wrap = btn.closest('.index-load-more-wrap');
             if (wrap) wrap.remove();
@@ -624,7 +664,9 @@
             var rows = await hikayeListele(state.offset, SAYFA);
             if (ilkPart) {
                 var el = listeEl();
-                if (el) el.innerHTML = '';
+                if (el && !el.querySelector('.index-dun-bolum-baslik')) {
+                    el.innerHTML = '';
+                }
             }
 
             state.offset += rows.length;
@@ -649,6 +691,10 @@
             }
 
             await kartlariEkle(rows, ilkPart);
+
+            if (dunIlkYukleme && rows.length) {
+                await yuklenenDunHikayelerineKaydir(rows);
+            }
 
             if (ilkPart && rows.length && onbellekKullanilabilirMi()) {
                 cacheYaz(rows, state.offset, state.bitti);
@@ -688,7 +734,9 @@
         } finally {
             state.yukleniyor = false;
         }
-        await hedefKartaKaydirOtomatik(0);
+        if (!skipHedefKaydir && !dunIlkYukleme) {
+            await hedefKartaKaydirOtomatik(0);
+        }
     }
 
     async function arkaplanIlkSayfaYenile() {
@@ -710,6 +758,16 @@
             var domIdler = domIlkSayfaIdleri();
 
             if (kartSayisi <= SAYFA) {
+                if (el.querySelector('.index-dun-bolum-baslik')) {
+                    var k;
+                    for (k = 0; k < rows.length; k++) {
+                        kartOySayilariniGuncelle(
+                            document.getElementById('h-' + rows[k].id),
+                            rows[k]
+                        );
+                    }
+                    return;
+                }
                 if (!idListesiAyni(domIdler, yeniIdler)) {
                     await ilkSayfayiYenidenCiz(rows);
                 } else {
@@ -1006,23 +1064,335 @@
         if (toolbar) toolbar.classList.remove('index-toolbar--arama-acik');
     }
 
-    function altBarDunTikla() {
-        analyticsIndex({ event: 'altbar_dun_click', sayfa: 'index' });
-        var dunEtiket = document.querySelector('.index-yayin-etiket--dun');
-        if (dunEtiket) {
-            var kart = dunEtiket.closest('.story-card');
-            if (kart) {
-                kart.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                return;
+    /** İstanbul takviminde dün (YYYY-MM-DD). */
+    function ymdDun() {
+        var bugun = trYmd(new Date());
+        if (!bugun) return null;
+        var p = bugun.split('-');
+        var d = new Date(Date.UTC(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)));
+        d.setUTCDate(d.getUTCDate() - 1);
+        var y = d.getUTCFullYear();
+        var m = d.getUTCMonth() + 1;
+        var g = d.getUTCDate();
+        return y + '-' + (m < 10 ? '0' : '') + m + '-' + (g < 10 ? '0' : '') + g;
+    }
+
+    async function dunun5Getir() {
+        var D = db();
+        if (!D) return [];
+        if (D.init) await D.init();
+        if (D.indexDunun5Getir) {
+            try {
+                var dogrudan = await D.indexDunun5Getir();
+                if (dogrudan && dogrudan.length) return dogrudan;
+            } catch (eDun) { /* taramaya düş */ }
+        }
+        if (!D.indexItirafListeleSayfa) return [];
+        var dun = ymdDun();
+        if (!dun) return [];
+        var dunRows = [];
+        var off = 0;
+        var batch = 60;
+        var maxTarama = 400;
+        while (dunRows.length < 5 && off < maxTarama) {
+            var parca = await D.indexItirafListeleSayfa(off, batch, 'yeni');
+            if (!parca.length) break;
+            var i;
+            for (i = 0; i < parca.length; i++) {
+                if (trYmd(parca[i].created_at) === dun) dunRows.push(parca[i]);
+            }
+            off += parca.length;
+            if (parca.length < batch) break;
+        }
+        dunRows.sort(function (a, b) {
+            return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+        });
+        return dunRows.slice(0, 5);
+    }
+
+    function dunIdlerDomdaEksik(idler) {
+        if (!idler || !idler.length) return true;
+        var i;
+        for (i = 0; i < idler.length; i++) {
+            if (!document.getElementById('h-' + idler[i])) return true;
+        }
+        return false;
+    }
+
+    var dunTiklaniyor = false;
+    var loadMoreTiklaniyor = false;
+
+    function dunIdListesi(opts) {
+        if (!opts) return null;
+        if (Array.isArray(opts)) {
+            return opts.map(function (id) { return String(id); }).filter(Boolean);
+        }
+        if (Array.isArray(opts.ids)) {
+            return opts.ids.map(function (id) { return String(id); }).filter(Boolean);
+        }
+        return null;
+    }
+
+    function dunSatirlar(opts) {
+        if (!opts || Array.isArray(opts)) return null;
+        return Array.isArray(opts.rows) ? opts.rows : null;
+    }
+
+    function dunKartBul(idler) {
+        var i, el;
+        if (idler && idler.length) {
+            for (i = 0; i < idler.length; i++) {
+                el = document.getElementById('h-' + idler[i]);
+                if (el) return el;
             }
         }
-        var moreBtn = document.querySelector('.index-load-more');
-        if (moreBtn) {
-            moreBtn.click();
+        var dunEtiket = document.querySelector('.index-yayin-etiket--dun');
+        return dunEtiket ? dunEtiket.closest('.story-card') : null;
+    }
+
+    async function dunKartLayoutBekle(kart) {
+        var deneme = 0;
+        while (deneme < 30) {
+            if (kart && kart.isConnected && kart.offsetHeight > 0) {
+                var r = kart.getBoundingClientRect();
+                if (r.height > 0) return true;
+            }
+            deneme += 1;
+            await new Promise(function (resolve) {
+                requestAnimationFrame(resolve);
+            });
+        }
+        return !!(kart && kart.isConnected);
+    }
+
+    async function dunKartaKaydir(kart) {
+        if (!kart || !kart.id) return false;
+        if (!(await dunKartLayoutBekle(kart))) return false;
+        var mobil = false;
+        try {
+            mobil = window.matchMedia && window.matchMedia('(max-width: 1023px)').matches;
+        } catch (eM) { /* */ }
+        var blok = mobil ? 'center' : 'start';
+        kart.scrollIntoView({ behavior: 'auto', block: blok });
+        await new Promise(function (resolve) {
+            requestAnimationFrame(resolve);
+        });
+        kart.scrollIntoView({ behavior: 'smooth', block: blok });
+        try {
+            if (global.history && global.history.replaceState) {
+                global.history.replaceState(null, '', '#' + kart.id);
+            } else {
+                location.hash = '#' + kart.id;
+            }
+        } catch (eHash) {
+            location.hash = '#' + kart.id;
+        }
+        qsaFocusTemizle(kart);
+        kart.classList.add('focused');
+        return true;
+    }
+
+    async function feedIlkYuklemeBekle() {
+        var deneme = 0;
+        while (state.yukleniyor && deneme < 150) {
+            deneme += 1;
+            await new Promise(function (resolve) {
+                global.setTimeout(resolve, 40);
+            });
+        }
+        try {
+            await arkaplanIlkSayfaTamam;
+        } catch (eFeed) { /* */ }
+    }
+
+    function qsaFocusTemizle(aktif) {
+        var el = listeEl();
+        if (!el) return;
+        var cards = el.querySelectorAll('.story-card.focused');
+        var i;
+        for (i = 0; i < cards.length; i++) {
+            if (cards[i] !== aktif) cards[i].classList.remove('focused');
+        }
+    }
+
+    function dunListeEklemeNoktasi(el) {
+        var anchor = el.querySelector('.index-load-more-wrap');
+        if (anchor) return { tip: 'before', ref: anchor };
+        return { tip: 'append', ref: null };
+    }
+
+    function dunListeYerlestir(el, node, nokta) {
+        if (!el || !node) return;
+        if (nokta.tip === 'after' && nokta.ref) {
+            if (nokta.ref.nextSibling) {
+                el.insertBefore(node, nokta.ref.nextSibling);
+            } else {
+                el.appendChild(node);
+            }
             return;
         }
-        if (!state.bitti && !state.yukleniyor) {
-            sonrakiPart(null);
+        if (nokta.tip === 'before' && nokta.ref) {
+            el.insertBefore(node, nokta.ref);
+            return;
+        }
+        el.appendChild(node);
+    }
+
+    function dunBolumBasligiYerlestir(el, refKart) {
+        if (!el || el.querySelector('.index-dun-bolum-baslik')) return;
+        var baslikEl = document.createElement('p');
+        baslikEl.className = 'index-dun-bolum-baslik';
+        baslikEl.setAttribute('role', 'note');
+        baslikEl.textContent = '📅 Dünün 5\'i';
+        if (refKart && refKart.parentNode === el) {
+            el.insertBefore(baslikEl, refKart);
+            return;
+        }
+        dunListeYerlestir(el, baslikEl, dunListeEklemeNoktasi(el));
+    }
+
+    async function yuklenenDunHikayelerineKaydir(rows) {
+        var dun = ymdDun();
+        var i, kart, el;
+        if (dun && rows && rows.length) {
+            for (i = 0; i < rows.length; i++) {
+                if (!rows[i] || rows[i].id == null) continue;
+                if (trYmd(rows[i].created_at) !== dun) continue;
+                kart = document.getElementById('h-' + rows[i].id);
+                if (!kart) continue;
+                el = listeEl();
+                if (el) dunBolumBasligiYerlestir(el, kart);
+                await dunDomHazirBekle();
+                if (await dunKartaKaydir(kart)) return;
+            }
+        }
+        var etiket = document.querySelector('.index-yayin-etiket--dun');
+        kart = etiket ? etiket.closest('.story-card') : null;
+        if (!kart) return;
+        el = listeEl();
+        if (el) dunBolumBasligiYerlestir(el, kart);
+        await dunDomHazirBekle();
+        await dunKartaKaydir(kart);
+    }
+
+    async function dunSatirlariListeyeEkle(rows) {
+        if (!rows || !rows.length) return;
+        var eksik = [];
+        var i;
+        for (i = 0; i < rows.length; i++) {
+            if (!rows[i] || rows[i].id == null) continue;
+            if (!document.getElementById('h-' + rows[i].id)) {
+                eksik.push(rows[i]);
+            }
+        }
+        if (!eksik.length) return;
+
+        eksik.sort(function (a, b) {
+            return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+        });
+
+        var el = listeEl();
+        if (!el) return;
+
+        var nokta = dunListeEklemeNoktasi(el);
+
+        var frag = document.createDocumentFragment();
+        for (i = 0; i < eksik.length; i++) {
+            state.yuklenenIdler[eksik[i].id] = true;
+            var dunKart = kartElementOlustur(eksik[i], false);
+            dunKart.setAttribute('data-g5-dun', '1');
+            frag.appendChild(dunKart);
+        }
+        dunListeYerlestir(el, frag, nokta);
+        if (eksik[0] && eksik[0].id != null) {
+            dunBolumBasligiYerlestir(el, document.getElementById('h-' + eksik[0].id));
+        } else {
+            dunBolumBasligiYerlestir(el, null);
+        }
+
+        await kartOyDurumlariniSenkron(eksik);
+        var A = global.Gunde5Analytics;
+        if (A && A.kartlariIzle) A.kartlariIzle(el);
+    }
+
+    function dunDomHazirBekle() {
+        return new Promise(function (resolve) {
+            requestAnimationFrame(function () {
+                requestAnimationFrame(resolve);
+            });
+        });
+    }
+
+    async function dunHikayelerineGit(opts) {
+        analyticsIndex({ event: 'altbar_dun_click', sayfa: 'index' });
+        var D = db();
+        if (D && D.init) await D.init();
+        await feedIlkYuklemeBekle();
+
+        var idler = dunIdListesi(opts);
+        var dunRows = dunSatirlar(opts);
+
+        if (!dunRows || !dunRows.length) {
+            dunRows = await dunun5Getir();
+            idler = dunRows.map(function (r) { return String(r.id); });
+        }
+
+        if (!dunRows.length) {
+            showToast('Dün için yayınlanmış hikâye yok.');
+            return;
+        }
+
+        if (dunIdlerDomdaEksik(idler)) {
+            await dunSatirlariListeyeEkle(dunRows);
+            await dunDomHazirBekle();
+        }
+
+        var kart = dunKartBul(idler);
+        if (await dunKartaKaydir(kart)) return;
+
+        var moreBtn = document.querySelector('.index-load-more');
+        if (dunIdlerDomdaEksik(idler) && moreBtn && !state.bitti) {
+            var depth;
+            for (depth = 0; depth < 30; depth++) {
+                if (!dunIdlerDomdaEksik(idler)) break;
+                if (state.yukleniyor) {
+                    await new Promise(function (resolve) {
+                        global.setTimeout(resolve, 200);
+                    });
+                    continue;
+                }
+                if (state.bitti) break;
+                moreBtn = document.querySelector('.index-load-more');
+                if (!moreBtn) break;
+                await sonrakiPart(moreBtn, { skipHedefKaydir: true });
+                await dunDomHazirBekle();
+                kart = dunKartBul(idler);
+                if (await dunKartaKaydir(kart)) return;
+            }
+        }
+
+        if (dunIdlerDomdaEksik(idler)) {
+            await dunSatirlariListeyeEkle(dunRows);
+            await dunDomHazirBekle();
+            kart = dunKartBul(idler);
+            if (await dunKartaKaydir(kart)) return;
+        }
+
+        kart = dunKartBul(idler);
+        if (await dunKartaKaydir(kart)) return;
+
+        showToast('Dünkü hikâyeler gösterilemedi.');
+    }
+
+    async function altBarDunTikla() {
+        if (dunTiklaniyor) return;
+        dunTiklaniyor = true;
+        try {
+            await dunHikayelerineGit();
+        } catch (err) {
+            showToast(hataMesaji(err));
+        } finally {
+            dunTiklaniyor = false;
         }
     }
 
@@ -1098,7 +1468,13 @@
             }
             var moreBtn = e.target.closest('.index-load-more');
             if (moreBtn) {
-                sonrakiPart(moreBtn);
+                if (loadMoreTiklaniyor) return;
+                loadMoreTiklaniyor = true;
+                sonrakiPart(moreBtn).catch(function (err) {
+                    showToast(hataMesaji(err));
+                }).finally(function () {
+                    loadMoreTiklaniyor = false;
+                });
             }
         });
     }
@@ -1175,13 +1551,18 @@
         if (cached && cached.rows.length) {
             await onbellektenGoster(cached);
             indexMasterNavErtele();
-            arkaplanIlkSayfaYenile().then(function () {
-                return hedefKartaKaydirOtomatik(0);
-            });
+            arkaplanIlkSayfaTamam = arkaplanIlkSayfaYenile()
+                .then(function () {
+                    return hedefKartaKaydirOtomatik(0);
+                })
+                .catch(function () {
+                    return null;
+                });
             return;
         }
 
         await sonrakiPart(null);
+        arkaplanIlkSayfaTamam = Promise.resolve();
         indexMasterNavErtele();
     }
 
@@ -1196,7 +1577,7 @@
         });
     }
 
-    global.Gunde5Index = { baslat: baslat };
+    global.Gunde5Index = { baslat: baslat, dunHikayelerineGit: dunHikayelerineGit };
 
     if (global.document.readyState === 'loading') {
         global.document.addEventListener('DOMContentLoaded', boot);

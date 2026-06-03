@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-gunde5.txt → planlı itiraflar seed SQL (TARİH satırı yok / yok sayılır).
+gunde5.txt → planlı itiraflar seed SQL.
 
 Dosya formatı:
+  TARİH: 06-06-2026 07:04   (opsiyonel; varsa dosyadaki saat kullanılır)
   BAŞLIK: ...
   RUMUZ: ...
   YAŞ: 32
   CİNSİYET: Erkek | Kadın   (opsiyonel)
-  ŞEHİR: İstanbul
+  ŞEHİR: İstanbul | Yurtdışı - Berlin
   ...hikaye metni...
 
-Yayın: ilk günden itibaren günde 5 hikaye — 07:00, 07:01, … 07:04 (Europe/Istanbul).
+Yayın: TARİH yoksa ilk günden itibaren günde 5 hikaye — 07:00 … 07:04 (Europe/Istanbul).
 
 Günlük kullanım (SQL dosyası):
   python scripts/gunde5-txt-to-sql.py "C:\\Users\\iklim\\Downloads\\gunde5.txt"
@@ -79,6 +80,43 @@ def yer_slug(sehir: str) -> str:
         return SEHIR_SLUG[key]
     slug = re.sub(r"[^a-z0-9]+", "_", key).strip("_")
     return slug or "ankara"
+
+
+def yer_ve_yurtdisi(sehir: str) -> tuple[str, str | None]:
+    ham = sehir.strip()
+    if re.search(r"yurtd", norm(ham), re.I) or re.search(r"yurtdisi", ham, re.I):
+        m = re.search(r"[-–]\s*(.+)$", ham)
+        return "yurtdisi", (m.group(1).strip() if m else None)
+    return yer_slug(ham), None
+
+
+def parse_tarih_satir(ham: str) -> tuple[str, str] | None:
+    """DD-MM-YYYY HH:MM → (ISO, SQL timestamptz literal)."""
+    m = re.match(
+        r"(\d{1,2})-(\d{1,2})-(\d{4})\s+(\d{1,2}):(\d{2})",
+        ham.strip(),
+    )
+    if not m:
+        return None
+    gun, ay, yil, saat, dk = m.groups()
+    d = date(int(yil), int(ay), int(gun))
+    h, mi = int(saat), int(dk)
+    iso = f"{d.isoformat()}T{h:02d}:{mi:02d}:00+03:00"
+    sql = f"timestamptz '{d.isoformat()} {h:02d}:{mi:02d}:00+03'"
+    return iso, sql
+
+
+def split_blocks(text: str) -> list[str]:
+    """Ayraç veya yeni TARİH satırı ile bloklara böl."""
+    text = text.replace("\r\n", "\n").strip()
+    if not text:
+        return []
+    parts = re.split(
+        r"(?:^-{10,}\s*\n|\n(?=TARİH:\s*\d{1,2}-\d{1,2}-\d{4}))",
+        text,
+        flags=re.MULTILINE,
+    )
+    return [p.strip() for p in parts if p.strip()]
 
 
 def cinsiyet_slug(ham: str | None) -> str:
@@ -213,6 +251,8 @@ def veritabanina_ekle(url: str, key: str, stories: list[dict]) -> None:
             "is_gizli": False,
             "created_at": created_at,
         }
+        if s.get("yurtdisi_sehir"):
+            body["yurtdisi_sehir"] = s["yurtdisi_sehir"]
         _, row = supabase_request(
             url,
             key,
@@ -227,16 +267,13 @@ def veritabanina_ekle(url: str, key: str, stories: list[dict]) -> None:
 
 def parse_file(text: str) -> list[dict]:
     stories: list[dict] = []
-    blocks = re.split(r"-{10,}", text)
-    for block in blocks:
-        block = block.strip()
-        if not block:
-            continue
+    for block in split_blocks(text):
         if not re.search(r"BAŞLIK\s*:", block, re.I):
             continue
 
         fields: dict[str, str] = {}
         for key, pat in [
+            ("tarih", r"TARİH:\s*(.+?)(?:\r?\n|$)"),
             ("baslik", r"BAŞLIK:\s*(.+?)(?:\r?\n|$)"),
             ("rumuz", r"RUMUZ:\s*(.+?)(?:\r?\n|$)"),
             ("yas", r"YAŞ:\s*(\d+)"),
@@ -257,17 +294,39 @@ def parse_file(text: str) -> list[dict]:
             print(f"Uyarı: boş metin — {fields['baslik']}", file=sys.stderr)
             continue
 
-        stories.append(
-            {
-                "username": fields["rumuz"],
-                "age": int(fields["yas"]),
-                "gender": cinsiyet_slug(fields.get("cinsiyet")),
-                "yasadigi_yer": yer_slug(fields["sehir"]),
-                "baslik": fields["baslik"],
-                "hikaye": body,
-            }
-        )
+        yer, yurtdisi = yer_ve_yurtdisi(fields["sehir"])
+        row: dict = {
+            "username": fields["rumuz"],
+            "age": int(fields["yas"]),
+            "gender": cinsiyet_slug(fields.get("cinsiyet")),
+            "yasadigi_yer": yer,
+            "yurtdisi_sehir": yurtdisi,
+            "baslik": fields["baslik"],
+            "hikaye": body,
+        }
+        if fields.get("tarih"):
+            parsed = parse_tarih_satir(fields["tarih"])
+            if parsed:
+                row["created_at"], row["yayin_at_sql"] = parsed
+            else:
+                print(f"Uyarı: geçersiz TARİH — {fields['baslik']}: {fields['tarih']}", file=sys.stderr)
+        stories.append(row)
     return stories
+
+
+def zamanlari_ata(stories: list[dict], ilk_gun: date) -> None:
+    eksik = [s for s in stories if "created_at" not in s]
+    if not eksik:
+        return
+    if len(eksik) < len(stories):
+        print(
+            "Uyarı: bazı bloklarda TARİH yok; eksikler otomatik slot alıyor.",
+            file=sys.stderr,
+        )
+    zamanlar = yayin_zamanlari(len(eksik), ilk_gun)
+    for s, (iso, sql_lit) in zip(eksik, zamanlar):
+        s["created_at"] = iso
+        s["yayin_at_sql"] = sql_lit
 
 
 def render_sql(stories: list[dict], baslik: str) -> str:
@@ -277,12 +336,16 @@ def render_sql(stories: list[dict], baslik: str) -> str:
     rows = []
     for s in stories:
         hikaye = sql_escape(s["hikaye"])
+        yurtdisi = "null::varchar"
+        if s.get("yurtdisi_sehir"):
+            yurtdisi = f"'{sql_escape(s['yurtdisi_sehir'])}'"
         rows.append(
             f"    (\n"
             f"      '{sql_escape(s['username'])}',\n"
             f"      {s['age']},\n"
             f"      '{s['gender']}',\n"
             f"      '{sql_escape(s['yasadigi_yer'])}',\n"
+            f"      {yurtdisi},\n"
             f"      '{sql_escape(s['baslik'])}',\n"
             f"      '{hikaye}',\n"
             f"      {s['yayin_at_sql']}\n"
@@ -299,6 +362,7 @@ insert into public.itiraflar (
   age,
   gender,
   yasadigi_yer,
+  yurtdisi_sehir,
   baslik,
   content_short,
   content_full,
@@ -312,6 +376,7 @@ select
   v.age,
   v.gender,
   v.yasadigi_yer,
+  v.yurtdisi_sehir,
   v.baslik,
   case
     when char_length(v.hikaye) <= 140 then v.hikaye
@@ -324,7 +389,7 @@ select
 from (
   values
 {joined}
-) as v(username, age, gender, yasadigi_yer, baslik, hikaye, yayin_at)
+) as v(username, age, gender, yasadigi_yer, yurtdisi_sehir, baslik, hikaye, yayin_at)
 where not exists (
   select 1
   from public.itiraflar i
@@ -381,15 +446,12 @@ def main() -> int:
         print("Hikaye bulunamadı.", file=sys.stderr)
         return 1
 
-    zamanlar = yayin_zamanlari(len(stories), ilk_gun)
-    for s, (iso, sql_lit) in zip(stories, zamanlar):
-        s["created_at"] = iso
-        s["yayin_at_sql"] = sql_lit
+    zamanlari_ata(stories, ilk_gun)
 
-    son_gun = ilk_gun + timedelta(days=(len(stories) - 1) // GUN_BASINA)
+    tarihler = sorted(date.fromisoformat(s["created_at"][:10]) for s in stories)
     ozet = (
         f"{len(stories)} planlı hikaye — {args.dosya.name} — "
-        f"{ilk_gun.isoformat()} … {son_gun.isoformat()} (07:00–07:04)"
+        f"{tarihler[0].isoformat()} … {tarihler[-1].isoformat()} (dosya TARİH / 07:00–07:04)"
     )
 
     if args.ekle:
@@ -413,7 +475,11 @@ def main() -> int:
         sql = render_sql(stories, ozet)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(sql, encoding="utf-8")
-        print(f"Yazıldı: {args.output} ({len(stories)} hikaye, ilk gün {ilk_gun})", file=sys.stderr)
+        print(
+            f"Yazıldı: {args.output} ({len(stories)} hikaye, "
+            f"{tarihler[0].isoformat()} … {tarihler[-1].isoformat()})",
+            file=sys.stderr,
+        )
 
     return 0
 

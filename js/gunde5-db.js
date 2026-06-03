@@ -508,6 +508,64 @@
         return res.data || [];
     }
 
+    function istanbulYmdSimdi() {
+        return new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Europe/Istanbul',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).format(new Date());
+    }
+
+    function istanbulYmdDun() {
+        var bugun = istanbulYmdSimdi();
+        if (!bugun) return null;
+        var p = bugun.split('-');
+        var d = new Date(Date.UTC(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)));
+        d.setUTCDate(d.getUTCDate() - 1);
+        var y = d.getUTCFullYear();
+        var m = d.getUTCMonth() + 1;
+        var g = d.getUTCDate();
+        return y + '-' + (m < 10 ? '0' : '') + m + '-' + (g < 10 ? '0' : '') + g;
+    }
+
+    /** YYYY-MM-DD (İstanbul günü) → [gün başı, ertesi gün başı) ISO aralığı. */
+    function istanbulGunAraligi(ymd) {
+        var p = String(ymd || '').split('-');
+        if (p.length !== 3) return null;
+        var son = new Date(Date.UTC(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)));
+        son.setUTCDate(son.getUTCDate() + 1);
+        var sy = son.getUTCFullYear();
+        var sm = son.getUTCMonth() + 1;
+        var sg = son.getUTCDate();
+        var sonYmd = sy + '-' + (sm < 10 ? '0' : '') + sm + '-' + (sg < 10 ? '0' : '') + sg;
+        return {
+            bas: ymd + 'T00:00:00+03:00',
+            son: sonYmd + 'T00:00:00+03:00'
+        };
+    }
+
+    /** Anasayfa — İstanbul takviminde dünün en fazla 5 hikâyesi (07:00–07:04 sırası). */
+    async function indexDunun5Getir() {
+        var sb = getClient();
+        if (!sb) return [];
+        var dun = istanbulYmdDun();
+        if (!dun) return [];
+        var aralik = istanbulGunAraligi(dun);
+        if (!aralik) return [];
+        var res = await indexYayindaFiltre(
+            sb
+                .from('itiraflar')
+                .select(INDEX_ITIRAF_SELECT)
+                .gte('created_at', aralik.bas)
+                .lt('created_at', aralik.son)
+        )
+            .order('created_at', { ascending: true })
+            .limit(5);
+        if (res.error) throw res.error;
+        return res.data || [];
+    }
+
     /** Ortaya karışık: yayında tüm hikayeler (sayfalı çekim). */
     async function indexItirafHavuzGetir() {
         var sb = getClient();
@@ -2271,6 +2329,7 @@
         profilItiraflarim: profilHikayelerim,
         itirafAra: hikayeAra,
         indexItirafListeleSayfa: indexHikayeListeleSayfa,
+        indexDunun5Getir: indexDunun5Getir,
         indexItirafAra: indexItirafAra,
         indexItirafHavuzGetir: indexItirafHavuzGetir,
         INDEX_ITIRAF_SELECT: INDEX_ITIRAF_SELECT,
