@@ -48,6 +48,7 @@ Metrikler özeti sıfır, “en çok görülen” dolu ise: **`analytics-event-s
 
 Olay türlerini doğrulamak için: **`analytics-diagnostics.sql`** (`story_vote` / `story_share` / `load_more_click` satırları görünmeli).
 
+- **Sitemap** (`scripts/generate-sitemap.js`) — yalnızca gerçekten yayında olan sayfalar (şu an `/`). Podyum/KVKK vb. dosya olsa bile üründe kapalıysa listeye ekleme.
 - **`/istatistikler`** — trafik özeti + **günlük metrikler** + **anasayfa arayüzü** (Ara / Dünkü 5 / arama terimleri; `index-analytics.sql` + `master-gunluk-istatistik.sql` güncel Run)
 - **`/metrikler`** — site içi davranış (`site_analytics_*`, oy, paylaşım)
 

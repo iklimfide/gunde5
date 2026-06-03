@@ -1,18 +1,14 @@
 /**
- * Statik sitemap — indexlenebilir sayfalar (clean URL, .html yok).
- * robots.txt / meta noindex ile uyumlu; profil, admin, istatistik vb. dahil değil.
+ * Statik sitemap — yalnızca gerçekten yayında ve indexlenen sayfalar.
+ * Yeni sayfa eklendiğinde buraya ekle (clean URL, .html yok).
  */
 const fs = require('fs');
 const path = require('path');
 
 var BASE = 'https://gunde5.com';
-var SAYFALAR = [
-    { path: '/', changefreq: 'daily', priority: '1.0' },
-    { path: '/podyum', changefreq: 'daily', priority: '0.9' },
-    { path: '/hakkinda', changefreq: 'monthly', priority: '0.5' },
-    { path: '/iletisim', changefreq: 'monthly', priority: '0.4' },
-    { path: '/kvkk', changefreq: 'monthly', priority: '0.4' }
-];
+
+/** Şu an kullanıcıya açık tek yüzey: anasayfa (index.html). */
+var SAYFALAR = [{ path: '/', changefreq: 'daily', priority: '1.0' }];
 
 function bugunIso() {
     return new Date().toISOString().slice(0, 10);
@@ -21,7 +17,7 @@ function bugunIso() {
 var lastmod = bugunIso();
 var satirlar = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<!-- gunde5 sitemap — clean URL, .html yok; uretim: ' + lastmod + ' -->',
+    '<!-- gunde5 sitemap — yayinda olan sayfalar; uretim: ' + lastmod + ' -->',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
 ];
 
