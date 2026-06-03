@@ -698,6 +698,47 @@
             border: 1px solid var(--border-color);
             border-radius: 12px;
             background: var(--bg-card);
+            -webkit-overflow-scrolling: touch;
+        }
+        .istat-tablo-wrap .istat-tablo { min-width: 640px; }
+        .istat-matris-wrap .istat-matris { min-width: 480px; }
+        .istat-matris .istat-matris-kose,
+        .istat-matris .istat-matris-hikaye {
+            text-align: left;
+            min-width: 140px;
+            max-width: 200px;
+            font-weight: 700;
+            position: sticky;
+            left: 0;
+            background: var(--bg-card);
+            z-index: 1;
+        }
+        .istat-matris .istat-matris-gun,
+        .istat-matris .istat-matris-sayi {
+            text-align: center;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+        .istat-matris .istat-matris-gun {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+        .istat-matris .istat-matris-sayi.istat-matris-bos {
+            color: var(--text-muted);
+            opacity: 0.45;
+        }
+        .istat-matris .istat-matris-sayi.istat-matris-dolu {
+            font-weight: 800;
+        }
+        .istat-matris .istat-matris-toplam,
+        .istat-matris .istat-matris-toplam-hucre {
+            font-weight: 800;
+            background: rgba(29, 155, 240, 0.06);
+        }
+        body.dark-mode .istat-matris .istat-matris-toplam,
+        body.dark-mode .istat-matris .istat-matris-toplam-hucre {
+            background: rgba(29, 155, 240, 0.12);
         }
         .istat-tablo {
             width: 100%;
@@ -744,7 +785,7 @@
     <script src="js/gunde5-db.js"></script>
     <script src="js/gunde5-paylas.js"></script>
     <script src="js/gunde5-bildirim.js"></script>
-    <script src="js/gunde5-istatistik.js"></script>
+    <script src="js/gunde5-istatistik.js?v=3"></script>
 </head>
 <body>
     <header>
@@ -770,7 +811,7 @@
 
     <div class="container">
         <h1 class="page-title">📊 İstatistikler</h1>
-        <p class="intro">Kim geldi, nereden geldi — sayfa ziyaretleri ve trafik kaynakları. Site içi davranış için <a href="/metrikler">Metrikler</a> sayfasına bakın.</p>
+        <p class="intro">Günlük ziyaret ve hikaye okuma (oturum başına 1 kez). Trafik özeti + kaynak grupları; detay davranış için <a href="/metrikler">Metrikler</a>.</p>
 
         <div id="istatistikYetkisiz" class="istat-yetkisiz" hidden>
             <p class="istat-yetkisiz-metin"></p>

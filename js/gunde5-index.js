@@ -62,7 +62,17 @@
     function analyticsLoadMore(loadedCount) {
         analyticsIndex({
             event: 'load_more_click',
-            loaded_count: loadedCount || SAYFA
+            loaded_count: loadedCount || SAYFA,
+            sayfa: 'index',
+            payload: { tip: state.loadMoreMetinGenel ? 'onceki' : 'dun' }
+        });
+    }
+
+    function analyticsIndexArama(q) {
+        analyticsIndex({
+            event: 'index_search',
+            sayfa: 'index',
+            payload: { query: String(q || '').slice(0, 120) }
         });
     }
 
@@ -91,6 +101,45 @@
             return parseInt(row.dislike, 10) || 0;
         }
         return parseInt(row.down_votes, 10) || 0;
+    }
+
+    /** Oy sayacı: 1214 → 1,2 B · 1_400_000_000 → 1.4B */
+    function oySayaciGoster(n) {
+        n = parseInt(n, 10) || 0;
+        if (n < 0) n = 0;
+        if (n >= 1e9) {
+            var milyar = n / 1e9;
+            return (milyar >= 10 ? String(Math.round(milyar)) : milyar.toFixed(1)) + 'B';
+        }
+        if (n >= 1e6) {
+            var mn = n / 1e6;
+            return (mn >= 10 ? String(Math.round(mn)) : mn.toFixed(1).replace('.', ',')) + ' Mn';
+        }
+        if (n >= 1e3) {
+            var bin = n / 1e3;
+            return (bin >= 10 ? String(Math.round(bin)) : bin.toFixed(1).replace('.', ',')) + ' B';
+        }
+        return String(n);
+    }
+
+    function oySayaciSpanHtml(sayi, sinif) {
+        var n = parseInt(sayi, 10) || 0;
+        return (
+            '<span class="' +
+            sinif +
+            '" data-oy-sayi="' +
+            n +
+            '">' +
+            esc(oySayaciGoster(n)) +
+            '</span>'
+        );
+    }
+
+    function oySpanGuncelle(span, sayi) {
+        if (!span) return;
+        var n = parseInt(sayi, 10) || 0;
+        span.setAttribute('data-oy-sayi', String(n));
+        span.textContent = oySayaciGoster(n);
     }
 
     function metaSatir(row) {
@@ -438,11 +487,13 @@
             '<div class="card-footer story-actions">' +
                 '<div class="vote-box">' +
                     '<button type="button" class="vote-btn' + (voted === 'up' ? ' applauded' : '') +
-                    '" data-vote="up" data-id="' + id + '" aria-label="Beğendim">❤️ Beğendim <span class="count">' + like + '</span></button>' +
+                    '" data-vote="up" data-id="' + id + '" aria-label="Gülümsetti">😊 Gülümsetti ' + oySayaciSpanHtml(like, 'count') + '</button>' +
                     '<button type="button" class="vote-btn' + (voted === 'down' ? ' disliked' : '') +
-                    '" data-vote="down" data-id="' + id + '" aria-label="Beğenmedim">👎 Beğenmedim <span class="count-down">' + dislike + '</span></button>' +
+                    '" data-vote="down" data-id="' + id + '" aria-label="Sarmadı">😐 Sarmadı ' + oySayaciSpanHtml(dislike, 'count-down') + '</button>' +
                 '</div>' +
-                '<button type="button" class="share-btn" data-share="' + id + '">🔗 Paylaş</button>' +
+                '<div class="card-footer-paylas">' +
+                    '<button type="button" class="share-btn" data-share="' + id + '" aria-label="Arkadaşına gönder">Arkadaşına Gönder</button>' +
+                '</div>' +
             '</div>';
 
         return art;
@@ -687,31 +738,19 @@
         if (!card || !row) return;
         var upBtn = card.querySelector('[data-vote="up"]');
         var downBtn = card.querySelector('[data-vote="down"]');
-        if (upBtn) {
-            var upSpan = upBtn.querySelector('.count');
-            if (upSpan) upSpan.textContent = String(likeSayisi(row));
-        }
-        if (downBtn) {
-            var downSpan = downBtn.querySelector('.count-down');
-            if (downSpan) downSpan.textContent = String(dislikeSayisi(row));
-        }
+        if (upBtn) oySpanGuncelle(upBtn.querySelector('.count'), likeSayisi(row));
+        if (downBtn) oySpanGuncelle(downBtn.querySelector('.count-down'), dislikeSayisi(row));
     }
 
     function kartOyGuncelle(card, sonuc, tip) {
         if (!card || !sonuc) return;
         var upBtn = card.querySelector('[data-vote="up"]');
         var downBtn = card.querySelector('[data-vote="down"]');
-        if (upBtn) {
-            var upSpan = upBtn.querySelector('.count');
-            if (upSpan && sonuc.up_votes != null) {
-                upSpan.textContent = String(sonuc.up_votes);
-            }
+        if (upBtn && sonuc.up_votes != null) {
+            oySpanGuncelle(upBtn.querySelector('.count'), sonuc.up_votes);
         }
-        if (downBtn) {
-            var downSpan = downBtn.querySelector('.count-down');
-            if (downSpan && sonuc.down_votes != null) {
-                downSpan.textContent = String(sonuc.down_votes);
-            }
+        if (downBtn && sonuc.down_votes != null) {
+            oySpanGuncelle(downBtn.querySelector('.count-down'), sonuc.down_votes);
         }
         if (tip) oyButonRenklendir(card, tip);
     }
@@ -929,6 +968,7 @@
         state.aramaTimer = setTimeout(function () {
             state.aramaTimer = null;
             state.aramaAktif = true;
+            analyticsIndexArama(q);
             listeSifirla();
             durumAramaYaz('Aranıyor…');
             sonrakiPart(null);
@@ -947,6 +987,72 @@
         sonrakiPart(null);
     }
 
+    function altBarAraTikla() {
+        analyticsIndex({ event: 'altbar_ara_click', sayfa: 'index' });
+        var toolbar = document.getElementById('indexToolbar');
+        var inp = document.getElementById('indexAramaInput');
+        if (toolbar) {
+            toolbar.classList.add('index-toolbar--arama-acik');
+        }
+        if (inp) {
+            global.setTimeout(function () {
+                inp.focus({ preventScroll: true });
+            }, 80);
+        }
+    }
+
+    function altBarAramaKapat() {
+        var toolbar = document.getElementById('indexToolbar');
+        if (toolbar) toolbar.classList.remove('index-toolbar--arama-acik');
+    }
+
+    function altBarDunTikla() {
+        analyticsIndex({ event: 'altbar_dun_click', sayfa: 'index' });
+        var dunEtiket = document.querySelector('.index-yayin-etiket--dun');
+        if (dunEtiket) {
+            var kart = dunEtiket.closest('.story-card');
+            if (kart) {
+                kart.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+        }
+        var moreBtn = document.querySelector('.index-load-more');
+        if (moreBtn) {
+            moreBtn.click();
+            return;
+        }
+        if (!state.bitti && !state.yukleniyor) {
+            sonrakiPart(null);
+        }
+    }
+
+    function altBarBagla() {
+        var ara = document.getElementById('indexAltbarAra');
+        var gonder = document.getElementById('indexAltbarGonder');
+        var dun = document.getElementById('indexAltbarDun');
+        if (ara && ara.getAttribute('data-bound') !== '1') {
+            ara.setAttribute('data-bound', '1');
+            ara.addEventListener('click', altBarAraTikla);
+        }
+        if (gonder && gonder.getAttribute('data-bound') !== '1') {
+            gonder.setAttribute('data-bound', '1');
+            gonder.addEventListener('click', function () {
+                if (global.Gunde5Gonder && global.Gunde5Gonder.ac) {
+                    global.Gunde5Gonder.ac();
+                } else {
+                    var tail = document.getElementById('pageTailGonderBtn');
+                    if (tail) tail.click();
+                }
+            });
+        }
+        if (dun && dun.getAttribute('data-bound') !== '1') {
+            dun.setAttribute('data-bound', '1');
+            dun.addEventListener('click', function () {
+                altBarDunTikla();
+            });
+        }
+    }
+
     function toolbarBagla() {
         var inp = document.getElementById('indexAramaInput');
         var sel = document.getElementById('indexSiralama');
@@ -956,7 +1062,15 @@
                 aramaGirdiIsle(inp.value);
             });
             inp.addEventListener('search', function () {
-                if (!inp.value) aramaGirdiIsle('');
+                if (!inp.value) {
+                    aramaGirdiIsle('');
+                    altBarAramaKapat();
+                }
+            });
+            inp.addEventListener('blur', function () {
+                global.setTimeout(function () {
+                    if (document.activeElement !== inp) altBarAramaKapat();
+                }, 120);
             });
         }
         if (sel && sel.getAttribute('data-bound') !== '1') {
@@ -1053,6 +1167,7 @@
         }
         await D.init();
         toolbarBagla();
+        altBarBagla();
         olaylariBagla();
         SAYFA = D.INDEX_SAYFA_BOYUT || 5;
 

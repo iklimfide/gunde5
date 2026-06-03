@@ -48,10 +48,10 @@ Metrikler özeti sıfır, “en çok görülen” dolu ise: **`analytics-event-s
 
 Olay türlerini doğrulamak için: **`analytics-diagnostics.sql`** (`story_vote` / `story_share` / `load_more_click` satırları görünmeli).
 
-- **`/istatistikler`** — trafik (`site_ziyaretler`, referrer, UTM)
+- **`/istatistikler`** — trafik özeti + **günlük metrikler** + **anasayfa arayüzü** (Ara / Dünkü 5 / arama terimleri; `index-analytics.sql` + `master-gunluk-istatistik.sql` güncel Run)
 - **`/metrikler`** — site içi davranış (`site_analytics_*`, oy, paylaşım)
 
-İstatistik sayfası: `Gunde5DB.masterZiyaretIstatistik(7|30|90|365)`.
+İstatistik sayfası: `master_trafik_istatistik` + `master_gunluk_istatistik` (7|30|90|365 gün).
 
 ## Hikaye toplu ekleme (3 bot hikaye)
 

@@ -1,4 +1,4 @@
-/* gunde5 — master trafik istatistikleri (site_ziyaretler) */
+/* gunde5 — master trafik + günlük istatistikler */
 (function (global) {
     'use strict';
 
@@ -36,6 +36,12 @@
         } catch (e2) { return esc(iso); }
     }
 
+    function fmtAktifDk(saniye) {
+        var s = parseInt(saniye, 10);
+        if (isNaN(s) || s <= 0) return '0';
+        return fmtSayi(Math.round(s / 60));
+    }
+
     function kisaMetin(s, max) {
         var t = String(s || '').trim();
         if (!t) return '—';
@@ -44,17 +50,6 @@
     }
 
     function arrCoz(v) { return Array.isArray(v) ? v : []; }
-
-    var SITE_ETIKET = {
-        uyeler: 'Üyeler',
-        kulis: 'Kulis (aktif)',
-        podyum: 'Podyum (aktif)',
-        gizli_hikaye: 'Gizli hikaye',
-        silinen: 'Silinen hikaye',
-        cevaplar: 'Cevaplar',
-        oylar: 'Oylar',
-        sikayetler: 'Şikayetler'
-    };
 
     function tabloHtml(baslik, kolonlar, satirlar, bosMesaj, not) {
         var html = '<section class="istat-bolum"><h2 class="istat-bolum-baslik">' + esc(baslik) + '</h2>';
@@ -90,7 +85,104 @@
         );
     }
 
-    function render(veri) {
+    function hikayeMatrisHtml(matris) {
+        matris = matris || {};
+        var gunler = arrCoz(matris.gunler);
+        var satirlar = arrCoz(matris.satirlar);
+        var html = '<section class="istat-bolum"><h2 class="istat-bolum-baslik">Hikaye okuma matrisi</h2>';
+        html += '<p class="istat-bolum-not">Son 7 gün · en çok okunan 20 hikaye · oturumda hikaye başına en fazla 1 okuma.';
+        if (matris.baslangic && matris.bitis) {
+            html += ' ' + esc(matris.baslangic) + ' – ' + esc(matris.bitis) + '.';
+        }
+        html += '</p>';
+        if (!gunler.length || !satirlar.length) {
+            html += '<p class="istat-bos">Son bir haftada hikaye okuma kaydı yok.</p></section>';
+            return html;
+        }
+        html += '<div class="istat-tablo-wrap istat-matris-wrap"><table class="istat-tablo istat-matris"><thead><tr>';
+        html += '<th scope="col" class="istat-matris-kose">Hikaye</th>';
+        gunler.forEach(function (g) {
+            html += '<th scope="col" class="istat-matris-gun">' + esc(g.etiket || g.gun) + '</th>';
+        });
+        html += '<th scope="col" class="istat-matris-toplam">Σ</th></tr></thead><tbody>';
+        satirlar.forEach(function (satir) {
+            var hucreler = arrCoz(satir.okuma);
+            html += '<tr><th scope="row" class="istat-matris-hikaye">' + kisaMetin(satir.baslik, 48) + '</th>';
+            gunler.forEach(function (g, i) {
+                var n = hucreler[i];
+                var v = parseInt(n, 10);
+                if (isNaN(v)) v = 0;
+                var cls = v > 0 ? ' istat-matris-dolu' : ' istat-matris-bos';
+                html += '<td class="istat-matris-sayi' + cls + '">' + fmtSayi(v) + '</td>';
+            });
+            html += '<td class="istat-matris-sayi istat-matris-toplam-hucre">' + fmtSayi(satir.toplam) + '</td></tr>';
+        });
+        html += '</tbody></table></div></section>';
+        return html;
+    }
+
+    function indexArayuzBolumu(ia) {
+        ia = ia || {};
+        var terimler = arrCoz(ia.arama_terimleri);
+        var html = '<section class="istat-bolum"><h2 class="istat-bolum-baslik">Anasayfa arayüzü</h2>';
+        html += '<p class="istat-bolum-not">Alt bar, arama ve «daha fazla oku» tıklamaları (analytics). Eski kayıtlarda «Dünkü 5» / «Ara» ayrımı olmayabilir.</p>';
+        html += '<div class="istat-kpi-grid">';
+        html += kpiKart('Ara (alt bar)', fmtSayi(ia.altbar_ara), 'Arama kutusunu açma');
+        html += kpiKart('Dünkü 5 (alt bar)', fmtSayi(ia.altbar_dun), 'Dünkü 5 kısayolu');
+        html += kpiKart('Dün yayınlanan…', fmtSayi(ia.daha_fazla_dun), 'İlk «daha fazla» (dün)');
+        html += kpiKart('Önceki günler…', fmtSayi(ia.daha_fazla_onceki), 'Sonraki «daha fazla»');
+        html += kpiKart('Daha fazla (toplam)', fmtSayi(ia.daha_fazla_toplam), 'Tüm load_more_click');
+        html += kpiKart('Arama yapıldı', fmtSayi(ia.arama), 'Gerçek sorgu gönderimi');
+        html += '</div>';
+        html += tabloHtml(
+            'En çok aranan terimler',
+            [
+                { etiket: 'Terim', deger: function (r) { return r.terim; } },
+                { etiket: 'Adet', deger: function (r) { return fmtSayi(r.adet); } }
+            ],
+            terimler,
+            'Bu dönemde arama kaydı yok.',
+            'Küçük harf, en fazla 40 terim.'
+        );
+        return html + '</section>';
+    }
+
+    function gunlukBolumu(gunluk) {
+        if (!gunluk || !gunluk.ok) {
+            return (
+                '<section class="istat-bolum">' +
+                '<h2 class="istat-bolum-baslik">Günlük metrikler</h2>' +
+                '<p class="istat-hata">' + esc((gunluk && gunluk.hata) || 'Günlük veri yüklenemedi. Supabase SQL Editor\'da supabase/master-gunluk-istatistik.sql dosyasını çalıştırın.') + '</p>' +
+                '</section>'
+            );
+        }
+
+        var not = 'Hikaye okuma = story_impression (oturumda her hikaye en fazla 1 kez). ';
+        if (gunluk.veri_baslangic) {
+            not += 'Kayıtlar ' + fmtTarih(gunluk.veri_baslangic) + ' tarihinden itibaren.';
+        }
+
+        return tabloHtml(
+            'Günlük özet',
+            [
+                { etiket: 'Gün', deger: function (r) { return r.gun_etiket || r.gun; } },
+                { etiket: 'Sayfa açılışı', deger: function (r) { return fmtSayi(r.sayfa_acilisi); } },
+                { etiket: 'Tekil oturum', deger: function (r) { return fmtSayi(r.tekil_oturum); } },
+                { etiket: 'Tekil ziyaretçi', deger: function (r) { return fmtSayi(r.tekil_ziyaretci); } },
+                { etiket: 'Hikaye okuma', deger: function (r) { return fmtSayi(r.hikaye_okuma); } },
+                { etiket: 'Beğeni', deger: function (r) { return fmtSayi(r.begeni); } },
+                { etiket: 'Beğenmeme', deger: function (r) { return fmtSayi(r.begenmeme); } },
+                { etiket: 'Paylaşım', deger: function (r) { return fmtSayi(r.paylasim); } },
+                { etiket: 'Daha fazla oku', deger: function (r) { return fmtSayi(r.daha_fazla_oku); } },
+                { etiket: 'Aktif (dk)', deger: function (r) { return fmtAktifDk(r.aktif_saniye); } }
+            ],
+            arrCoz(gunluk.gunluk),
+            'Bu dönemde günlük kayıt yok.',
+            not
+        ) + hikayeMatrisHtml(gunluk.hikaye_matris) + indexArayuzBolumu(gunluk.index_arayuz);
+    }
+
+    function render(veri, gunluk) {
         var kok = document.getElementById('istatistikIcerik');
         if (!kok) return;
 
@@ -99,7 +191,6 @@
             return;
         }
 
-        var site = veri.site || {};
         var html = '';
 
         html += '<p class="istat-donem-notu">Son <strong>' + fmtSayi(veri.gun) + '</strong> gün';
@@ -122,70 +213,10 @@
             ],
             arrCoz(veri.referrer_gruplu),
             'Henüz kaynak verisi yok.',
-            'direct / bilinmiyor = referrer alınamadı; geri gelen kullanıcı anlamına gelmez.'
-        );
-        html += tabloHtml(
-            'Referrer (ham)',
-            [
-                { etiket: 'Kaynak', alan: 'referrer', deger: function (r) { return kisaMetin(r.referrer, 80); } },
-                { etiket: 'Adet', alan: 'adet', deger: function (r) { return fmtSayi(r.adet); } }
-            ],
-            arrCoz(veri.referrerlar)
-        );
-        html += tabloHtml(
-            'Sayfalar',
-            [
-                { etiket: 'Sayfa', alan: 'sayfa' },
-                { etiket: 'Ziyaret', alan: 'adet', deger: function (r) { return fmtSayi(r.adet); } }
-            ],
-            arrCoz(veri.sayfalar),
-            'Bu dönemde sayfa kaydı yok.'
-        );
-        html += tabloHtml(
-            'UTM kaynak',
-            [
-                { etiket: 'utm_source', alan: 'utm_source' },
-                { etiket: 'Adet', alan: 'adet', deger: function (r) { return fmtSayi(r.adet); } }
-            ],
-            arrCoz(veri.utm_kaynaklar),
-            'UTM kaydı yok.'
-        );
-        html += tabloHtml(
-            'UTM medium',
-            [
-                { etiket: 'utm_medium', alan: 'utm_medium' },
-                { etiket: 'Adet', alan: 'adet', deger: function (r) { return fmtSayi(r.adet); } }
-            ],
-            arrCoz(veri.utm_medium),
-            'UTM medium yok.'
-        );
-        html += tabloHtml(
-            'Cihaz',
-            [
-                { etiket: 'Cihaz', alan: 'cihaz' },
-                { etiket: 'Adet', alan: 'adet', deger: function (r) { return fmtSayi(r.adet); } }
-            ],
-            arrCoz(veri.cihazlar)
-        );
-        html += tabloHtml(
-            'Son 100 ziyaret kaydı',
-            [
-                { etiket: 'Tarih', deger: function (r) { return fmtTarih(r.created_at); } },
-                { etiket: 'Sayfa', alan: 'sayfa' },
-                { etiket: 'Yol', deger: function (r) { return kisaMetin(r.yol, 48); } },
-                { etiket: 'Referrer', deger: function (r) { return kisaMetin(r.referrer, 40); } }
-            ],
-            arrCoz(veri.son_kayitlar),
-            'Kayıt yok.'
+            'direct / bilinmiyor = referrer alınamadı.'
         );
 
-        html += '<details class="istat-detay"><summary>Site envanteri (tüm zaman)</summary>';
-        html += '<div class="istat-kpi-grid istat-kpi-grid--site">';
-        Object.keys(SITE_ETIKET).forEach(function (anahtar) {
-            if (site[anahtar] == null) return;
-            html += kpiKart(SITE_ETIKET[anahtar], fmtSayi(site[anahtar]));
-        });
-        html += '</div></details>';
+        html += gunlukBolumu(gunluk);
 
         kok.innerHTML = html;
     }
@@ -220,10 +251,19 @@
         haricSecimGuncelle();
         yukleniyor(true);
         try {
-            var veri = await D.masterTrafikIstatistik(seciliGun, seciliHaric);
-            render(veri);
+            var trafikPromise = D.masterTrafikIstatistik(seciliGun, seciliHaric);
+            var gunlukPromise = D.masterGunlukIstatistik
+                ? D.masterGunlukIstatistik(seciliGun, seciliHaric).catch(function (e) {
+                    return {
+                        ok: false,
+                        hata: D.hataMesaji ? D.hataMesaji(e) : 'RPC yok veya hata'
+                    };
+                })
+                : Promise.resolve({ ok: false, hata: 'master_gunluk_istatistik tanımlı değil' });
+            var sonuc = await Promise.all([trafikPromise, gunlukPromise]);
+            render(sonuc[0], sonuc[1]);
         } catch (e) {
-            render({ ok: false, hata: D.hataMesaji ? D.hataMesaji(e) : 'Hata' });
+            render({ ok: false, hata: D.hataMesaji ? D.hataMesaji(e) : 'Hata' }, null);
         } finally {
             yukleniyor(false);
         }

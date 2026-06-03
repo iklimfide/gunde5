@@ -183,7 +183,7 @@
 
     /* İstenmeyen bloklar (PC): pill bar + sıralama seçici */
     #pcPills { display: none !important; }
-    .index-siralama-wrap { display: none !important; }
+    .index-siralama { display: none !important; }
 
     /* Sol kutular */
     .pc-left-kutu,
@@ -414,13 +414,13 @@
         text-align: center;
     }
 
-    /* Sıralama kalkınca arama kutusu tam genişlik */
     .index-toolbar {
         justify-content: center;
     }
     .index-toolbar .index-arama-kutu {
         flex: 1;
         max-width: 640px;
+        width: 100%;
     }
 
     /* Hash ile inince header altında kalmasın */

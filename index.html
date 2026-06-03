@@ -28,14 +28,14 @@
     <meta name="twitter:image:alt" content="5 dakikada oku, gül, güne başla">
     <meta name="theme-color" content="#ffffff">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="stylesheet" href="css/index.css?v=9">
-    <link rel="stylesheet" href="css/index-pc.css?v=7">
+    <link rel="stylesheet" href="css/index.css?v=18">
+    <link rel="stylesheet" href="css/index-pc.css?v=8">
     <script src="js/gunde5-shell.js"></script>
     <script defer src="js/gunde5-config.js?v=17"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js" crossorigin></script>
     <script defer src="js/gunde5-db.js?v=28"></script>
-    <script defer src="js/gunde5-index.js?v=37"></script>
-    <script defer src="js/gunde5-index-pc.js?v=4"></script>
+    <script defer src="js/gunde5-index.js?v=44"></script>
+    <script defer src="js/gunde5-index-pc.js?v=5"></script>
     <script defer src="js/gunde5-gonder.js?v=2"></script>
 </head>
 <body>
@@ -97,10 +97,7 @@
 
                 <div class="pc-pills" id="pcPills" aria-label="Bugünün 5'i hızlı geçiş"></div>
 
-                <p class="index-tagline">
-                    <span class="index-tagline-ust">İnsanların anlatamadıklarını anlattığı yer.</span>
-                    <span class="index-tagline-alt">Anonim itiraflar ve gerçek hikâyeler.</span>
-                </p>
+                <p class="index-tagline">Anonim hikaye ve itiraflar</p>
 
                 <div class="index-toolbar" id="indexToolbar">
                     <label class="index-arama-kutu" for="indexAramaInput">
@@ -112,15 +109,12 @@
                             </svg>
                         </span>
                     </label>
-                    <div class="index-siralama-wrap">
-                        <span class="index-siralama-etiket" id="indexSiralamaEtiket">SIRALA</span>
-                        <select class="index-siralama" id="indexSiralama" aria-labelledby="indexSiralamaEtiket">
-                            <option value="yeni" selected>📖 Bugünün 5'i</option>
-                            <option value="populer">🔥 Sevilenler</option>
-                            <option value="efsane">🏆 Efsaneler</option>
-                            <option value="rastgele">🎲 Ortaya Karışık</option>
-                        </select>
-                    </div>
+                    <select class="index-siralama" id="indexSiralama" aria-label="Sıralama">
+                        <option value="yeni" selected>📖 Bugünün 5'i</option>
+                        <option value="populer">🔥 Sevilenler</option>
+                        <option value="efsane">🏆 Efsaneler</option>
+                        <option value="rastgele">🎲 Ortaya Karışık</option>
+                    </select>
                     <p class="index-arama-durum" id="indexAramaDurum" aria-live="polite"></p>
                 </div>
 
@@ -144,8 +138,8 @@
                 <div class="pc-right-kutu">
                     <div class="pc-right-baslik">🔥 Dünün favorisi</div>
                     <a class="pc-favori pc-favori-link" id="pcDununFavorisiLink" href="#">
-                        <strong id="pcDununFavorisiBaslik">Komşunun kedisi kapıda</strong>
-                        <span id="pcDununFavorisiMeta">👍 312 · 💬 88 · dün 18:20</span>
+                        <strong id="pcDununFavorisiBaslik">Yükleniyor…</strong>
+                        <span id="pcDununFavorisiMeta"></span>
                     </a>
                 </div>
                 <div class="pc-right-kutu pc-rastgele">
@@ -159,6 +153,26 @@
             </aside>
         </div>
     </main>
+
+    <nav class="index-altbar mobile-only" id="indexAltbar" aria-label="Hızlı işlemler">
+        <button type="button" class="index-altbar-item" id="indexAltbarAra" aria-label="Hikaye ara">
+            <span class="index-altbar-ikon index-altbar-ikon--emoji" aria-hidden="true">🔍</span>
+            <span class="index-altbar-metin">Ara</span>
+        </button>
+        <button type="button" class="index-altbar-item index-altbar-item--orta" id="indexAltbarGonder" aria-label="Hikaye yaz">
+            <span class="index-altbar-ikon index-altbar-ikon--orta" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+            </span>
+            <span class="index-altbar-metin">Hikaye yaz</span>
+        </button>
+        <button type="button" class="index-altbar-item" id="indexAltbarDun" aria-label="Dünkü 5 hikaye">
+            <span class="index-altbar-ikon index-altbar-ikon--emoji" aria-hidden="true">📚</span>
+            <span class="index-altbar-metin">Dünkü 5</span>
+        </button>
+    </nav>
 
     <div class="modal" id="aboutModal" onclick="closeModal(event)">
         <div class="modal-content modal-content--faq" onclick="event.stopPropagation()">

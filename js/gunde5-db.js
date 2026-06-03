@@ -135,7 +135,7 @@
         var http403 = err.status === 403 || err.statusCode === 403 ||
             String(err.message || '').indexOf('403') >= 0;
         if (http403 && err.code !== '42501') {
-            return 'Master panel erişimi reddedildi (403). Master hesabıyla giriş yapın; Supabase SQL Editor\'da supabase/master-panel-canli-403-fix.sql dosyasını çalıştırın. Eksik RPC için sırayla: master-kamikaze-panel.sql, master-metrik-istatistik.sql, master-mudavim-istatistik.sql, index-analytics.sql.';
+            return 'Master panel erişimi reddedildi (403). Master hesabıyla giriş yapın; Supabase SQL Editor\'da supabase/master-panel-canli-403-fix.sql dosyasını çalıştırın. Eksik RPC için sırayla: master-kamikaze-panel.sql, master-metrik-istatistik.sql, master-gunluk-istatistik.sql, master-mudavim-istatistik.sql, index-analytics.sql.';
         }
         if (err.code === '42501') {
             var yetkiMsg = err.message || '';
@@ -1565,6 +1565,17 @@
         return res.data || { ok: false };
     }
 
+    async function masterGunlukIstatistik(gun, haric) {
+        var sb = getClient();
+        if (!sb) return { ok: false };
+        var res = await sb.rpc('master_gunluk_istatistik', {
+            p_gun: gun || 30,
+            p_haric: haric || 'master'
+        });
+        if (res.error) throw res.error;
+        return res.data || { ok: false };
+    }
+
     /** @deprecated master_trafik_istatistik + master_metrik_istatistik kullanın */
     async function masterZiyaretIstatistik(gun, haric) {
         return masterTrafikIstatistik(gun, haric);
@@ -2248,6 +2259,7 @@
         ziyaretKaydet: ziyaretKaydet,
         analyticsEventKaydet: analyticsEventKaydet,
         masterTrafikIstatistik: masterTrafikIstatistik,
+        masterGunlukIstatistik: masterGunlukIstatistik,
         masterMetrikIstatistik: masterMetrikIstatistik,
         masterMudavimIstatistik: masterMudavimIstatistik,
         masterZiyaretIstatistik: masterZiyaretIstatistik,
