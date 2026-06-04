@@ -21,6 +21,7 @@
         aramaAktif: false,
         rastgeleHavuz: null,
         aramaTimer: null,
+        listeIstekNo: 0,
         bugunBilgiGosterildi: false,
         loadMoreMetinGenel: false
     };
@@ -286,6 +287,11 @@
         state.bugunBilgiGosterildi = false;
         state.loadMoreMetinGenel = false;
         loadMoreTemizle();
+    }
+
+    function listeTemizle() {
+        var el = listeEl();
+        if (el) el.innerHTML = '';
     }
 
     /** Europe/Istanbul takvim günü (YYYY-MM-DD). */
@@ -639,7 +645,8 @@
             }
         }
 
-        if (state.yukleniyor || state.bitti) return;
+        if (state.yukleniyor && !(partOpts && partOpts.aramaZorla)) return;
+        if (!state.aramaAktif && state.bitti && !kullaniciLoadMore) return;
 
         var dunIlkYukleme = kullaniciLoadMore && !state.loadMoreMetinGenel;
 
@@ -653,18 +660,26 @@
             analyticsLoadMore(state.offset + SAYFA);
         }
 
+        var istekNo = partOpts && partOpts.istekNo ? partOpts.istekNo : ++state.listeIstekNo;
         state.yukleniyor = true;
         var ilkPart = state.offset === 0;
 
         if (ilkPart) {
-            durumYaz('<p class="index-durum">Yükleniyor…</p>');
+            if (state.aramaAktif) {
+                listeTemizle();
+                durumAramaYaz('Aranıyor…');
+            } else {
+                durumYaz('<p class="index-durum">Yükleniyor…</p>');
+            }
         }
 
         try {
             var rows = await hikayeListele(state.offset, SAYFA);
+            if (istekNo !== state.listeIstekNo) return;
+
             if (ilkPart) {
                 var el = listeEl();
-                if (el && !el.querySelector('.index-dun-bolum-baslik')) {
+                if (el && (state.aramaAktif || !el.querySelector('.index-dun-bolum-baslik'))) {
                     el.innerHTML = '';
                 }
             }
@@ -692,6 +707,14 @@
 
             await kartlariEkle(rows, ilkPart);
 
+            if (state.aramaAktif && ilkPart && rows.length) {
+                var elArama = listeEl();
+                if (elArama && !elArama.querySelector('.story-card')) {
+                    state.yuklenenIdler = {};
+                    await kartlariEkle(rows, ilkPart);
+                }
+            }
+
             if (dunIlkYukleme && rows.length) {
                 await yuklenenDunHikayelerineKaydir(rows);
             }
@@ -705,6 +728,10 @@
                     durumAramaYaz('Sonuç yok');
                 } else {
                     durumAramaYaz(rows.length + (state.bitti ? '' : '+') + ' sonuç');
+                    var elListe = listeEl();
+                    if (elListe && elListe.querySelector('.story-card')) {
+                        elListe.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                 }
             }
         } catch (err) {
@@ -1018,7 +1045,8 @@
             durumAramaYaz(q.length ? 'En az 2 karakter yaz' : '');
             if (onceAktif || !q.length) {
                 listeSifirla();
-                sonrakiPart(null);
+                listeTemizle();
+                sonrakiPart(null, { istekNo: ++state.listeIstekNo });
             }
             return;
         }
@@ -1028,8 +1056,10 @@
             state.aramaAktif = true;
             analyticsIndexArama(q);
             listeSifirla();
+            listeTemizle();
             durumAramaYaz('Aranıyor…');
-            sonrakiPart(null);
+            var istekNo = ++state.listeIstekNo;
+            sonrakiPart(null, { istekNo: istekNo, aramaZorla: true });
         }, ARAMA_DEBOUNCE);
     }
 

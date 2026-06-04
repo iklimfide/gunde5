@@ -30,11 +30,18 @@ begin
         return jsonb_build_object('ok', false, 'hata', 'session_id ve visitor_id gerekli');
     end if;
 
-    if v_event not in ('page_view', 'load_more_click', 'story_vote', 'story_share', 'heartbeat', 'story_impression') then
+    if v_event not in (
+        'page_view', 'load_more_click', 'story_vote', 'story_share', 'heartbeat', 'story_impression',
+        'altbar_ara_click', 'altbar_dun_click', 'index_search'
+    ) then
         return jsonb_build_object('ok', false, 'hata', 'gecersiz event');
     end if;
 
     v_uid := auth.uid();
+
+    if v_uid is not null and v_uid = private.gunde5_master_user_uuid() then
+        return jsonb_build_object('ok', true, 'atlandi', true, 'neden', 'master');
+    end if;
 
     v_sayfa := nullif(left(trim(coalesce(p_body->>'sayfa', '')), 40), '');
     v_path := nullif(left(trim(coalesce(p_body->>'path', '')), 500), '');
@@ -44,7 +51,10 @@ begin
     v_loaded := nullif(trim(coalesce(p_body->>'loaded_count', '')), '')::int;
     v_delta := coalesce(nullif(trim(coalesce(p_body->>'active_delta', '')), '')::int, 15);
 
-    if v_sayfa is null and v_event in ('story_impression', 'story_vote', 'story_share', 'load_more_click') then
+    if v_sayfa is null and v_event in (
+        'story_impression', 'story_vote', 'story_share', 'load_more_click',
+        'altbar_ara_click', 'altbar_dun_click', 'index_search'
+    ) then
         v_sayfa := 'index';
     end if;
 
@@ -96,9 +106,38 @@ begin
             where s.session_id = v_sid;
 
             insert into public.site_analytics_events (
-                event_type, session_id, visitor_id, user_id, loaded_count
+                event_type, session_id, visitor_id, user_id, loaded_count, payload
             ) values (
-                v_event, v_sid, v_vid, v_uid, v_loaded
+                v_event, v_sid, v_vid, v_uid, v_loaded,
+                case
+                    when nullif(left(trim(coalesce(p_body->'payload'->>'tip', '')), 20), '') is not null
+                    then jsonb_build_object('tip', left(trim(coalesce(p_body->'payload'->>'tip', '')), 20))
+                    else null
+                end
+            );
+
+        elsif v_event in ('altbar_ara_click', 'altbar_dun_click') then
+            insert into public.site_analytics_events (
+                event_type, session_id, visitor_id, user_id, payload
+            ) values (
+                v_event, v_sid, v_vid, v_uid,
+                jsonb_build_object('sayfa', coalesce(v_sayfa, 'index'))
+            );
+
+        elsif v_event = 'index_search' then
+            v_sayfa := coalesce(v_sayfa, 'index');
+            if length(left(trim(coalesce(p_body->'payload'->>'query', p_body->>'query', '')), 120)) < 2 then
+                return jsonb_build_object('ok', false, 'hata', 'arama sorgusu gerekli');
+            end if;
+
+            insert into public.site_analytics_events (
+                event_type, session_id, visitor_id, user_id, payload
+            ) values (
+                v_event, v_sid, v_vid, v_uid,
+                jsonb_build_object(
+                    'sayfa', v_sayfa,
+                    'query', left(trim(coalesce(p_body->'payload'->>'query', p_body->>'query', '')), 120)
+                )
             );
 
         elsif v_event = 'story_vote' then

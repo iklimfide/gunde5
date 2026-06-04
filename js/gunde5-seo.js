@@ -131,7 +131,7 @@
                       canonical: SITE_ORIGIN + '/',
                       ogUrl: SITE_ORIGIN + '/',
                       ogType: 'website',
-                      ogImage: SITE_ORIGIN + '/og/anasayfa.png'
+                      ogImage: SITE_ORIGIN + '/og/anasayfa.png?v=2'
                   };
         apply(varsayilan);
     }

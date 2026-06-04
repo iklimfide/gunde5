@@ -39,7 +39,7 @@ export default async function handler(req) {
     var baslik = row ? rumuz + ' | gunde5.com' : OG_TITLE;
     var okumaUrl = id ? SITE + '/?itiraf=' + id : SITE + '/';
     var paylasUrl = id ? SITE + '/h/' + id : SITE + '/';
-    var ogImage = id ? SITE + '/og/' + id + '.png' : OG_IMAGE_URL;
+    var ogImage = OG_IMAGE_URL;
     var ogImageAlt = row ? rumuz + ' — gunde5.com' : OG_IMAGE_ALT;
     var bot = onizlemeBotu(req.headers.get('user-agent') || '');
 

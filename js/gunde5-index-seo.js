@@ -3,7 +3,7 @@
     'use strict';
 
     var SITE = 'https://gunde5.com';
-    var DEFAULT_IMG = SITE + '/og-share.png';
+    var DEFAULT_IMG = SITE + '/og/anasayfa.png?v=2';
 
     function itirafIdOku() {
         try {
@@ -46,7 +46,7 @@
             "Her sabah 5 yeni anonim hikaye & itiraf. 5 dakikada oku, gül, güne başla 😄";
         var baslik = rumuz + ' | gunde5.com';
         var url = SITE + '/h/' + id;
-        var ogImage = SITE + '/og/' + id + '.png';
+        var ogImage = DEFAULT_IMG;
 
         document.title = baslik;
         metaAyar('description', aciklama, false);

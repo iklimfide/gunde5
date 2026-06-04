@@ -220,8 +220,6 @@
   ],
   "rewrites": [
     { "source": "/admin/inbox", "destination": "/admin/inbox/index.html" },
-    { "source": "/h/:id", "destination": "/api/itiraf-share?id=:id" },
-    { "source": "/og/anasayfa.png", "destination": "/api/og" },
-    { "source": "/og/:id.png", "destination": "/api/og?id=:id" }
+    { "source": "/h/:id", "destination": "/api/itiraf-share?id=:id" }
   ]
 }

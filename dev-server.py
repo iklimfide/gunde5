@@ -24,7 +24,6 @@ ROUTE_TO_HTML = {
     "/uyeler": "/uyeler.html",
     "/kamikaze": "/kamikaze.html",
     "/sosyal-paylas": "/sosyal-paylas.html",
-    "/og/anasayfa.png": "/api/og",
     "/hikaye-gonder": "/hikaye-gonder.html",
     "/admin/inbox": "/admin/inbox/index.html",
     "/admin/submissions": "/admin/inbox/index.html",
