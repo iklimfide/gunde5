@@ -5,6 +5,14 @@
     var seciliGun = 30;
     var seciliHaric = 'master';
     var filtreHazir = false;
+    var bugunSiraIds = [];
+    var bugunSiraKayitli = false;
+    var bugunSiraSatirlar = {};
+    var siraKaydediyor = false;
+    var puanGosterAdet = 20;
+    var PUAN_ILK_ADET = 20;
+    var PUAN_ADIM = 20;
+    var puanSort = { kolon: 'puan', yon: 'desc' };
 
     function db() { return global.Gunde5DB; }
     function ui() { return global.Gunde5UI; }
@@ -49,6 +57,51 @@
     function arrCoz(v) { return Array.isArray(v) ? v : []; }
     function objCoz(v) { return v && typeof v === 'object' ? v : {}; }
 
+    /** Okuyucu başına net oy: (beğeni − beğenmeme) / görülme × 100 */
+    function hikayeOkurPuani(satir) {
+        var gor = parseInt(satir && satir.goruntulenme, 10);
+        var beg = parseInt(satir && satir.begeni, 10);
+        var begenme = parseInt(satir && satir.begenmeme, 10);
+        if (!isFinite(gor) || gor <= 0) return null;
+        if (!isFinite(beg)) beg = 0;
+        if (!isFinite(begenme)) begenme = 0;
+        return ((beg - begenme) / gor) * 100;
+    }
+
+    function cinsEtiket(gender) {
+        if (gender === 'male') return 'Erkek';
+        if (gender === 'female') return 'Kadın';
+        return '—';
+    }
+
+    function cinsHtml(satir) {
+        var cins = satir && satir.gender;
+        var etiket = cinsEtiket(cins);
+        if (etiket === '—') return etiket;
+        var sinif = 'metrik-cins';
+        if (cins === 'male') sinif += ' metrik-cins--erkek';
+        else if (cins === 'female') sinif += ' metrik-cins--kadin';
+        return '<span class="' + sinif + '">' + esc(etiket) + '</span>';
+    }
+
+    function hikayePuanDeger(satir) {
+        if (satir && satir.puan != null && satir.puan !== '') {
+            var sqlPuan = parseFloat(satir.puan);
+            if (isFinite(sqlPuan)) return sqlPuan;
+        }
+        return hikayeOkurPuani(satir);
+    }
+
+    function hikayePuanHtml(satir) {
+        var puan = hikayePuanDeger(satir);
+        if (puan == null) return '—';
+        var sinif = 'metrik-puan';
+        if (puan > 0) sinif += ' metrik-puan--iyi';
+        else if (puan < 0) sinif += ' metrik-puan--kotu';
+        var metin = (puan > 0 ? '+' : '') + fmtOran(puan) + '%';
+        return '<span class="' + sinif + '" title="(beğeni − beğenmeme) ÷ görülme">' + esc(metin) + '</span>';
+    }
+
     function tabloHtml(baslik, kolonlar, satirlar, bosMesaj, not) {
         var html = '<section class="istat-bolum"><h2 class="istat-bolum-baslik">' + esc(baslik) + '</h2>';
         if (not) html += '<p class="istat-bolum-not">' + esc(not) + '</p>';
@@ -88,6 +141,382 @@
     }
 
     function bolumKapat() { return '</section>'; }
+
+    function puanListeYedek(icerik) {
+        var harita = {};
+        function birlestir(liste) {
+            arrCoz(liste).forEach(function (r) {
+                if (!r || r.id == null) return;
+                var key = String(r.id);
+                var mevcut = harita[key] || { id: r.id, baslik: r.baslik };
+                if (r.baslik) mevcut.baslik = r.baslik;
+                if (r.begeni != null) mevcut.begeni = r.begeni;
+                if (r.begenmeme != null) mevcut.begenmeme = r.begenmeme;
+                if (r.paylasim != null) mevcut.paylasim = r.paylasim;
+                if (r.goruntulenme != null) mevcut.goruntulenme = r.goruntulenme;
+                harita[key] = mevcut;
+            });
+        }
+        birlestir(icerik.en_begenilen);
+        birlestir(icerik.en_begenilmeyen);
+        birlestir(icerik.en_gorulen);
+        birlestir(icerik.en_paylasilan);
+        return Object.keys(harita).map(function (k) {
+            return harita[k];
+        }).filter(function (r) {
+            var gor = parseInt(r.goruntulenme, 10);
+            var beg = parseInt(r.begeni, 10) || 0;
+            var begenme = parseInt(r.begenmeme, 10) || 0;
+            return isFinite(gor) && gor > 0 && (beg > 0 || begenme > 0);
+        }).sort(function (a, b) {
+            var pa = hikayeOkurPuani(a);
+            var pb = hikayeOkurPuani(b);
+            if (pa == null && pb == null) return 0;
+            if (pa == null) return 1;
+            if (pb == null) return -1;
+            return pb - pa;
+        }).slice(0, 100);
+    }
+
+    function puanSiraliListe(icerik) {
+        var liste = arrCoz(icerik.puan_sirali);
+        if (liste.length) return liste;
+        return puanListeYedek(icerik);
+    }
+
+    function puanKarsilastir(a, b, kolon, asc) {
+        var va;
+        var vb;
+        var sonuc;
+        if (kolon === 'baslik') {
+            va = String((a && a.baslik) || '');
+            vb = String((b && b.baslik) || '');
+            try {
+                sonuc = va.localeCompare(vb, 'tr', { sensitivity: 'base' });
+            } catch (eLoc) {
+                sonuc = va < vb ? -1 : va > vb ? 1 : 0;
+            }
+        } else if (kolon === 'gender') {
+            va = a && a.gender === 'male' ? 1 : a && a.gender === 'female' ? 0 : -1;
+            vb = b && b.gender === 'male' ? 1 : b && b.gender === 'female' ? 0 : -1;
+            sonuc = va - vb;
+        } else if (kolon === 'puan') {
+            va = hikayePuanDeger(a);
+            vb = hikayePuanDeger(b);
+            if (va == null && vb == null) sonuc = 0;
+            else if (va == null) sonuc = 1;
+            else if (vb == null) sonuc = -1;
+            else sonuc = va - vb;
+        } else {
+            va = parseInt(a && a[kolon], 10);
+            vb = parseInt(b && b[kolon], 10);
+            if (!isFinite(va)) va = 0;
+            if (!isFinite(vb)) vb = 0;
+            sonuc = va - vb;
+        }
+        if (sonuc === 0 && a && b && a.id != null && b.id != null) {
+            sonuc = String(a.id) < String(b.id) ? -1 : String(a.id) > String(b.id) ? 1 : 0;
+        }
+        return asc ? sonuc : -sonuc;
+    }
+
+    function puanSiralamaUygula(liste) {
+        var k = puanSort.kolon;
+        var asc = puanSort.yon === 'asc';
+        return liste.slice().sort(function (a, b) {
+            return puanKarsilastir(a, b, k, asc);
+        });
+    }
+
+    function puanThBtn(kolon, etiket) {
+        var aktif = puanSort.kolon === kolon;
+        var ok = aktif ? (puanSort.yon === 'asc' ? '↑' : '↓') : '↕';
+        var sinif = 'metrik-th-sort' + (aktif ? ' metrik-th-sort--aktif' : '');
+        var yonEtiket = aktif
+            ? (puanSort.yon === 'asc' ? 'artan' : 'azalan')
+            : 'sırala';
+        return (
+            '<button type="button" class="' + sinif + '" data-puan-sort="' + esc(kolon) + '" ' +
+            'aria-label="' + esc(etiket) + ' — ' + yonEtiket + ' sırala">' +
+            esc(etiket) + ' <span class="metrik-th-ok" aria-hidden="true">' + ok + '</span></button>'
+        );
+    }
+
+    function puanSatirHtml(r) {
+        return (
+            '<tr>' +
+            '<td>' + kisaMetin(r.baslik, 64) + '</td>' +
+            '<td>' + cinsHtml(r) + '</td>' +
+            '<td>' + esc(fmtSayi(r.goruntulenme)) + '</td>' +
+            '<td>' + esc(fmtSayi(r.begeni)) + '</td>' +
+            '<td>' + esc(fmtSayi(r.begenmeme)) + '</td>' +
+            '<td>' + esc(fmtSayi(r.paylasim)) + '</td>' +
+            '<td>' + hikayePuanHtml(r) + '</td>' +
+            '</tr>'
+        );
+    }
+
+    function puanSiraliTabloHtml(icerik) {
+        var tum = puanSiralamaUygula(puanSiraliListe(icerik));
+        var baslik = 'Okuyucu puanı — hikâyeler';
+        var not = 'Puan = (beğeni − beğenmeme) ÷ görülme × 100 · görülme = DB tekil veya dönem impression (büyük olan) · dönem içi oy · sütun başlığına tıklayarak sırala';
+        var html = '<section class="istat-bolum metrik-puan-bolum" id="metrikPuanBolum">';
+        html += '<h2 class="istat-bolum-baslik">' + esc(baslik) + '</h2>';
+        html += '<p class="istat-bolum-not">' + esc(not) + '</p>';
+        if (!tum.length) {
+            html += '<p class="istat-bos">Bu dönemde puanlanacak hikâye yok (görülme ve oy gerekli).</p></section>';
+            return html;
+        }
+        var goster = tum.slice(0, puanGosterAdet);
+        html += '<div class="istat-tablo-wrap"><table class="istat-tablo metrik-puan-tablo"><thead><tr>';
+        html += '<th scope="col">' + puanThBtn('baslik', 'Başlık') + '</th>';
+        html += '<th scope="col">' + puanThBtn('gender', 'Cins') + '</th>';
+        html += '<th scope="col">' + puanThBtn('goruntulenme', 'Görülme') + '</th>';
+        html += '<th scope="col">' + puanThBtn('begeni', 'Beğeni') + '</th>';
+        html += '<th scope="col">' + puanThBtn('begenmeme', 'Beğenmeme') + '</th>';
+        html += '<th scope="col">' + puanThBtn('paylasim', 'Paylaşım') + '</th>';
+        html += '<th scope="col">' + puanThBtn('puan', 'Puan') + '</th>';
+        html += '</tr></thead><tbody>';
+        goster.forEach(function (r) {
+            html += puanSatirHtml(r);
+        });
+        html += '</tbody></table></div>';
+        html += '<p class="metrik-puan-ozet">' + fmtSayi(goster.length) + ' / ' + fmtSayi(tum.length) + ' hikâye</p>';
+        if (tum.length > puanGosterAdet) {
+            var kalan = tum.length - puanGosterAdet;
+            var adim = Math.min(PUAN_ADIM, kalan);
+            html += '<p class="metrik-puan-daha"><button type="button" class="istat-yenile-btn" id="metrikPuanDahaFazla">' +
+                fmtSayi(adim) + ' tane daha göster (' + fmtSayi(kalan) + ' kaldı)</button></p>';
+        }
+        html += '</section>';
+        return html;
+    }
+
+    function puanEtkilesimBagla() {
+        var kok = document.getElementById('metrikIcerik');
+        if (!kok || kok._g5PuanEtkilesim) return;
+        kok._g5PuanEtkilesim = true;
+        kok.addEventListener('click', function (e) {
+            var sortBtn = e.target.closest('[data-puan-sort]');
+            if (sortBtn) {
+                e.preventDefault();
+                var kolon = sortBtn.getAttribute('data-puan-sort');
+                if (!kolon) return;
+                if (puanSort.kolon === kolon) {
+                    puanSort.yon = puanSort.yon === 'asc' ? 'desc' : 'asc';
+                } else {
+                    puanSort.kolon = kolon;
+                    puanSort.yon = (kolon === 'baslik' || kolon === 'gender') ? 'asc' : 'desc';
+                }
+                if (kok._g5SonVeri) render(kok._g5SonVeri);
+                return;
+            }
+            var hedef = e.target;
+            if (hedef && hedef.id === 'metrikPuanDahaFazla') {
+                e.preventDefault();
+                puanGosterAdet += PUAN_ADIM;
+                if (kok._g5SonVeri) render(kok._g5SonVeri);
+            }
+        });
+    }
+
+    function bugunSatirlariAyikla(satirlar) {
+        var bugun = [];
+        var diger = [];
+        arrCoz(satirlar).forEach(function (r) {
+            if (r && r.gun_etiket === 'Bugün' && r.id != null) bugun.push(r);
+            else diger.push(r);
+        });
+        return { bugun: bugun, diger: diger };
+    }
+
+    function bugunSiraDurumGuncelle(icerik) {
+        var parcalar = bugunSatirlariAyikla(icerik.son_gun_hikayeler);
+        bugunSiraKayitli = !!icerik.bugun5_manuel_sira;
+        bugunSiraSatirlar = {};
+        bugunSiraIds = parcalar.bugun.map(function (r) {
+            bugunSiraSatirlar[String(r.id)] = r;
+            return r.id;
+        });
+    }
+
+    function bugunSiraSatirHtml(id, idx, toplam) {
+        var r = bugunSiraSatirlar[String(id)];
+        if (!r) return '';
+        var yukariKapali = idx <= 0 ? ' disabled' : '';
+        var asagiKapali = idx >= toplam - 1 ? ' disabled' : '';
+        var siraNo = idx + 1;
+        return (
+            '<tr class="metrik-sira-satir" data-metrik-sira-id="' + esc(String(id)) + '">' +
+            '<td class="metrik-sira-hucre">' +
+            '<span class="metrik-sira-no" aria-live="polite">' + esc(String(siraNo)) + '</span>' +
+            '<div class="metrik-sira-kontrol">' +
+            '<button type="button" class="metrik-sira-btn" data-metrik-sira-yon="yukari"' + yukariKapali + ' aria-label="' + siraNo + '. sıra, yukarı">↑</button>' +
+            '<button type="button" class="metrik-sira-btn" data-metrik-sira-yon="asagi"' + asagiKapali + ' aria-label="' + siraNo + '. sıra, aşağı">↓</button>' +
+            '</div></td>' +
+            '<td>' + esc(r.gun_etiket || 'Bugün') + '</td>' +
+            '<td>' + esc(r.yayin_tarihi || '—') + '</td>' +
+            '<td>' + kisaMetin(r.baslik, 56) + '</td>' +
+            '<td>' + cinsHtml(r) + '</td>' +
+            '<td>' + esc(fmtSayi(r.goruntulenme)) + '</td>' +
+            '<td>' + esc(fmtSayi(r.begeni)) + '</td>' +
+            '<td>' + esc(fmtSayi(r.begenmeme)) + '</td>' +
+            '<td>' + esc(fmtSayi(r.paylasim)) + '</td>' +
+            '<td>' + hikayePuanHtml(r) + '</td>' +
+            '</tr>'
+        );
+    }
+
+    function sonGunHikayelerHtml(icerik) {
+        var parcalar = bugunSatirlariAyikla(icerik.son_gun_hikayeler);
+        var baslik = 'Dün ve bugün — son 10 hikâye';
+        var not = 'İstanbul saati · görülme = DB tekil veya analytics impression (büyük olan) · oy/paylaşım analytics (hariç tut filtresine uygun, tüm zaman) · puan = (beğeni − beğenmeme) ÷ görülme × 100 (okuyucu başına net oy %)';
+        var html = '<section class="istat-bolum metrik-sira-bolum"><h2 class="istat-bolum-baslik">' + esc(baslik) + '</h2>';
+        html += '<p class="istat-bolum-not">' + esc(not) + '</p>';
+
+        if (!parcalar.bugun.length && !parcalar.diger.length) {
+            html += '<p class="istat-bos">Dün veya bugün yayınlanan hikâye yok.</p></section>';
+            return html;
+        }
+
+        if (parcalar.bugun.length) {
+            html += '<div class="metrik-sira-ust">';
+            html += '<p class="metrik-sira-aciklama">Bugünün 5\'i — anasayfa sırası (↑↓ ile değiştir)</p>';
+            if (bugunSiraKayitli) {
+                html += '<span class="metrik-sira-rozet">Özel sıra aktif</span>';
+            }
+            html += '</div>';
+            html += '<div class="metrik-sira-aksiyonlar">';
+            html += '<button type="button" class="metrik-sira-kaydet-btn" id="metrikBugun5Kaydet">Sırayı kaydet</button>';
+            html += '<button type="button" class="metrik-sira-sifirla-btn" id="metrikBugun5Sifirla">Yayın sırasına dön</button>';
+            html += '</div>';
+        }
+
+        html += '<div class="istat-tablo-wrap"><table class="istat-tablo metrik-sira-tablo"><thead><tr>';
+        if (parcalar.bugun.length) {
+            html += '<th scope="col">Sıra</th>';
+        }
+        html += '<th scope="col">Gün</th><th scope="col">Yayın</th><th scope="col">Başlık</th><th scope="col">Cins</th>';
+        html += '<th scope="col">Görülme</th><th scope="col">Beğeni</th><th scope="col">Beğenmeme</th><th scope="col">Paylaşım</th><th scope="col">Puan</th>';
+        html += '</tr></thead><tbody>';
+
+        if (parcalar.bugun.length) {
+            bugunSiraIds.forEach(function (id, idx) {
+                html += bugunSiraSatirHtml(id, idx, bugunSiraIds.length);
+            });
+        }
+
+        parcalar.diger.forEach(function (r) {
+            html += '<tr>' +
+                (parcalar.bugun.length ? '<td></td>' : '') +
+                '<td>' + esc(r.gun_etiket || '—') + '</td>' +
+                '<td>' + esc(r.yayin_tarihi || '—') + '</td>' +
+                '<td>' + kisaMetin(r.baslik, 56) + '</td>' +
+                '<td>' + cinsHtml(r) + '</td>' +
+                '<td>' + esc(fmtSayi(r.goruntulenme)) + '</td>' +
+                '<td>' + esc(fmtSayi(r.begeni)) + '</td>' +
+                '<td>' + esc(fmtSayi(r.begenmeme)) + '</td>' +
+                '<td>' + esc(fmtSayi(r.paylasim)) + '</td>' +
+                '<td>' + hikayePuanHtml(r) + '</td>' +
+                '</tr>';
+        });
+
+        html += '</tbody></table></div></section>';
+        return html;
+    }
+
+    function bugunSiraTasi(id, yon) {
+        var idx = bugunSiraIds.indexOf(id);
+        if (idx < 0) return;
+        var hedef = yon === 'yukari' ? idx - 1 : idx + 1;
+        if (hedef < 0 || hedef >= bugunSiraIds.length) return;
+        var gecici = bugunSiraIds[idx];
+        bugunSiraIds[idx] = bugunSiraIds[hedef];
+        bugunSiraIds[hedef] = gecici;
+    }
+
+    function bugunSiraTabloYenile() {
+        var govde = document.querySelector('.metrik-sira-tablo tbody');
+        if (!govde || !bugunSiraIds.length) return;
+        var diger = [];
+        govde.querySelectorAll('tr:not(.metrik-sira-satir)').forEach(function (tr) {
+            diger.push(tr.outerHTML);
+        });
+        var bugunHtml = '';
+        bugunSiraIds.forEach(function (id, idx) {
+            bugunHtml += bugunSiraSatirHtml(id, idx, bugunSiraIds.length);
+        });
+        govde.innerHTML = bugunHtml + diger.join('');
+        siraKontrolBagla();
+    }
+
+    function siraKontrolBagla() {
+        document.querySelectorAll('[data-metrik-sira-yon]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (btn.disabled) return;
+                var satir = btn.closest('[data-metrik-sira-id]');
+                if (!satir) return;
+                var id = parseInt(satir.getAttribute('data-metrik-sira-id'), 10);
+                if (!isFinite(id)) return;
+                bugunSiraTasi(id, btn.getAttribute('data-metrik-sira-yon'));
+                bugunSiraTabloYenile();
+            });
+        });
+    }
+
+    function siraAksiyonBagla() {
+        var kok = document.getElementById('metrikIcerik');
+        if (!kok || kok._g5SiraAksiyon) return;
+        kok._g5SiraAksiyon = true;
+        kok.addEventListener('click', function (e) {
+            var hedef = e.target;
+            if (!hedef || !hedef.id) return;
+            if (hedef.id === 'metrikBugun5Kaydet') {
+                e.preventDefault();
+                siraKaydet();
+            } else if (hedef.id === 'metrikBugun5Sifirla') {
+                e.preventDefault();
+                siraSifirla();
+            }
+        });
+    }
+
+    function toast(mesaj, hata) {
+        var U = ui();
+        if (U && U.showToast) U.showToast(mesaj, hata ? 'hata' : undefined);
+    }
+
+    async function siraKaydet() {
+        if (siraKaydediyor) return;
+        var D = db();
+        if (!D || !D.masterBugun5SiraKaydet) return;
+        siraKaydediyor = true;
+        try {
+            await D.masterBugun5SiraKaydet(bugunSiraIds);
+            toast('Anasayfa sırası kaydedildi.');
+            await veriYukle(seciliGun, seciliHaric);
+        } catch (e) {
+            toast(D.hataMesaji ? D.hataMesaji(e) : 'Kaydedilemedi.', true);
+        } finally {
+            siraKaydediyor = false;
+        }
+    }
+
+    async function siraSifirla() {
+        if (siraKaydediyor) return;
+        var D = db();
+        if (!D || !D.masterBugun5SiraSifirla) return;
+        siraKaydediyor = true;
+        try {
+            await D.masterBugun5SiraSifirla();
+            toast('Yayın sırasına dönüldü.');
+            await veriYukle(seciliGun, seciliHaric);
+        } catch (e) {
+            toast(D.hataMesaji ? D.hataMesaji(e) : 'Sıfırlanamadı.', true);
+        } finally {
+            siraKaydediyor = false;
+        }
+    }
 
     function render(veri) {
         var kok = document.getElementById('metrikIcerik');
@@ -133,66 +562,16 @@
         html += '</div>' + bolumKapat();
 
         html += bolumAc('İçerik performansı');
-        html += tabloHtml(
-            'En çok beğenilen 10 hikâye',
-            [
-                { etiket: 'Başlık', deger: function (r) { return kisaMetin(r.baslik, 72); } },
-                { etiket: 'Beğeni', deger: function (r) { return fmtSayi(r.begeni); } },
-                { etiket: 'Beğenmeme', deger: function (r) { return fmtSayi(r.begenmeme); } },
-                { etiket: 'Paylaşım', deger: function (r) { return fmtSayi(r.paylasim); } }
-            ],
-            arrCoz(icerik.en_begenilen),
-            'Bu dönemde analytics oy olayı yok. index.html + gunde5-analytics.js gerekli.'
-        );
-        html += tabloHtml(
-            'En çok paylaşılan 10 hikâye',
-            [
-                { etiket: 'Başlık', deger: function (r) { return kisaMetin(r.baslik, 72); } },
-                { etiket: 'Paylaşım', deger: function (r) { return fmtSayi(r.paylasim); } },
-                { etiket: 'Beğeni', deger: function (r) { return fmtSayi(r.begeni); } }
-            ],
-            arrCoz(icerik.en_paylasilan),
-            'Bu dönemde paylaşım olayı yok.'
-        );
-        html += tabloHtml(
-            'En çok beğenilmeyen 10 hikâye',
-            [
-                { etiket: 'Başlık', deger: function (r) { return kisaMetin(r.baslik, 72); } },
-                { etiket: 'Beğenmeme', deger: function (r) { return fmtSayi(r.begenmeme); } },
-                { etiket: 'Beğeni', deger: function (r) { return fmtSayi(r.begeni); } }
-            ],
-            arrCoz(icerik.en_begenilmeyen),
-            'Bu dönemde beğenmeme olayı yok.'
-        );
-        if (icerik.impression_var && arrCoz(icerik.en_gorulen).length) {
-            html += tabloHtml(
-                'En çok görülen 10 hikâye',
-                [
-                    { etiket: 'Başlık', deger: function (r) { return kisaMetin(r.baslik, 72); } },
-                    { etiket: 'Görüntülenme', deger: function (r) { return fmtSayi(r.goruntulenme); } }
-                ],
-                arrCoz(icerik.en_gorulen)
-            );
-        }
+        html += puanSiraliTabloHtml(icerik);
         html += bolumKapat();
 
-        html += tabloHtml(
-            'Dün ve bugün — son 10 hikâye',
-            [
-                { etiket: 'Gün', deger: function (r) { return r.gun_etiket || '—'; } },
-                { etiket: 'Yayın', deger: function (r) { return r.yayin_tarihi || '—'; } },
-                { etiket: 'Başlık', deger: function (r) { return kisaMetin(r.baslik, 56); } },
-                { etiket: 'Görülme', deger: function (r) { return fmtSayi(r.goruntulenme); } },
-                { etiket: 'Beğeni', deger: function (r) { return fmtSayi(r.begeni); } },
-                { etiket: 'Beğenmeme', deger: function (r) { return fmtSayi(r.begenmeme); } },
-                { etiket: 'Paylaşım', deger: function (r) { return fmtSayi(r.paylasim); } }
-            ],
-            arrCoz(icerik.son_gun_hikayeler),
-            'Dün veya bugün yayınlanan hikâye yok.',
-            'İstanbul saati · görülme = DB tekil veya analytics impression (büyük olan) · oy/paylaşım analytics (hariç tut filtresine uygun, tüm zaman)'
-        );
+        bugunSiraDurumGuncelle(icerik);
+        html += sonGunHikayelerHtml(icerik);
 
+        kok._g5SonVeri = veri;
         kok.innerHTML = html;
+        siraKontrolBagla();
+        puanEtkilesimBagla();
     }
 
     function yukleniyor(goster) {
@@ -224,6 +603,8 @@
         gunSecimGuncelle();
         haricSecimGuncelle();
         yukleniyor(true);
+        puanGosterAdet = PUAN_ILK_ADET;
+        puanSort = { kolon: 'puan', yon: 'desc' };
         try {
             var veri = await D.masterMetrikIstatistik(seciliGun, seciliHaric);
             render(veri);
@@ -311,6 +692,8 @@
         }
         icerikGoster();
         filtreBagla();
+        siraAksiyonBagla();
+        puanEtkilesimBagla();
         await veriYukle(seciliGun);
     }
 

@@ -1,5 +1,6 @@
 -- Metrik RPC — olay tablosu birincil (impression calisiyor, sessions bos olabilir)
 -- analytics-event-session-fix.sql sonrasi Run.
+-- Bugünün 5 manuel sıra: once index-bugun5-sira.sql, sonra bu dosya.
 
 create or replace function public.master_metrik_istatistik(
     p_gun int default 30,
@@ -31,6 +32,7 @@ declare
     v_en_paylasilan jsonb;
     v_en_begenilmeyen jsonb;
     v_en_gorulen jsonb;
+    v_puan_sirali jsonb;
     v_bugun date;
     v_dun date;
     v_son_gun_hikayeler jsonb;
@@ -182,6 +184,67 @@ begin
         v_avg_stories := 5;
     end if;
 
+    with fe as materialized (
+        select e.*
+        from public.site_analytics_events e
+        where e.created_at >= v_since
+          and (
+            v_haric = 'yok'
+            or (v_haric = 'uyeler' and e.user_id is null)
+            or (v_haric = 'master' and (e.user_id is null or e.user_id is distinct from v_master))
+          )
+    ),
+    story as materialized (
+        select
+            e.story_id,
+            count(*) filter (where e.event_type = 'story_vote' and e.vote_type = 'like')::int as begeni,
+            count(*) filter (where e.event_type = 'story_vote' and e.vote_type = 'dislike')::int as begenmeme,
+            count(*) filter (where e.event_type = 'story_share')::int as paylasim,
+            count(distinct public.analytics_kimlik(e.user_id, e.visitor_id))
+                filter (where e.event_type = 'story_impression')::int as goruntulenme
+        from fe e
+        where e.story_id is not null
+        group by e.story_id
+    ),
+    puanli as (
+        select
+            st.story_id as id,
+            i.gender,
+            coalesce(nullif(trim(i.baslik), ''), left(coalesce(i.content_short, i.content_full, ''), 80)) as baslik,
+            greatest(coalesce(i.tekil_goruntulenme, 0), coalesce(st.goruntulenme, 0))::int as goruntulenme,
+            st.begeni,
+            st.begenmeme,
+            st.paylasim,
+            round(
+                ((st.begeni - st.begenmeme)::numeric
+                    / nullif(greatest(coalesce(i.tekil_goruntulenme, 0), coalesce(st.goruntulenme, 0)), 0)::numeric)
+                * 100, 1
+            ) as puan
+        from story st
+        join public.itiraflar i on i.id = st.story_id and i.silindi_at is null
+        where greatest(coalesce(i.tekil_goruntulenme, 0), coalesce(st.goruntulenme, 0)) > 0
+          and (st.begeni > 0 or st.begenmeme > 0)
+    )
+    select coalesce(jsonb_agg(
+        jsonb_build_object(
+            'id', p.id,
+            'baslik', p.baslik,
+            'gender', p.gender,
+            'goruntulenme', p.goruntulenme,
+            'begeni', p.begeni,
+            'begenmeme', p.begenmeme,
+            'paylasim', p.paylasim,
+            'puan', p.puan
+        )
+        order by p.puan desc nulls last, p.goruntulenme desc, p.id desc
+    ), '[]'::jsonb)
+    into v_puan_sirali
+    from (
+        select * from puanli
+        order by puan desc nulls last, goruntulenme desc, id desc
+        limit 100
+    ) p;
+
     v_etkilesim_oran := case
         when coalesce(v_tekil_ziyaretci, 0) > 0 then
             round(((coalesce(v_begeni, 0) + coalesce(v_begenmeme, 0) + coalesce(v_paylasim, 0))::numeric
@@ -189,32 +252,83 @@ begin
         else 0
     end;
 
-    select coalesce(jsonb_agg(t.row order by t.created_at desc), '[]'::jsonb)
+    select coalesce(jsonb_agg(t.row order by t.grup asc, t.sira asc), '[]'::jsonb)
     into v_son_gun_hikayeler
     from (
-        with gun_hik as (
+        with manuel as (
+            select s.hikaye_ids
+            from public.index_bugun5_sira s
+            where s.gun = v_bugun
+        ),
+        bugun_h as (
             select
                 i.id,
                 i.created_at,
                 i.tekil_goruntulenme,
+                i.gender,
                 coalesce(nullif(trim(i.baslik), ''), left(coalesce(i.content_short, i.content_full, ''), 80)) as baslik,
-                case
-                    when (i.created_at at time zone 'Europe/Istanbul')::date = v_bugun then 'Bugün'
-                    else 'Dün'
-                end as gun_etiket,
-                to_char(i.created_at at time zone 'Europe/Istanbul', 'DD/MM/YYYY') as yayin_tarihi
+                'Bugün' as gun_etiket,
+                to_char(i.created_at at time zone 'Europe/Istanbul', 'DD/MM/YYYY') as yayin_tarihi,
+                coalesce(
+                    array_position((select m.hikaye_ids from manuel m), i.id),
+                    row_number() over (order by i.created_at asc)::int
+                ) as sira
             from public.itiraflar i
             where i.silindi_at is null
               and i.created_at <= now()
-              and (i.created_at at time zone 'Europe/Istanbul')::date in (v_bugun, v_dun)
-            order by i.created_at desc
-            limit 10
+              and (i.created_at at time zone 'Europe/Istanbul')::date = v_bugun
+        ),
+        dun_h as (
+            select
+                i.id,
+                i.created_at,
+                i.tekil_goruntulenme,
+                i.gender,
+                coalesce(nullif(trim(i.baslik), ''), left(coalesce(i.content_short, i.content_full, ''), 80)) as baslik,
+                'Dün' as gun_etiket,
+                to_char(i.created_at at time zone 'Europe/Istanbul', 'DD/MM/YYYY') as yayin_tarihi,
+                row_number() over (order by i.created_at asc)::int as sira
+            from public.itiraflar i
+            where i.silindi_at is null
+              and i.created_at <= now()
+              and (i.created_at at time zone 'Europe/Istanbul')::date = v_dun
+            order by i.created_at asc
+            limit 5
+        ),
+        gun_hik as (
+            select
+                h.id,
+                h.created_at,
+                h.tekil_goruntulenme,
+                h.gender,
+                h.baslik,
+                h.gun_etiket,
+                h.yayin_tarihi,
+                h.sira,
+                0 as grup,
+                true as sira_duzenlenebilir
+            from bugun_h h
+            union all
+            select
+                h.id,
+                h.created_at,
+                h.tekil_goruntulenme,
+                h.gender,
+                h.baslik,
+                h.gun_etiket,
+                h.yayin_tarihi,
+                h.sira,
+                1 as grup,
+                false as sira_duzenlenebilir
+            from dun_h h
         )
         select
-            h.created_at,
+            h.grup,
+            h.sira,
             jsonb_build_object(
                 'id', h.id,
                 'baslik', h.baslik,
+                'gender', h.gender,
                 'gun_etiket', h.gun_etiket,
                 'yayin_tarihi', h.yayin_tarihi,
                 'goruntulenme', greatest(
@@ -223,7 +337,8 @@ begin
                 ),
                 'begeni', coalesce(a.begeni, 0),
                 'begenmeme', coalesce(a.begenmeme, 0),
-                'paylasim', coalesce(a.paylasim, 0)
+                'paylasim', coalesce(a.paylasim, 0),
+                'sira_duzenlenebilir', h.sira_duzenlenebilir
             ) as row
         from gun_hik h
         left join (
@@ -286,7 +401,11 @@ begin
             'en_paylasilan', coalesce(v_en_paylasilan, '[]'::jsonb),
             'en_begenilmeyen', coalesce(v_en_begenilmeyen, '[]'::jsonb),
             'en_gorulen', case when v_impression_var then coalesce(v_en_gorulen, '[]'::jsonb) else null end,
-            'son_gun_hikayeler', coalesce(v_son_gun_hikayeler, '[]'::jsonb)
+            'puan_sirali', coalesce(v_puan_sirali, '[]'::jsonb),
+            'son_gun_hikayeler', coalesce(v_son_gun_hikayeler, '[]'::jsonb),
+            'bugun5_manuel_sira', exists (
+                select 1 from public.index_bugun5_sira s where s.gun = v_bugun
+            )
         )
     );
 end;

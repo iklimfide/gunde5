@@ -734,6 +734,149 @@
             text-decoration: none;
         }
         .istat-capraz-link:hover, .intro a:hover { text-decoration: underline; }
+        .metrik-sira-bolum { margin-top: 8px; }
+        .metrik-sira-ust {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 8px;
+        }
+        .metrik-sira-aciklama {
+            margin: 0;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .metrik-sira-rozet {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: #1d4ed8;
+            background: rgba(29, 155, 240, 0.12);
+            border: 1px solid rgba(29, 155, 240, 0.28);
+            border-radius: 999px;
+            padding: 3px 8px;
+        }
+        body.dark-mode .metrik-sira-rozet {
+            color: #93c5fd;
+            background: rgba(29, 155, 240, 0.18);
+        }
+        .metrik-sira-aksiyonlar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0 0 10px;
+        }
+        .metrik-sira-kaydet-btn,
+        .metrik-sira-sifirla-btn {
+            border: none;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .metrik-sira-kaydet-btn {
+            background: #1d9bf0;
+            color: #fff;
+        }
+        .metrik-sira-sifirla-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px dashed var(--border-color);
+        }
+        .metrik-sira-hucre { width: 88px; white-space: nowrap; vertical-align: middle; }
+        .metrik-sira-no {
+            display: block;
+            font-size: 15px;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+            line-height: 1.1;
+            margin-bottom: 4px;
+            color: #1d9bf0;
+        }
+        body.dark-mode .metrik-sira-no { color: #60a5fa; }
+        .metrik-sira-kontrol {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+        }
+        .metrik-cins {
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .metrik-cins--kadin { color: var(--female-color); }
+        .metrik-cins--erkek { color: var(--male-color); }
+        .metrik-sira-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
+        }
+        .metrik-sira-btn:hover:not(:disabled) {
+            border-color: #1d9bf0;
+            color: #1d9bf0;
+        }
+        .metrik-sira-btn:disabled {
+            opacity: 0.35;
+            cursor: default;
+        }
+        .metrik-puan {
+            font-variant-numeric: tabular-nums;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .metrik-puan--iyi { color: #15803d; }
+        .metrik-puan--kotu { color: #b91c1c; }
+        body.dark-mode .metrik-puan--iyi { color: #4ade80; }
+        body.dark-mode .metrik-puan--kotu { color: #f87171; }
+        .metrik-puan-daha {
+            margin: 10px 0 0;
+            text-align: center;
+        }
+        .metrik-puan-ozet {
+            margin: 8px 0 0;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-align: right;
+        }
+        .metrik-th-sort {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border: none;
+            background: transparent;
+            padding: 0;
+            font: inherit;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .metrik-th-sort:hover { color: #1d9bf0; }
+        .metrik-th-sort--aktif { color: var(--text-main); }
+        .metrik-th-ok {
+            font-size: 11px;
+            line-height: 1;
+            opacity: 0.85;
+        }
+        .metrik-th-sort:not(.metrik-th-sort--aktif) .metrik-th-ok { opacity: 0.35; }
     </style>
     <script src="js/gunde5-shell.js"></script>
     <script defer src="js/gunde5-perf.js"></script>
@@ -741,13 +884,14 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
     <script src="js/gunde5-profil.js"></script>
     <script src="js/gunde5-ui.js"></script>
-    <script src="js/gunde5-db.js"></script>
+    <script src="js/gunde5-db.js?v=35"></script>
     <script src="js/gunde5-paylas.js"></script>
     <script src="js/gunde5-bildirim.js"></script>
-    <script src="js/gunde5-metrikler.js"></script>
+    <script src="js/gunde5-metrikler.js?v=7"></script>
     <link rel="stylesheet" href="css/gunde5-topbar.css?v=1">
+    <link rel="stylesheet" href="css/master-panel.css?v=2">
 </head>
-<body>
+<body class="master-panel-page">
     <header>
         <div class="header-sol">
             <div class="header-menu-wrap">

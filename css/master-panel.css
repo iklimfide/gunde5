@@ -1,0 +1,95 @@
+/* gunde5 — master sayfaları: geniş PC düzeni (menü yok, hamburger menü yeterli) */
+
+body.master-panel-page > .container,
+body.master-panel-page > main.container,
+body.master-panel-page main.container {
+    width: min(1320px, calc(100% - 32px));
+    max-width: none;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 18px 16px 32px;
+}
+
+body.master-panel-page .page-title {
+    text-align: left;
+    font-size: clamp(22px, 2.4vw, 28px);
+    margin: 4px 0 10px;
+}
+
+body.master-panel-page .intro {
+    text-align: left;
+    max-width: 72ch;
+}
+
+body.master-panel-page .istat-filtre,
+body.master-panel-page .istat-filtre--haric {
+    justify-content: flex-start;
+}
+
+body.master-panel-page .istat-donem-notu {
+    text-align: left;
+}
+
+body.master-panel-page .istat-kpi-grid {
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+}
+
+body.master-panel-page .istat-kpi-grid--hero {
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+}
+
+body.master-panel-page .istat-tablo-wrap {
+    border-radius: 14px;
+}
+
+body.master-panel-page .istat-tablo {
+    font-size: 13px;
+}
+
+body.master-panel-page .istat-tablo th,
+body.master-panel-page .istat-tablo td {
+    padding: 10px 12px;
+}
+
+body.master-panel-page .kamikaze-page,
+body.master-panel-page main.kamikaze-page {
+    width: min(1400px, calc(100% - 32px));
+    max-width: none;
+}
+
+body.master-panel-page .kamikaze-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.master-panel-page .kamikaze-chart-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+body.master-panel-page .kamikaze-table-wrap,
+body.master-panel-page .kamikaze-table-wrap--pc {
+    width: 100%;
+    overflow-x: auto;
+}
+
+body.master-panel-page .sp-grid {
+    display: grid;
+    gap: 16px;
+}
+
+@media (min-width: 960px) {
+    body.master-panel-page .istat-bolum--hero .istat-kpi-grid--hero {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    body.master-panel-page .sp-grid {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+    }
+}
+
+@media (min-width: 1200px) {
+    body.master-panel-page .istat-kpi-grid--hero {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+}

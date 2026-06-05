@@ -545,135 +545,6 @@
         };
     }
 
-    var BUGUN5_KARISTIR_DK_MS = 30 * 60 * 1000;
-
-    function istanbulSaatDilimi() {
-        try {
-            return parseInt(
-                new Intl.DateTimeFormat('en-GB', {
-                    timeZone: 'Europe/Istanbul',
-                    hour: 'numeric',
-                    hour12: false
-                }).format(new Date()),
-                10
-            );
-        } catch (e) {
-            return new Date().getHours();
-        }
-    }
-
-    function tohumSayi(str) {
-        var h = 2166136261;
-        var i;
-        var s = String(str || '');
-        for (i = 0; i < s.length; i++) {
-            h ^= s.charCodeAt(i);
-            h = Math.imul(h, 16777619);
-        }
-        return h >>> 0;
-    }
-
-    function tohumluRng(seed) {
-        return function () {
-            seed |= 0;
-            seed = (seed + 0x6d2b79f5) | 0;
-            var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-        };
-    }
-
-    function tohumluKaristir(dizi, tohum) {
-        var a = dizi.slice();
-        var rnd = tohumluRng(tohum);
-        var i;
-        for (i = a.length - 1; i > 0; i--) {
-            var j = Math.floor(rnd() * (i + 1));
-            var gecici = a[i];
-            a[i] = a[j];
-            a[j] = gecici;
-        }
-        return a;
-    }
-
-    function gulumsemeSkoru(row) {
-        var up = parseInt(row && row.up_votes, 10);
-        var dn = parseInt(row && row.down_votes, 10);
-        if (!isFinite(up)) up = 0;
-        if (!isFinite(dn)) dn = 0;
-        return up - dn;
-    }
-
-    var BUGUN5_KILIT_KEY = 'g5_bugun5_kilit_v1';
-
-    function idlereGoreSirala(rows, ids) {
-        var liste = Array.isArray(rows) ? rows : [];
-        var idList = Array.isArray(ids) ? ids : [];
-        if (!liste.length || !idList.length) return liste;
-        var harita = {};
-        var i;
-        for (i = 0; i < liste.length; i++) {
-            if (liste[i] && liste[i].id != null) harita[String(liste[i].id)] = liste[i];
-        }
-        var sirali = [];
-        for (i = 0; i < idList.length; i++) {
-            var satir = harita[String(idList[i])];
-            if (satir) sirali.push(satir);
-        }
-        return sirali.length ? sirali : liste;
-    }
-
-    function bugun5OgleKilitOku(bugun) {
-        try {
-            var raw = global.localStorage.getItem(BUGUN5_KILIT_KEY);
-            if (!raw) return null;
-            var o = JSON.parse(raw);
-            if (!o || o.gun !== bugun || !Array.isArray(o.ids) || !o.ids.length) return null;
-            return o.ids;
-        } catch (e) {
-            return null;
-        }
-    }
-
-    function bugun5OgleKilitYaz(bugun, ids) {
-        try {
-            global.localStorage.setItem(
-                BUGUN5_KILIT_KEY,
-                JSON.stringify({ gun: bugun, ids: ids, ts: Date.now() })
-            );
-        } catch (e2) { /* */ }
-    }
-
-    function bugun5Sirala(rows) {
-        var liste = Array.isArray(rows) ? rows.slice() : [];
-        if (!liste.length) return liste;
-        var bugun = istanbulYmdSimdi();
-
-        if (istanbulSaatDilimi() >= 12) {
-            var kilitIds = bugun5OgleKilitOku(bugun);
-            if (kilitIds) return idlereGoreSirala(liste, kilitIds);
-
-            liste.sort(function (a, b) {
-                var skorA = gulumsemeSkoru(a);
-                var skorB = gulumsemeSkoru(b);
-                if (skorB !== skorA) return skorB - skorA;
-                var upA = parseInt(a.up_votes, 10) || 0;
-                var upB = parseInt(b.up_votes, 10) || 0;
-                if (upB !== upA) return upB - upA;
-                return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
-            });
-            bugun5OgleKilitYaz(
-                bugun,
-                liste.map(function (r) { return r.id; })
-            );
-            return liste;
-        }
-
-        var epoch = Math.floor(Date.now() / BUGUN5_KARISTIR_DK_MS);
-        var tohum = tohumSayi(bugun + ':' + epoch);
-        return tohumluKaristir(liste, tohum);
-    }
-
     function rpcSatirlarCoz(data) {
         var rows = data;
         if (rows == null) return [];
@@ -683,7 +554,7 @@
         return Array.isArray(rows) ? rows : [];
     }
 
-    /** Anasayfa — bugünün 5'i; 12:00 öncesi 30 dk karışık, 12:00'da gülümseme−dislike ile kilit. */
+    /** Anasayfa — bugünün 5'i (manuel sıra varsa ona göre, yoksa yayın sırası). */
     async function indexBugunun5Getir() {
         var sb = getClient();
         if (!sb) return [];
@@ -709,7 +580,39 @@
             .order('created_at', { ascending: true })
             .limit(5);
         if (res.error) throw res.error;
-        return bugun5Sirala(res.data || []);
+        return res.data || [];
+    }
+
+    async function masterBugun5SiraKaydet(hikayeIds) {
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var ids = Array.isArray(hikayeIds) ? hikayeIds : [];
+        var clean = ids.map(function (id) { return parseInt(id, 10); }).filter(function (n) { return isFinite(n) && n > 0; });
+        var res = await sb.rpc('master_bugun5_sira_kaydet', { p_hikaye_ids: clean });
+        if (res.error) throw res.error;
+        var data = res.data;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { data = {}; }
+        }
+        if (!data || !data.ok) {
+            throw new Error((data && data.hata) || 'Sıra kaydedilemedi.');
+        }
+        return data;
+    }
+
+    async function masterBugun5SiraSifirla() {
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var res = await sb.rpc('master_bugun5_sira_sifirla');
+        if (res.error) throw res.error;
+        var data = res.data;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { data = {}; }
+        }
+        if (!data || !data.ok) {
+            throw new Error((data && data.hata) || 'Sıra sıfırlanamadı.');
+        }
+        return data;
     }
 
     /** Anasayfa — İstanbul takviminde dünün en fazla 5 hikâyesi (07:00–07:04 sırası). */
@@ -2486,6 +2389,8 @@
         masterTrafikIstatistik: masterTrafikIstatistik,
         masterGunlukIstatistik: masterGunlukIstatistik,
         masterMetrikIstatistik: masterMetrikIstatistik,
+        masterBugun5SiraKaydet: masterBugun5SiraKaydet,
+        masterBugun5SiraSifirla: masterBugun5SiraSifirla,
         masterMudavimIstatistik: masterMudavimIstatistik,
         masterZiyaretIstatistik: masterZiyaretIstatistik,
         getViewerKey: getViewerKey,

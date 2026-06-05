@@ -155,23 +155,10 @@
 
     async function bugununBesHikayeleriGetir() {
         var D = db();
-        if (!D || !D.indexHikayeListeleSayfa) {
-            throw new Error('indexHikayeListeleSayfa tanımlı değil');
+        if (D && D.indexBugunun5Getir) {
+            return D.indexBugunun5Getir();
         }
-        var bugun = trYmd(new Date());
-        if (!bugun) return [];
-        var ham = await D.indexHikayeListeleSayfa(0, 80, 'yeni');
-        var bugunkiler = [];
-        var i;
-        for (i = 0; i < ham.length; i++) {
-            if (trYmd(ham[i].created_at) === bugun) {
-                bugunkiler.push(ham[i]);
-            }
-        }
-        bugunkiler.sort(function (a, b) {
-            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        });
-        return bugunkiler.slice(0, 5);
+        throw new Error('indexBugunun5Getir tanımlı değil');
     }
 
     function twitterIntentUrl(metin) {
@@ -384,6 +371,7 @@
         if (uyari) {
             html += '<p class="sp-uyari" role="status">' + esc(uyari) + '</p>';
         }
+        html += '<div class="sp-grid">';
         html += '<section class="sp-kart">';
         html += '<h2 class="sp-kart-baslik">X — metin</h2>';
         html += '<p class="sp-bolum-etiket">Günlük ritüel duyurusu · Instagram görseliyle aynı dil</p>';
@@ -406,7 +394,7 @@
         html += '<div class="sp-aksiyonlar">';
         html += '<button type="button" class="istat-gun-btn sp-btn--ig" id="spIgIndirBtn">PNG indir</button>';
         html += '<button type="button" class="istat-gun-btn" id="spIgMetinKopyalaBtn">Açıklama metnini kopyala</button>';
-        html += '</div></section>';
+        html += '</div></section></div>';
         if (arr(rows).length) {
             html += '<section class="sp-kart"><h2 class="sp-kart-baslik">Bugünkü liste (yayın sırası)</h2>';
             html += '<ol class="sp-liste">';
