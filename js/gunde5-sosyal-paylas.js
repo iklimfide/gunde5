@@ -8,6 +8,7 @@
     var MARKA_ORTA = 'Her sabah 5 gerçek hikaye.';
     var MARKA_ALT = 'Kahveni al, 5 dakika ayır ☕';
     var MARKA_URL = 'gunde5.com';
+    var MARKA_X = "Bizi X'ten takip edin @gunde5_com";
     var hazir = false;
     var sonSatirlar = [];
     var igFormat = 'kare';
@@ -127,6 +128,7 @@
         lines.push(MARKA_ALT);
         lines.push('');
         lines.push(MARKA_URL);
+        lines.push(MARKA_X);
         return lines.join('\n');
     }
 
@@ -193,6 +195,7 @@
         html += '<p class="sp-ig-kart-orta">' + esc(MARKA_ORTA) + '</p>';
         html += '<p class="sp-ig-kart-alt">' + esc(MARKA_ALT) + '</p>';
         html += '<p class="sp-ig-kart-marka">gunde<span>5</span>.com</p>';
+        html += '<p class="sp-ig-kart-x">' + esc(MARKA_X) + '</p>';
         html += '</div>';
         return html;
     }

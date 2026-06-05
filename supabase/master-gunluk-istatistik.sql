@@ -24,6 +24,7 @@ declare
     v_matris_baslangic date;
     v_index_arayuz jsonb;
     v_arama_terimleri jsonb;
+    v_siralama_filtreleri jsonb;
 begin
     perform set_config('statement_timeout', '60000', true);
 
@@ -219,7 +220,8 @@ begin
             where e.event_type = 'load_more_click'
               and coalesce(e.payload->>'tip', '') = 'onceki'
         )::int,
-        'arama', count(*) filter (where e.event_type = 'index_search')::int
+        'arama', count(*) filter (where e.event_type = 'index_search')::int,
+        'siralama_toplam', count(*) filter (where e.event_type = 'index_sort_change')::int
     )
     into v_index_arayuz
     from public.site_analytics_events e
@@ -253,8 +255,42 @@ begin
         limit 40
     ) s;
 
+    select coalesce(jsonb_agg(jsonb_build_object(
+        'kod', s.kod,
+        'etiket', s.etiket,
+        'adet', coalesce(c.adet, 0)
+    ) order by coalesce(c.adet, 0) desc, s.sira), '[]'::jsonb)
+    into v_siralama_filtreleri
+    from (
+        values
+            (1, 'gulumseten', '🔥 En çok gülümsetenler'),
+            (2, 'dun', '📅 Dünkü 5'),
+            (3, 'rastgele', '🎲 Rastgele hikayeler'),
+            (4, 'tum', '📚 Tüm hikayeler'),
+            (5, 'yeni', '☕ Bugünün 5''i'),
+            (6, 'populer', 'Sevilenler (eski)'),
+            (7, 'efsane', 'Efsaneler (eski)')
+    ) as s(sira, kod, etiket)
+    left join (
+        select left(trim(coalesce(e.payload->>'siralama', '')), 20) as kod,
+               count(*)::int as adet
+        from public.site_analytics_events e
+        where e.created_at >= v_since
+          and e.event_type = 'index_sort_change'
+          and coalesce(e.payload->>'siralama', '') in ('yeni', 'gulumseten', 'dun', 'rastgele', 'tum', 'populer', 'efsane')
+          and (
+            v_haric = 'yok'
+            or (v_haric = 'uyeler' and e.user_id is null)
+            or (v_haric = 'master' and (e.user_id is null or e.user_id is distinct from v_master))
+          )
+        group by 1
+    ) c on c.kod = s.kod;
+
     if v_index_arayuz is not null then
-        v_index_arayuz := v_index_arayuz || jsonb_build_object('arama_terimleri', coalesce(v_arama_terimleri, '[]'::jsonb));
+        v_index_arayuz := v_index_arayuz || jsonb_build_object(
+            'arama_terimleri', coalesce(v_arama_terimleri, '[]'::jsonb),
+            'siralama_filtreleri', coalesce(v_siralama_filtreleri, '[]'::jsonb)
+        );
     end if;
 
     return jsonb_build_object(
@@ -273,7 +309,8 @@ begin
         'hikaye_matris', coalesce(v_hikaye_matris, jsonb_build_object('gunler', '[]'::jsonb, 'satirlar', '[]'::jsonb)),
         'index_arayuz', coalesce(v_index_arayuz, jsonb_build_object(
             'altbar_ara', 0, 'altbar_dun', 0, 'daha_fazla_toplam', 0,
-            'daha_fazla_dun', 0, 'daha_fazla_onceki', 0, 'arama', 0, 'arama_terimleri', '[]'::jsonb
+            'daha_fazla_dun', 0, 'daha_fazla_onceki', 0, 'arama', 0,
+            'siralama_toplam', 0, 'arama_terimleri', '[]'::jsonb, 'siralama_filtreleri', '[]'::jsonb
         )),
         'not', 'hikaye_okuma = story_impression (oturumda hikaye başına en fazla 1); matris son 7 gün, en çok 20 hikaye'
     );

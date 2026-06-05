@@ -124,8 +124,9 @@
     function indexArayuzBolumu(ia) {
         ia = ia || {};
         var terimler = arrCoz(ia.arama_terimleri);
+        var siralama = arrCoz(ia.siralama_filtreleri);
         var html = '<section class="istat-bolum"><h2 class="istat-bolum-baslik">Anasayfa arayüzü</h2>';
-        html += '<p class="istat-bolum-not">Alt bar, arama ve «daha fazla oku» tıklamaları (analytics). Eski kayıtlarda «Dünkü 5» / «Ara» ayrımı olmayabilir.</p>';
+        html += '<p class="istat-bolum-not">Alt bar, liste filtresi, arama ve «daha fazla oku» tıklamaları (analytics). Eski kayıtlarda «Dünkü 5» / «Ara» veya sıralama filtresi ayrımı olmayabilir.</p>';
         html += '<div class="istat-kpi-grid">';
         html += kpiKart('Ara (alt bar)', fmtSayi(ia.altbar_ara), 'Arama kutusunu açma');
         html += kpiKart('Dünkü 5 (alt bar)', fmtSayi(ia.altbar_dun), 'Dünkü 5 kısayolu');
@@ -133,7 +134,18 @@
         html += kpiKart('Önceki günler…', fmtSayi(ia.daha_fazla_onceki), 'Sonraki «daha fazla»');
         html += kpiKart('Daha fazla (toplam)', fmtSayi(ia.daha_fazla_toplam), 'Tüm load_more_click');
         html += kpiKart('Arama yapıldı', fmtSayi(ia.arama), 'Gerçek sorgu gönderimi');
+        html += kpiKart('Liste filtresi', fmtSayi(ia.siralama_toplam), 'Sıralama değişikliği');
         html += '</div>';
+        html += tabloHtml(
+            'Liste filtresi kullanımı',
+            [
+                { etiket: 'Filtre', deger: function (r) { return r.etiket || r.kod; } },
+                { etiket: 'Adet', deger: function (r) { return fmtSayi(r.adet); } }
+            ],
+            siralama,
+            'Bu dönemde sıralama değişikliği yok.',
+            'Mobil açılır liste ve masaüstü yan menü.'
+        );
         html += tabloHtml(
             'En çok aranan terimler',
             [

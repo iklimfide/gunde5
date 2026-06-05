@@ -190,7 +190,7 @@
 
     /* İstenmeyen bloklar (PC): pill bar + sıralama seçici */
     #pcPills { display: none !important; }
-    .index-siralama { display: none !important; }
+    .index-filtre-kutu { display: none !important; }
 
     /* Yan kolon tipografi (başlık / içerik ayrımı) */
     .pc-left,

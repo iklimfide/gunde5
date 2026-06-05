@@ -32,7 +32,7 @@ begin
 
     if v_event not in (
         'page_view', 'load_more_click', 'story_vote', 'story_share', 'heartbeat', 'story_impression',
-        'altbar_ara_click', 'altbar_dun_click', 'index_search'
+        'altbar_ara_click', 'altbar_dun_click', 'index_search', 'index_sort_change'
     ) then
         return jsonb_build_object('ok', false, 'hata', 'gecersiz event');
     end if;
@@ -53,7 +53,7 @@ begin
 
     if v_sayfa is null and v_event in (
         'story_impression', 'story_vote', 'story_share', 'load_more_click',
-        'altbar_ara_click', 'altbar_dun_click', 'index_search'
+        'altbar_ara_click', 'altbar_dun_click', 'index_search', 'index_sort_change'
     ) then
         v_sayfa := 'index';
     end if;
@@ -137,6 +137,22 @@ begin
                 jsonb_build_object(
                     'sayfa', v_sayfa,
                     'query', left(trim(coalesce(p_body->'payload'->>'query', p_body->>'query', '')), 120)
+                )
+            );
+
+        elsif v_event = 'index_sort_change' then
+            v_sayfa := coalesce(v_sayfa, 'index');
+            if coalesce(p_body->'payload'->>'siralama', p_body->>'siralama', '') not in ('yeni', 'gulumseten', 'dun', 'rastgele', 'tum', 'populer', 'efsane') then
+                return jsonb_build_object('ok', false, 'hata', 'gecersiz siralama');
+            end if;
+
+            insert into public.site_analytics_events (
+                event_type, session_id, visitor_id, user_id, payload
+            ) values (
+                v_event, v_sid, v_vid, v_uid,
+                jsonb_build_object(
+                    'sayfa', v_sayfa,
+                    'siralama', coalesce(p_body->'payload'->>'siralama', p_body->>'siralama')
                 )
             );
 
