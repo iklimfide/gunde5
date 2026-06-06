@@ -95,13 +95,6 @@ export default async function handler(req) {
         escHtml(ogImage) +
         '">';
 
-    if (!bot) {
-        html +=
-            '<meta http-equiv="refresh" content="0;url=' +
-            escHtml(okumaUrl) +
-            '">';
-    }
-
     html +=
         '</head><body><p><a href="' +
         escHtml(okumaUrl) +
@@ -116,7 +109,8 @@ export default async function handler(req) {
     return new Response(html, {
         headers: {
             'Content-Type': 'text/html; charset=utf-8',
-            'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+            'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+            Vary: 'User-Agent'
         }
     });
 }
