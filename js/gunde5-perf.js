@@ -34,7 +34,7 @@
             }
             return liste;
         }
-        return ['js/gunde5-ziyaret.js', 'js/gunde5-seo.js', 'js/gunde5-master.js'];
+        return ['js/gunde5-ziyaret.js', 'js/gunde5-seo.js', 'js/gunde5-master.js?v=2'];
     }
 
     function loadScript(src, cb) {

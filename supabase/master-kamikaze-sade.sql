@@ -78,7 +78,9 @@ stable
 set search_path = public
 as $$
 declare
+    v_raw text;
     v_q text;
+    v_pat text;
     v_lim int;
     v_id bigint;
 begin
@@ -86,12 +88,14 @@ begin
         return jsonb_build_object('ok', false, 'hata', 'yetkisiz');
     end if;
 
-    v_q := public.tr_arama_norm(trim(coalesce(p_body->>'q', '')));
+    v_raw := trim(coalesce(p_body->>'q', ''));
+    v_q := public.tr_arama_norm(v_raw);
+    v_pat := '%' || v_q || '%';
     v_lim := least(greatest(coalesce((p_body->>'limit')::int, 40), 1), 80);
     v_id := null;
 
-    if trim(coalesce(p_body->>'q', '')) ~ '^[0-9]+$' then
-        v_id := trim(p_body->>'q')::bigint;
+    if v_raw ~ '^[0-9]+$' then
+        v_id := v_raw::bigint;
     end if;
 
     if v_q = '' then
@@ -136,9 +140,11 @@ begin
                     left(coalesce(i.content_full, i.content_short, ''), 200) as onizleme
                 from public.itiraflar i
                 where (v_id is not null and i.id = v_id)
-                   or public.tr_arama_norm(coalesce(i.baslik, '')) like '%' || v_q || '%'
-                   or public.tr_arama_norm(coalesce(i.content_full, i.content_short, '')) like '%' || v_q || '%'
-                   or public.tr_arama_norm(coalesce(i.username, '')) like '%' || v_q || '%'
+                   or (v_id is null and (
+                       public.tr_arama_norm(coalesce(i.username, '')) like v_pat
+                       or public.tr_arama_norm(coalesce(i.baslik, '')) like v_pat
+                       or public.tr_arama_norm(coalesce(i.content_full, i.content_short, '')) like v_pat
+                   ))
                 order by i.created_at desc
                 limit v_lim
             ) t

@@ -1,53 +1,7 @@
--- Hikaye yaz: baslik sütunu + RLS + master_hikaye_ekle (tek seferde)
--- Canlı şema: public.itiraflar — SQL Editor'da bir kez Run.
--- Önce master-admin.sql veya security-advisor-definer-fix.sql (master_email_eslesir).
+-- Planlı hikaye ekleme düzeltmesi: master_hikaye_ekle → SECURITY DEFINER
+-- (PostgREST insert + created_at bazı kurulumlarda takılabiliyor; RPC güvenilir yol.)
+-- SQL Editor'da bir kez Run (itiraf-hikaye-yaz-kurulum.sql daha önce çalıştırıldıysa yeterli).
 
--- ---------------------------------------------------------------------------
--- 1) Başlık sütunu (isteğe bağlı alan)
--- ---------------------------------------------------------------------------
-alter table public.itiraflar
-    add column if not exists baslik varchar(120);
-
-comment on column public.itiraflar.baslik is 'Hikaye başlığı (kart/liste üst satırı; boş olabilir)';
-
--- ---------------------------------------------------------------------------
--- 2) RLS: okuma + üye insert/güncelleme + master insert/güncelleme
--- ---------------------------------------------------------------------------
-alter table public.itiraflar enable row level security;
-
-grant select on public.itiraflar to anon, authenticated;
-grant insert, update on public.itiraflar to authenticated;
-
-drop policy if exists itiraflar_select_all on public.itiraflar;
-create policy itiraflar_select_all on public.itiraflar
-    for select
-    using (true);
-
-drop policy if exists itiraflar_insert_auth on public.itiraflar;
-create policy itiraflar_insert_auth on public.itiraflar
-    for insert to authenticated
-    with check (auth.uid() = user_id);
-
-drop policy if exists itiraflar_insert_master on public.itiraflar;
-create policy itiraflar_insert_master on public.itiraflar
-    for insert to authenticated
-    with check (public.master_email_eslesir());
-
-drop policy if exists itiraflar_update_own on public.itiraflar;
-create policy itiraflar_update_own on public.itiraflar
-    for update to authenticated
-    using (auth.uid() = user_id)
-    with check (auth.uid() = user_id);
-
-drop policy if exists itiraflar_update_master on public.itiraflar;
-create policy itiraflar_update_master on public.itiraflar
-    for update to authenticated
-    using (public.master_email_eslesir())
-    with check (public.master_email_eslesir());
-
--- ---------------------------------------------------------------------------
--- 3) Master: bot / planlı hikaye ekleme
--- ---------------------------------------------------------------------------
 create or replace function public.master_hikaye_ekle(p_body jsonb)
 returns jsonb
 language plpgsql

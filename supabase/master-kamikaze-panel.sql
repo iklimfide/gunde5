@@ -173,6 +173,7 @@ begin
                     i.city,
                     i.yasadigi_yer,
                     i.yurtdisi_sehir,
+                    i.baslik,
                     i.r,
                     i.b,
                     i.up_votes,
@@ -206,6 +207,7 @@ begin
                     i.city,
                     i.yasadigi_yer,
                     i.yurtdisi_sehir,
+                    i.baslik,
                     i.r,
                     i.b,
                     i.up_votes,
@@ -239,6 +241,7 @@ begin
                     i.city,
                     i.yasadigi_yer,
                     i.yurtdisi_sehir,
+                    i.baslik,
                     i.r,
                     i.b,
                     i.up_votes,
@@ -417,6 +420,7 @@ begin
                     i.city,
                     i.yasadigi_yer,
                     i.yurtdisi_sehir,
+                    i.baslik,
                     i.is_gizli,
                     i.silindi_at,
                     i.r,
@@ -434,6 +438,7 @@ begin
                 left join public.uye u on u.id = i.user_id
                 where (v_id is not null and i.id = v_id)
                    or lower(coalesce(i.content_full, i.content_short, '')) like '%' || v_q || '%'
+                   or lower(coalesce(i.baslik, '')) like '%' || v_q || '%'
                    or lower(coalesce(i.username, '')) like '%' || v_q || '%'
                 order by i.created_at desc
                 limit v_lim
@@ -479,6 +484,7 @@ begin
                 'status', i.status,
                 'user_id', i.user_id,
                 'username', i.username,
+                'baslik', i.baslik,
                 'user_email', u.email,
                 'is_gizli', i.is_gizli,
                 'silindi_at', i.silindi_at,

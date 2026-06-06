@@ -89,13 +89,14 @@
             document.body.classList.remove('master-mod-aktif');
             temizleKartlar();
             profilModTemizle();
+            eskiMasterMenuTemizle();
             menuGuncelle();
-            menuHikayeGonderGuncelle();
             menuAdminGonderimGuncelle();
             menuIstatistikGuncelle();
             menuUyelerGuncelle();
             menuKamikazeGuncelle();
             menuSosyalPaylasGuncelle();
+            eskiMasterMenuTemizle();
             return;
         }
         try {
@@ -106,13 +107,14 @@
         }
         modAcik = false;
         document.body.classList.remove('master-mod-aktif');
+        eskiMasterMenuTemizle();
         menuGuncelle();
-        menuHikayeGonderGuncelle();
         menuAdminGonderimGuncelle();
         menuIstatistikGuncelle();
         menuUyelerGuncelle();
         menuKamikazeGuncelle();
         menuSosyalPaylasGuncelle();
+        eskiMasterMenuTemizle();
         temizleKartlar();
         profilModTemizle();
     }
@@ -120,6 +122,7 @@
     function modToggle() {
         modAcik = false;
         document.body.classList.remove('master-mod-aktif');
+        eskiMasterMenuTemizle();
         menuGuncelle();
         temizleKartlar();
         profilModTemizle();
@@ -143,30 +146,11 @@
         }
     }
 
-    function menuHikayeGonderKaldir() {
-        var link = document.getElementById('headerMenuHikayeGonder');
-        if (link && link.parentNode) link.parentNode.removeChild(link);
-    }
-
-    function menuHikayeGonderGuncelle() {
-        if (!masterMi) {
-            menuHikayeGonderKaldir();
-            return;
-        }
-        if (document.getElementById('headerMenuHikayeGonder')) return;
-        var nav = document.querySelector('.header-menu-nav');
-        if (!nav) return;
-        var link = document.createElement('a');
-        link.href = '/hikaye-gonder';
-        link.className = 'header-menu-link header-menu-link--master';
-        link.id = 'headerMenuHikayeGonder';
-        link.textContent = '✍️ Hikaye gönder';
-        var istat = document.getElementById('headerMenuIstatistik');
-        if (istat && istat.parentNode === nav) {
-            nav.insertBefore(link, istat);
-        } else {
-            nav.appendChild(link);
-        }
+    function eskiMasterMenuTemizle() {
+        ['headerMenuHikayeGonder'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el && el.parentNode) el.parentNode.removeChild(el);
+        });
     }
 
     function menuAdminGonderimKaldir() {
@@ -193,7 +177,7 @@
         link.className = 'header-menu-link header-menu-link--master';
         link.id = 'headerMenuAdminInbox';
         link.textContent = '📥 Gelen kutusu';
-        masterMenuNavEkle(link, 'headerMenuHikayeGonder');
+        masterMenuNavEkle(link, 'headerMenuIstatistik');
     }
 
     function menuIstatistikKaldir() {
@@ -211,11 +195,10 @@
             menuKamikazeKaldir();
             return;
         }
-        var link = document.getElementById('headerMenuKamikaze');
-        if (link) return;
+        if (document.getElementById('headerMenuKamikaze')) return;
         var nav = document.querySelector('.header-menu-nav');
         if (!nav) return;
-        link = document.createElement('a');
+        var link = document.createElement('a');
         link.href = '/kamikaze';
         link.className = 'header-menu-link header-menu-link--master';
         link.id = 'headerMenuKamikaze';
@@ -248,11 +231,13 @@
 
     function menuIstatistikGuncelle() {
         if (!masterMi) {
-            menuHikayeGonderKaldir();
             menuAdminGonderimKaldir();
             menuIstatistikKaldir();
             menuMetrikKaldir();
             menuMudavimKaldir();
+            menuKamikazeKaldir();
+            menuSosyalPaylasKaldir();
+            eskiMasterMenuTemizle();
             return;
         }
         var link = document.getElementById('headerMenuIstatistik');
@@ -313,6 +298,7 @@
         link.id = 'headerMenuMudavim';
         link.textContent = '🏆 Müdavimler';
         masterMenuNavEkle(link, 'headerMenuMetrik');
+        menuKamikazeGuncelle();
     }
 
     function menuUyelerKaldir() {

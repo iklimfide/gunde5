@@ -65,12 +65,12 @@
             '.header-bildirim-oge-zaman{font-size:11px;color:#6b7280;margin-top:4px}' +
             'body.dark-mode .header-bildirim-oge-zaman{color:var(--text-muted)}' +
             '.header-bildirim-bos{padding:20px 12px;text-align:center;font-size:13px;color:#6b7280}' +
-            '.header-bildirim-wrap--yonetim .header-bildirim-panel{position:fixed;inset:0;top:0;right:0;width:100%;max-height:none;border:none;border-radius:0;background:rgba(15,23,42,.48);box-shadow:none;z-index:2400;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}' +
-            'body.dark-mode .header-bildirim-wrap--yonetim .header-bildirim-panel{background:rgba(0,0,0,.62)}' +
-            '.header-bildirim-panel-inner{width:min(480px,100%);max-height:min(560px,85vh);background:#fff;border:1px solid #e5e7eb;border-radius:18px;box-shadow:0 20px 48px rgba(0,0,0,.22);display:flex;flex-direction:column;overflow:hidden}' +
-            'body.dark-mode .header-bildirim-panel-inner{background:var(--bg-card);border-color:var(--border-color)}' +
-            '.header-bildirim-wrap--yonetim .header-bildirim-baslik{padding:14px 16px}' +
-            '.header-bildirim-wrap--yonetim .header-bildirim-liste{max-height:min(460px,65vh)}' +
+            '.header-bildirim-panel--yonetim{position:fixed;inset:0;width:100%;max-height:none;border:none;border-radius:0;background:rgba(15,23,42,.48);box-shadow:none;z-index:2400;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}' +
+            'body.dark-mode .header-bildirim-panel--yonetim{background:rgba(0,0,0,.62)}' +
+            '.header-bildirim-panel--yonetim .header-bildirim-panel-inner{width:min(480px,100%);max-height:min(560px,85vh);background:#fff;border:1px solid #e5e7eb;border-radius:18px;box-shadow:0 20px 48px rgba(0,0,0,.22);display:flex;flex-direction:column;overflow:hidden}' +
+            'body.dark-mode .header-bildirim-panel--yonetim .header-bildirim-panel-inner{background:var(--bg-card);border-color:var(--border-color)}' +
+            '.header-bildirim-panel--yonetim .header-bildirim-baslik{padding:14px 16px}' +
+            '.header-bildirim-panel--yonetim .header-bildirim-liste{max-height:min(460px,65vh)}' +
             'body.bildirim-modal-acik{overflow:hidden}';
         document.head.appendChild(s);
     }
@@ -316,7 +316,7 @@
         btn.addEventListener('click', panelToggle);
 
         var panel = document.createElement('div');
-        panel.className = 'header-bildirim-panel';
+        panel.className = 'header-bildirim-panel' + (yonetimModu ? ' header-bildirim-panel--yonetim' : '');
         panel.id = 'headerBildirimPanel';
         panel.hidden = true;
         panel.setAttribute('role', yonetimModu ? 'dialog' : 'region');
@@ -332,7 +332,9 @@
             '</div>';
 
         wrap.appendChild(btn);
-        wrap.appendChild(panel);
+        /* Yönetim sayfalarında header-sag transform yüzünden fixed panel viewport'a taşmaz; body'ye al. */
+        if (yonetimModu) document.body.appendChild(panel);
+        else wrap.appendChild(panel);
 
         var profil = document.getElementById('headerProfilWrap') || document.getElementById('headerProfilLink');
         if (profil && profil.parentNode === sag) {

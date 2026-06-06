@@ -8,9 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 TARGETS = [
     ROOT / "istatistikler.html",
     ROOT / "metrikler.html",
-    ROOT / "mudavimler.html",
     ROOT / "kamikaze.html",
-    ROOT / "hikaye-gonder.html",
+    ROOT / "mudavimler.html",
     ROOT / "sosyal-paylas.html",
     ROOT / "uyeler.html",
     ROOT / "admin" / "inbox" / "index.html",

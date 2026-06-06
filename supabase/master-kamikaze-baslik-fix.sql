@@ -1,0 +1,3 @@
+-- Kamikaze: baslik alanı RPC cevabına eklendi (eski sürümde yalnızca b = oy puanı vardı).
+-- Supabase SQL Editor'da supabase/master-kamikaze-panel.sql dosyasının tamamını çalıştırın.
+-- JS tarafında REST yedeklemesi de var; SQL güncellenmeden de başlıklar görünür (master oturumu gerekir).

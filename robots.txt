@@ -66,12 +66,10 @@ Disallow: /mudavimler
 Disallow: /mudavimler.html
 Disallow: /uyeler
 Disallow: /uyeler.html
-Disallow: /bulut
-Disallow: /bulut.html
-Disallow: /hikaye-gonder
-Disallow: /hikaye-gonder.html
 Disallow: /kamikaze
 Disallow: /kamikaze.html
+Disallow: /bulut
+Disallow: /bulut.html
 Disallow: /sosyal-paylas
 Disallow: /sosyal-paylas.html
 Disallow: /admin/

@@ -99,6 +99,53 @@
         });
     }
 
+    function ikiHane(n) {
+        return n < 10 ? '0' + n : String(n);
+    }
+
+    /** Yarın 08:00 — varsayılan plan slotu. */
+    function varsayilanPlanDatetimeLocal() {
+        var d = new Date();
+        d.setDate(d.getDate() + 1);
+        d.setHours(8, 0, 0, 0);
+        return d.getFullYear() + '-' + ikiHane(d.getMonth() + 1) + '-' + ikiHane(d.getDate()) +
+            'T' + ikiHane(d.getHours()) + ':' + ikiHane(d.getMinutes());
+    }
+
+    function cinsiyetSubmissiondan(row) {
+        var g = String(row && row.gender || '').toLowerCase();
+        if (g.indexOf('erkek') >= 0) return 'male';
+        return 'female';
+    }
+
+    function datetimeLocalOku(raw) {
+        var metin = String(raw || '').trim();
+        if (!metin) return null;
+        var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/.exec(metin);
+        if (!m) return null;
+        var d = new Date(
+            parseInt(m[1], 10),
+            parseInt(m[2], 10) - 1,
+            parseInt(m[3], 10),
+            parseInt(m[4], 10),
+            parseInt(m[5], 10),
+            m[6] ? parseInt(m[6], 10) : 0,
+            0
+        );
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    function acikModalVar() {
+        var duzenle = document.getElementById('admDuzenleModal');
+        var planla = document.getElementById('admPlanlaModal');
+        return (duzenle && duzenle.classList.contains('acik')) || (planla && planla.classList.contains('acik'));
+    }
+
+    function modallariKapat() {
+        duzenleModalKapat();
+        planlaModalKapat();
+    }
+
     function silOnay(tur) {
         return global.confirm(
             tur === 'mesaj'
@@ -117,7 +164,23 @@
                 toast(sonuc.hata || 'İşlem başarısız', 'hata');
                 return;
             }
-            toast(action === 'delete' ? 'Hikaye silindi.' : 'Güncellendi.');
+            if (action === 'delete') {
+                toast('Hikaye silindi.');
+            } else if (action === 'reject') {
+                toast('Reddedildi.');
+                hikayeDurum = 'rejected';
+                hikayeFiltreKur();
+            } else if (action === 'archive') {
+                toast('Arşivlendi.');
+                hikayeDurum = 'archived';
+                hikayeFiltreKur();
+            } else if (action === 'pending') {
+                toast('Tekrar bekleyene alındı.');
+                hikayeDurum = 'pending';
+                hikayeFiltreKur();
+            } else {
+                toast('Güncellendi.');
+            }
             hikayeListeYukle();
         } catch (e) {
             toast(D.hataMesaji ? D.hataMesaji(e) : String(e), 'hata');
@@ -147,7 +210,10 @@
             modal.classList.remove('acik');
             modal.hidden = true;
         }
-        document.body.style.overflow = '';
+        var planla = document.getElementById('admPlanlaModal');
+        if (!planla || !planla.classList.contains('acik')) {
+            document.body.style.overflow = '';
+        }
     }
 
     function duzenleModalAc(row) {
@@ -166,6 +232,115 @@
         modal.classList.add('acik');
         document.body.style.overflow = 'hidden';
         document.getElementById('admDuzenleIcerik').focus();
+    }
+
+    function planlaModalKapat() {
+        var modal = document.getElementById('admPlanlaModal');
+        if (modal) {
+            modal.classList.remove('acik');
+            modal.hidden = true;
+        }
+        if (!document.getElementById('admDuzenleModal') ||
+            !document.getElementById('admDuzenleModal').classList.contains('acik')) {
+            document.body.style.overflow = '';
+        }
+    }
+
+    function planlaModalAc(row) {
+        var modal = document.getElementById('admPlanlaModal');
+        if (!modal || !row) return;
+        if (row.published_story_id) {
+            toast('Bu gönderi zaten planlandı (#' + row.published_story_id + ').', 'hata');
+            return;
+        }
+        document.getElementById('admPlanlaId').value = row.id || '';
+        document.getElementById('admPlanlaBaslikInput').value = row.title || '';
+        document.getElementById('admPlanlaIcerik').value = row.content || '';
+        var yas = parseInt(row.age, 10);
+        document.getElementById('admPlanlaYas').value = (yas >= 18 && yas <= 120) ? String(yas) : '';
+        document.getElementById('admPlanlaSehir').value = row.city || '';
+        document.getElementById('admPlanlaCinsiyet').value = cinsiyetSubmissiondan(row);
+        document.getElementById('admPlanlaRumuz').value = '';
+        document.getElementById('admPlanlaYayin').value = varsayilanPlanDatetimeLocal();
+        modal.hidden = false;
+        modal.classList.add('acik');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('admPlanlaRumuz').focus();
+    }
+
+    async function planlaKaydet(ev) {
+        ev.preventDefault();
+        var D = db();
+        if (!D || !D.masterSubmissionPlanla) {
+            toast('Planlama hazır değil. Supabase SQL Editor\'da supabase/master-submission-planla.sql dosyasını bir kez çalıştır.', 'hata');
+            return;
+        }
+        var form = ev.target;
+        var btn = document.getElementById('admPlanlaKaydet');
+        var rumuz = (form.username && form.username.value || '').trim();
+        var icerik = (form.content && form.content.value || '').trim();
+        var yas = parseInt(form.age && form.age.value, 10);
+        var planHam = (form.yayin && form.yayin.value || '').trim();
+        var planTarih = datetimeLocalOku(planHam);
+
+        if (rumuz.length < 2) {
+            toast('Rumuz en az 2 karakter olmalı.', 'hata');
+            return;
+        }
+        if (icerik.length < 50) {
+            toast('Hikaye en az 50 karakter olmalı.', 'hata');
+            return;
+        }
+        if (!yas || yas < 18 || yas > 120) {
+            toast('Yaş 18–120 arasında olmalı.', 'hata');
+            return;
+        }
+        if (!planHam || !planTarih) {
+            toast('Geçerli bir yayın tarihi seç.', 'hata');
+            return;
+        }
+
+        var planIso = D.planliTarihIso ? D.planliTarihIso(planHam) : planTarih.toISOString();
+        if (!planIso) {
+            toast('Yayın tarihi okunamadı. Tekrar seç.', 'hata');
+            return;
+        }
+
+        var payload = {
+            id: form.id.value,
+            username: rumuz,
+            age: yas,
+            gender: form.gender ? form.gender.value : 'female',
+            title: (form.title && form.title.value || '').trim(),
+            content: icerik,
+            city: (form.city && form.city.value || '').trim(),
+            created_at: planIso
+        };
+
+        btn.disabled = true;
+        btn.textContent = 'Planlanıyor…';
+        try {
+            var sonuc = await D.masterSubmissionPlanla(payload);
+            if (sonuc && sonuc.ok === false) {
+                toast(sonuc.hata || 'Planlanamadı', 'hata');
+                return;
+            }
+            var hid = sonuc && sonuc.published_story_id;
+            toast(
+                hid
+                    ? 'Planlandı (#' + hid + '). Yayın: ' + planHam.replace('T', ' ')
+                    : 'Planlandı.'
+            );
+            planlaModalKapat();
+            hikayeDurum = 'approved';
+            hikayeFiltreKur();
+            hikayeListeYukle();
+        } catch (e) {
+            toast(D.hataMesaji ? D.hataMesaji(e) : String(e), 'hata');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Planla ve onayla';
+        }
     }
 
     async function duzenleKaydet(ev) {
@@ -215,14 +390,24 @@
         if (row.city) meta += ' · ' + esc(row.city);
         if (row.age) meta += ' · ' + esc(row.age);
         if (row.gender) meta += ' · ' + esc(row.gender);
+        var planliSatir = '';
+        if (row.published_story_id) {
+            planliSatir =
+                '<p class="adm-kart-planli">Planlı hikaye #' + esc(row.published_story_id) +
+                ' · <a href="/kamikaze">Kamikaze\'de düzenle</a></p>';
+        }
+        var planBtn = row.published_story_id
+            ? ''
+            : '<button type="button" class="onay" data-a="planla">Planla…</button>';
         return (
             '<article class="adm-kart" data-id="' + esc(row.id) + '" data-tur="hikaye">' +
             '<div class="adm-kart-baslik">' + baslik + '</div>' +
             '<div class="adm-kart-meta">' + meta + '</div>' +
             '<div class="adm-kart-metin">' + esc(row.content) + '</div>' +
+            planliSatir +
             '<div class="adm-aksiyon">' +
             '<button type="button" class="duzenle" data-a="edit">Düzenle</button>' +
-            '<button type="button" class="onay" data-a="approve">Onayla</button>' +
+            planBtn +
             '<button type="button" class="red" data-a="reject">Reddet</button>' +
             '<button type="button" data-a="archive">Arşivle</button>' +
             '<button type="button" class="sil" data-a="delete">Sil</button>' +
@@ -258,6 +443,10 @@
                 if (tur === 'hikaye') {
                     if (action === 'edit') {
                         duzenleModalAc(hikayeSatirlar[id]);
+                        return;
+                    }
+                    if (action === 'planla') {
+                        planlaModalAc(hikayeSatirlar[id]);
                         return;
                     }
                     hikayeIslem(id, action);
@@ -360,6 +549,23 @@
         });
     }
 
+    function modallariBagla() {
+        duzenleModalBagla();
+        var planlaModal = document.getElementById('admPlanlaModal');
+        var planlaKapat = document.getElementById('admPlanlaKapat');
+        var planlaForm = document.getElementById('admPlanlaForm');
+        if (planlaKapat) planlaKapat.addEventListener('click', planlaModalKapat);
+        if (planlaModal) {
+            planlaModal.addEventListener('click', function (e) {
+                if (e.target === planlaModal) planlaModalKapat();
+            });
+        }
+        if (planlaForm) planlaForm.addEventListener('submit', planlaKaydet);
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && acikModalVar()) modallariKapat();
+        });
+    }
+
     function duzenleModalBagla() {
         var modal = document.getElementById('admDuzenleModal');
         var kapat = document.getElementById('admDuzenleKapat');
@@ -371,9 +577,6 @@
             });
         }
         if (form) form.addEventListener('submit', duzenleKaydet);
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') duzenleModalKapat();
-        });
     }
 
     function yetkisizGoster() {
@@ -387,7 +590,7 @@
         var D = db();
         if (!D || !D.init) return;
         await D.init();
-        duzenleModalBagla();
+        modallariBagla();
         sekmeBagla();
         if (global.Gunde5UI && Gunde5UI.guncelleHeaderOturum) {
             Gunde5UI.guncelleHeaderOturum();

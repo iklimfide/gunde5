@@ -17,7 +17,6 @@
     { "source": "/metrikler.html", "destination": "/metrikler" },
     { "source": "/mudavimler.html", "destination": "/mudavimler" },
     { "source": "/uyeler.html", "destination": "/uyeler" },
-    { "source": "/kamikaze.html", "destination": "/kamikaze" },
     { "source": "/404.html", "destination": "/404" },
     { "source": "/admin-submissions.html", "destination": "/admin/inbox?tab=hikaye" },
     { "source": "/admin-messages.html", "destination": "/admin/inbox?tab=mesaj" },

@@ -68,15 +68,19 @@
         .adm-rad-grup { display:flex; flex-wrap:wrap; gap:8px; }
         .adm-rad { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; padding:8px 10px; border:1px solid var(--border-color); border-radius:999px; cursor:pointer; }
         .adm-duzenle-kaydet { width:100%; padding:12px; border:none; border-radius:12px; background:#1d9bf0; color:#fff; font-size:15px; font-weight:800; cursor:pointer; margin-top:8px; }
+        .adm-planla-not { font-size:12px; color:var(--text-muted); line-height:1.45; margin-bottom:12px; }
+        .adm-planla-kaydet { background:#16a34a; }
+        .adm-kart-planli { font-size:12px; color:#166534; font-weight:700; margin-top:8px; }
+        body.dark-mode .adm-kart-planli { color:#86efac; }
     </style>
     <script src="/js/gunde5-shell.js"></script>
     <script src="/js/gunde5-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
     <script src="/js/gunde5-ui.js"></script>
-    <script src="/js/gunde5-db.js?v=27"></script>
+    <script src="/js/gunde5-db.js?v=40"></script>
     <script src="/js/gunde5-bildirim.js?v=2"></script>
-    <script src="/js/gunde5-master.js"></script>
-    <script src="/js/gunde5-admin-inbox.js?v=1"></script>
+    <script src="/js/gunde5-master.js?v=2"></script>
+    <script src="/js/gunde5-admin-inbox.js?v=4"></script>
     <link rel="stylesheet" href="../../css/gunde5-topbar.css?v=1">
     <link rel="stylesheet" href="/css/master-panel.css?v=2">
 </head>
@@ -154,6 +158,51 @@
                     </div>
                 </div>
                 <button type="submit" class="adm-duzenle-kaydet" id="admDuzenleKaydet">Kaydet</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="adm-duzenle-modal" id="admPlanlaModal" hidden>
+        <div class="adm-duzenle-panel" role="dialog" aria-labelledby="admPlanlaBaslik">
+            <div class="adm-duzenle-baslik">
+                <h2 id="admPlanlaBaslik">Planla ve onayla</h2>
+                <button type="button" class="adm-duzenle-kapat" id="admPlanlaKapat" aria-label="Kapat">✕</button>
+            </div>
+            <p class="adm-planla-not">Yayın tarihi zorunlu. Hikaye o ana kadar sitede görünmez. Günde5 ritmine uygun bir sabah saati seç.</p>
+            <form id="admPlanlaForm">
+                <input type="hidden" id="admPlanlaId" name="id">
+                <div class="adm-alan">
+                    <label for="admPlanlaRumuz">Rumuz *</label>
+                    <input type="text" id="admPlanlaRumuz" name="username" maxlength="50" required autocomplete="off" placeholder="En az 2 karakter">
+                </div>
+                <div class="adm-alan">
+                    <label for="admPlanlaBaslikInput">Başlık</label>
+                    <input type="text" id="admPlanlaBaslikInput" name="title" maxlength="120" autocomplete="off">
+                </div>
+                <div class="adm-alan">
+                    <label for="admPlanlaIcerik">Hikaye metni *</label>
+                    <textarea id="admPlanlaIcerik" name="content" required minlength="50" maxlength="12000"></textarea>
+                </div>
+                <div class="adm-alan">
+                    <label for="admPlanlaYas">Yaş *</label>
+                    <input type="number" id="admPlanlaYas" name="age" min="18" max="120" required inputmode="numeric" placeholder="18–120">
+                </div>
+                <div class="adm-alan">
+                    <label for="admPlanlaSehir">Şehir</label>
+                    <input type="text" id="admPlanlaSehir" name="city" maxlength="80" autocomplete="off">
+                </div>
+                <div class="adm-alan">
+                    <label for="admPlanlaCinsiyet">Cinsiyet *</label>
+                    <select id="admPlanlaCinsiyet" name="gender" required>
+                        <option value="female">Kadın</option>
+                        <option value="male">Erkek</option>
+                    </select>
+                </div>
+                <div class="adm-alan">
+                    <label for="admPlanlaYayin">Yayın tarihi ve saati *</label>
+                    <input type="datetime-local" id="admPlanlaYayin" name="yayin" step="60" required>
+                </div>
+                <button type="submit" class="adm-duzenle-kaydet adm-planla-kaydet" id="admPlanlaKaydet">Planla ve onayla</button>
             </form>
         </div>
     </div>

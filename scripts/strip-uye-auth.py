@@ -58,12 +58,6 @@ def main():
             "function openAuthModal() { window.location.href = '/bulut'; }",
             text,
         )
-        if path.name in ("hikaye-gonder.html", "kamikaze.html") and "function openAuthModal" not in text:
-            text = text.replace(
-                "function guncelleHeaderOturum()",
-                OPEN_AUTH_STUB + "\n        function guncelleHeaderOturum()",
-                1,
-            )
         if text != orig:
             path.write_text(text, encoding="utf-8")
             print("updated", path.name)

@@ -130,6 +130,41 @@
         return m;
     }
 
+    function ikiHanePlan(n) {
+        return n < 10 ? '0' + n : String(n);
+    }
+
+    /** datetime-local / Date / ISO → Istanbul duvar saati (+03:00). */
+    function planliTarihIso(val) {
+        if (val == null) return null;
+        var d;
+        if (val instanceof Date) {
+            d = val;
+        } else {
+            var raw = String(val).replace(/^\s+|\s+$/g, '');
+            if (!raw) return null;
+            var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/.exec(raw);
+            if (m) {
+                d = new Date(
+                    parseInt(m[1], 10),
+                    parseInt(m[2], 10) - 1,
+                    parseInt(m[3], 10),
+                    parseInt(m[4], 10),
+                    parseInt(m[5], 10),
+                    m[6] ? parseInt(m[6], 10) : 0,
+                    0
+                );
+            } else {
+                var ms = Date.parse(raw);
+                if (isNaN(ms)) return null;
+                d = new Date(ms);
+            }
+        }
+        if (isNaN(d.getTime())) return null;
+        return d.getFullYear() + '-' + ikiHanePlan(d.getMonth() + 1) + '-' + ikiHanePlan(d.getDate()) +
+            'T' + ikiHanePlan(d.getHours()) + ':' + ikiHanePlan(d.getMinutes()) + ':00+03:00';
+    }
+
     function hataMesaji(err) {
         if (!err) return 'Bir hata oluştu.';
         var http403 = err.status === 403 || err.statusCode === 403 ||
@@ -204,6 +239,12 @@
             (msg.indexOf('bilinmeyen') >= 0 || msg.indexOf('gecersiz') >= 0)) {
             return 'Kart meta düzenleme için supabase/master-hikaye-kart-meta.sql dosyasını çalıştırın.';
         }
+        if (msg.indexOf('bilinmeyen islem') >= 0 && msg.indexOf('yayin') >= 0) {
+            return 'Planlama tarihi için supabase/master-hikaye-yayin-tarihi.sql dosyasını Supabase SQL Editor\'da çalıştırın.';
+        }
+        if (msg.indexOf('Planlı hikaye kaydı') >= 0 || msg.indexOf('planli hikaye') >= 0) {
+            return msg;
+        }
         if (msg.indexOf('master_hikaye_ekle') >= 0 &&
             (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
             return 'Master hikaye ekleme kurulmamış. Supabase SQL Editor\'da supabase/itiraf-hikaye-yaz-kurulum.sql dosyasını bir kez çalıştırın.';
@@ -211,6 +252,10 @@
         if (msg.indexOf('invalid input syntax for type timestamp') >= 0 ||
             msg.indexOf('gecersiz yayin tarihi') >= 0) {
             return 'Yayın tarihi geçersiz. Tarih/saat alanını temizleyip tekrar seçin.';
+        }
+        if (msg.indexOf('master_submission_planla') >= 0 &&
+            (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
+            return 'Gelen kutusu planlama kurulmamış. Supabase SQL Editor\'da supabase/master-submission-planla.sql dosyasını bir kez çalıştırın.';
         }
         if ((msg.indexOf('footer_gonder_') >= 0 || msg.indexOf('master_submissions') >= 0 ||
                 msg.indexOf('master_submission_guncelle') >= 0 ||
@@ -1080,9 +1125,10 @@
         var rpcPromise = sb.rpc(fn, { p_body: body || {} });
         var res;
         if (timeoutMs > 0) {
+            var sn = Math.max(1, Math.round(timeoutMs / 1000));
             var timeoutPromise = new Promise(function (_, reject) {
                 setTimeout(function () {
-                    reject(new Error('Sunucu yanıt vermedi (20 sn). Sayfayı yenileyip tekrar dene.'));
+                    reject(new Error('Sunucu yanıt vermedi (' + sn + ' sn). Sayfayı yenileyip tekrar dene.'));
                 }, timeoutMs);
             });
             res = await Promise.race([rpcPromise, timeoutPromise]);
@@ -1106,6 +1152,27 @@
         return res.data || { master: false };
     }
 
+    async function masterHikayeYayinTarihiYerel(b) {
+        await init();
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var id = b.itiraf_id != null ? b.itiraf_id : b.hikaye_id;
+        if (!id) throw new Error('Hikaye id gerekli');
+        var iso = planliTarihIso(b.created_at);
+        if (!iso) {
+            throw new Error('Yayın tarihi geçersiz. Tarih/saat alanını temizleyip tekrar seçin.');
+        }
+        var res = await supabaseRace(
+            sb.from('itiraflar').update({ created_at: iso }).eq('id', id)
+                .select('id,status,is_gizli,silindi_at,up_votes,down_votes,content_full,content_short,baslik,username,age,gender,yasadigi_yer,yurtdisi_sehir,created_at')
+                .single(),
+            12000,
+            'Yayın tarihi kaydı zaman aşımına uğradı (12 sn). Tekrar dene.'
+        );
+        if (res.error) throw res.error;
+        return { ok: true, hikaye: res.data };
+    }
+
     async function masterHikayeIslem(body) {
         var b = Object.assign({}, body || {});
         if (b.itiraf_id == null && b.hikaye_id != null) {
@@ -1115,7 +1182,39 @@
         if (b.content_full != null) {
             b.content_full = metinPerdele(String(b.content_full).replace(/^\s+|\s+$/g, ''));
         }
-        return masterRpc('master_hikaye_islem', b);
+        var islem = String(b.islem || '').toLowerCase();
+        if (islem === 'yayin_tarihi' && b.created_at != null) {
+            var planIso = planliTarihIso(b.created_at);
+            if (!planIso) {
+                throw new Error('Yayın tarihi geçersiz. Tarih/saat alanını temizleyip tekrar seçin.');
+            }
+            b.created_at = planIso;
+        }
+        try {
+            var sonuc = await masterRpc('master_hikaye_islem', b, { timeoutMs: 15000 });
+            if (sonuc && sonuc.ok === false && islem === 'yayin_tarihi') {
+                var h = String(sonuc.hata || '').toLowerCase();
+                if (h.indexOf('bilinmeyen') >= 0) {
+                    return masterHikayeYayinTarihiYerel(b);
+                }
+            }
+            return sonuc;
+        } catch (e) {
+            if (islem === 'yayin_tarihi') {
+                return masterHikayeYayinTarihiYerel(b);
+            }
+            throw e;
+        }
+    }
+
+    async function supabaseRace(promise, timeoutMs, mesaj) {
+        var ms = timeoutMs != null ? timeoutMs : 12000;
+        var timeoutPromise = new Promise(function (_, reject) {
+            setTimeout(function () {
+                reject(new Error(mesaj || 'Sunucu yanıt vermedi. Tekrar dene.'));
+            }, ms);
+        });
+        return Promise.race([promise, timeoutPromise]);
     }
 
     async function masterHikayeEkle(body) {
@@ -1170,31 +1269,59 @@
         };
         if (baslikMetin) kayit.baslik = baslikMetin;
 
+        var planIso = null;
         if (b.created_at != null && String(b.created_at).replace(/^\s+|\s+$/g, '') !== '') {
-            var planMs = Date.parse(String(b.created_at).trim());
-            if (isNaN(planMs)) {
+            planIso = planliTarihIso(b.created_at);
+            if (!planIso) {
                 throw new Error('Yayın tarihi geçersiz. Tarih/saat alanını temizleyip tekrar seçin.');
             }
-            kayit.created_at = new Date(planMs).toISOString();
+            kayit.created_at = planIso;
         }
 
-        var res = await sb.from('itiraflar').insert(kayit).select('*').single();
-        if (res.error) {
-            if (res.error.code === '42501') {
-                var rpcBody = Object.assign({}, b, {
-                    username: rumuz,
-                    age: yas,
-                    gender: cinsiyet,
-                    yasadigi_yer: yer || null,
-                    yurtdisi_sehir: yurtdisi || null,
-                    content_full: tam
-                });
-                if (baslikMetin) rpcBody.baslik = baslikMetin;
-                if (kayit.created_at) rpcBody.created_at = kayit.created_at;
-                return masterRpc('master_hikaye_ekle', rpcBody, { timeoutMs: 20000 });
+        var rpcBody = {
+            username: rumuz,
+            age: yas,
+            gender: cinsiyet,
+            yasadigi_yer: yer || null,
+            yurtdisi_sehir: yurtdisi || null,
+            content_full: tam
+        };
+        if (baslikMetin) rpcBody.baslik = baslikMetin;
+        if (planIso) rpcBody.created_at = planIso;
+
+        /* Planlı: yalnızca RPC — PostgREST insert+created_at bazı kurulumlarda yanıt vermiyor. */
+        if (planIso) {
+            var rpcPlan = await masterRpc('master_hikaye_ekle', rpcBody, { timeoutMs: 20000 });
+            if (rpcPlan && rpcPlan.ok === true) return rpcPlan;
+            if (rpcPlan && rpcPlan.ok === false) {
+                throw new Error(rpcPlan.hata || 'Kayıt başarısız');
             }
-            throw res.error;
+            if (rpcPlan && rpcPlan.hikaye) return { ok: true, hikaye: rpcPlan.hikaye };
+            throw new Error(
+                'Planlı hikaye kaydı başarısız. Supabase SQL Editor\'da supabase/itiraf-hikaye-yaz-kurulum.sql dosyasını çalıştırın.'
+            );
         }
+
+        try {
+            var rpcSonuc = await masterRpc('master_hikaye_ekle', rpcBody, { timeoutMs: 15000 });
+            if (rpcSonuc && rpcSonuc.ok === true) return rpcSonuc;
+            if (rpcSonuc && rpcSonuc.ok === false) {
+                throw new Error(rpcSonuc.hata || 'Kayıt başarısız');
+            }
+            if (rpcSonuc && rpcSonuc.hikaye) return { ok: true, hikaye: rpcSonuc.hikaye };
+        } catch (rpcErr) {
+            var kod = rpcErr && rpcErr.code;
+            if (kod && kod !== 'PGRST202' && kod !== '42501' && String(rpcErr.message || '').indexOf('yanıt vermedi') < 0) {
+                throw rpcErr;
+            }
+        }
+
+        var res = await supabaseRace(
+            sb.from('itiraflar').insert(kayit).select('*').single(),
+            12000,
+            'Kayıt zaman aşımına uğradı (12 sn). Tekrar dene.'
+        );
+        if (res.error) throw res.error;
 
         return { ok: true, hikaye: res.data };
     }
@@ -1246,6 +1373,73 @@
         return masterRpc('master_uye_guncelle', body);
     }
 
+    var KAMIKAZE_ARA_SELECT =
+        'id,status,username,baslik,age,gender,yasadigi_yer,yurtdisi_sehir,is_gizli,silindi_at,' +
+        'up_votes,down_votes,tekil_goruntulenme,sayfa_goruntulenme,podyum_donem,podyum_sira,created_at,content_full,content_short';
+
+    function kamikazeSatirdaBaslikAlaniYok(row) {
+        return !!(row && !Object.prototype.hasOwnProperty.call(row, 'baslik'));
+    }
+
+    function kamikazeSatirOnizleme(r) {
+        var k = Object.assign({}, r);
+        k.onizleme = String(k.content_full || k.content_short || '').slice(0, 120);
+        return k;
+    }
+
+    async function masterKamikazePanelYerel(limit) {
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var lim = limit || 150;
+        var res = await sb
+            .from('itiraflar')
+            .select(KAMIKAZE_ARA_SELECT)
+            .order('created_at', { ascending: false })
+            .limit(lim);
+        if (res.error) throw res.error;
+        return {
+            ok: true,
+            son_hikayeler: (res.data || []).map(kamikazeSatirOnizleme)
+        };
+    }
+
+    /** Durum filtresi — panel yalnızca son N kayıt döndürdüğü için filtrede tam liste REST ile. */
+    async function masterKamikazeListe(filtre, limit) {
+        await init();
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var kod = filtre || 'hepsi';
+        var lim = limit || (kod === 'index' ? 250 : kod === 'podyum' ? 200 : 150);
+        var simdi = new Date().toISOString();
+        var q = sb.from('itiraflar').select(KAMIKAZE_ARA_SELECT);
+
+        if (kod === 'silinen') {
+            q = q.or('silindi_at.not.is.null,status.eq.silindi');
+        } else {
+            q = q.is('silindi_at', null).neq('status', 'silindi');
+            if (kod === 'podyum') {
+                q = q.eq('status', 'podyum');
+            } else if (kod === 'gizli') {
+                q = q.eq('is_gizli', true);
+            } else if (kod === 'planli') {
+                q = q.eq('status', 'kulis').gt('created_at', simdi);
+            } else if (kod === 'index') {
+                q = q
+                    .neq('status', 'podyum')
+                    .or('is_gizli.is.null,is_gizli.eq.false')
+                    .lte('created_at', simdi);
+            }
+        }
+
+        var res = await q.order('created_at', { ascending: false }).limit(lim);
+        if (res.error) throw res.error;
+        return {
+            ok: true,
+            filtre: kod,
+            hikayeler: (res.data || []).map(kamikazeSatirOnizleme)
+        };
+    }
+
     async function masterKamikazePanel() {
         await init();
         var sb = getClient();
@@ -1256,15 +1450,77 @@
         }
         var res = await sb.rpc('master_kamikaze_panel');
         if (res.error) throw res.error;
-        return res.data || { ok: false };
+        var data = res.data || { ok: false };
+        var liste = data && data.son_hikayeler;
+        if (data.ok && Array.isArray(liste) && liste.some(kamikazeSatirdaBaslikAlaniYok)) {
+            try {
+                var fb = await masterKamikazePanelYerel(150);
+                if (fb.ok) data.son_hikayeler = fb.son_hikayeler;
+            } catch (eFb) { /* RPC listesi kalsın */ }
+        }
+        return data;
     }
 
     async function masterKamikazeAra(q, limit) {
         await init();
-        return masterRpc('master_kamikaze_ara', {
-            q: q != null ? q : '',
-            limit: limit || 40
+        var lim = limit || 40;
+        try {
+            var sonuc = await masterRpc('master_kamikaze_ara', {
+                q: q != null ? q : '',
+                limit: lim
+            }, { timeoutMs: 12000 });
+            if (sonuc && sonuc.ok === false) {
+                return masterKamikazeAraYerel(q, lim);
+            }
+            if (sonuc && sonuc.ok && Array.isArray(sonuc.hikayeler) &&
+                    sonuc.hikayeler.some(kamikazeSatirdaBaslikAlaniYok)) {
+                return masterKamikazeAraYerel(q, lim);
+            }
+            return sonuc;
+        } catch (e) {
+            return masterKamikazeAraYerel(q, lim);
+        }
+    }
+
+    /** RPC yok/hata — doğrudan REST (RLS select all; ~100 hikaye için yeterli). */
+    async function masterKamikazeAraYerel(q, limit) {
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var raw = String(q != null ? q : '').trim();
+        var lim = limit || 40;
+        if (!raw) {
+            return { ok: true, q: '', hikayeler: [], sayilar: { hikayeler: 0 } };
+        }
+        if (raw.length < 2 && !/^[0-9]+$/.test(raw)) {
+            return { ok: false, hata: 'en az 2 karakter' };
+        }
+        var rows;
+        if (/^[0-9]+$/.test(raw)) {
+            var idRes = await sb.from('itiraflar').select(KAMIKAZE_ARA_SELECT).eq('id', parseInt(raw, 10)).limit(1);
+            if (idRes.error) throw idRes.error;
+            rows = idRes.data || [];
+        } else {
+            var p = '%' + raw.replace(/[%_\\]/g, '') + '%';
+            var res = await sb
+                .from('itiraflar')
+                .select(KAMIKAZE_ARA_SELECT)
+                .or(
+                    'username.ilike.' + p +
+                    ',baslik.ilike.' + p +
+                    ',content_full.ilike.' + p +
+                    ',content_short.ilike.' + p
+                )
+                .order('created_at', { ascending: false })
+                .limit(lim);
+            if (res.error) throw res.error;
+            rows = res.data || [];
+        }
+        rows = rows.map(function (r) {
+            var k = Object.assign({}, r);
+            k.onizleme = String(k.content_full || k.content_short || '').slice(0, 200);
+            return k;
         });
+        return { ok: true, q: raw, hikayeler: rows, sayilar: { hikayeler: rows.length } };
     }
 
     async function masterKamikazeHikayeDetay(hikayeId) {
@@ -1273,7 +1529,17 @@
         if (!id) {
             return { ok: false, hata: 'hikaye_id gerekli' };
         }
-        return masterRpc('master_kamikaze_hikaye_detay', { hikaye_id: id });
+        var sonuc = await masterRpc('master_kamikaze_hikaye_detay', { hikaye_id: id });
+        if (sonuc && sonuc.ok && sonuc.hikaye && kamikazeSatirdaBaslikAlaniYok(sonuc.hikaye)) {
+            var sb = getClient();
+            if (sb) {
+                var det = await sb.from('itiraflar').select(KAMIKAZE_ARA_SELECT).eq('id', id).maybeSingle();
+                if (!det.error && det.data) {
+                    sonuc.hikaye = Object.assign({}, sonuc.hikaye, det.data);
+                }
+            }
+        }
+        return sonuc;
     }
 
     async function masterOyIslem(body) {
@@ -2069,6 +2335,10 @@
         return masterRpc('master_submission_guncelle', body || {});
     }
 
+    async function masterSubmissionPlanla(body) {
+        return masterRpc('master_submission_planla', body || {});
+    }
+
     async function masterMessagesListele(opts) {
         return masterRpc('master_messages_listele', opts || {});
     }
@@ -2605,6 +2875,7 @@
         masterSubmissionsListele: masterSubmissionsListele,
         masterSubmissionIslem: masterSubmissionIslem,
         masterSubmissionGuncelle: masterSubmissionGuncelle,
+        masterSubmissionPlanla: masterSubmissionPlanla,
         masterMessagesListele: masterMessagesListele,
         masterMessageIslem: masterMessageIslem,
         masterBildirimleriListele: masterBildirimleriListele,
@@ -2690,6 +2961,7 @@
         masterUyeIcerik: masterUyeIcerik,
         masterCevapIslem: masterCevapIslem,
         masterKamikazePanel: masterKamikazePanel,
+        masterKamikazeListe: masterKamikazeListe,
         masterKamikazeAra: masterKamikazeAra,
         masterKamikazeHikayeDetay: masterKamikazeHikayeDetay,
         masterOyIslem: masterOyIslem,
@@ -2703,6 +2975,7 @@
         PODYUM_BANNER_UST_ETIKET: PODYUM_BANNER_UST_ETIKET,
         podyumDonemTarihSatir: podyumDonemTarihSatir,
         podyumDonemAltSatir: podyumDonemAltSatir,
+        planliTarihIso: planliTarihIso,
         hataMesaji: hataMesaji
     };
 

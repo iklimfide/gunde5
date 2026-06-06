@@ -32,18 +32,6 @@
       ]
     },
     {
-      "source": "/kamikaze",
-      "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
-      ]
-    },
-    {
-      "source": "/kamikaze.html",
-      "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
-      ]
-    },
-    {
       "source": "/mudavimler",
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
@@ -51,18 +39,6 @@
     },
     {
       "source": "/mudavimler.html",
-      "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
-      ]
-    },
-    {
-      "source": "/hikaye-gonder",
-      "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
-      ]
-    },
-    {
-      "source": "/hikaye-gonder.html",
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
       ]
@@ -182,6 +158,18 @@
       ]
     },
     {
+      "source": "/kamikaze",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/kamikaze.html",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
       "source": "/h/:path*",
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
@@ -206,8 +194,9 @@
     { "source": "/mudavimler.html", "destination": "/mudavimler", "permanent": true },
     { "source": "/uyeler.html", "destination": "/uyeler", "permanent": true },
     { "source": "/kamikaze.html", "destination": "/kamikaze", "permanent": true },
+    { "source": "/hikaye-gonder", "destination": "/admin/inbox?tab=hikaye", "permanent": true },
+    { "source": "/hikaye-gonder.html", "destination": "/admin/inbox?tab=hikaye", "permanent": true },
     { "source": "/sosyal-paylas.html", "destination": "/sosyal-paylas", "permanent": true },
-    { "source": "/hikaye-gonder.html", "destination": "/hikaye-gonder", "permanent": true },
     { "source": "/admin-submissions.html", "destination": "/admin/inbox?tab=hikaye", "permanent": true },
     { "source": "/admin-messages.html", "destination": "/admin/inbox?tab=mesaj", "permanent": true },
     { "source": "/admin/submissions", "destination": "/admin/inbox?tab=hikaye", "permanent": true },
