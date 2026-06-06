@@ -1,5 +1,6 @@
 /**
  * robots.txt — yalnızca anasayfa indexlensin; diğer yollar Disallow.
+ * Paylaşım önizlemesi botları (/h/, /api/og) için istisna.
  * generate-sitemap.js ile aynı build adımında çalışır.
  */
 const fs = require('fs');
@@ -43,12 +44,37 @@ var DISALLOW = [
     '/404.html'
 ];
 
+/** X/Telegram/FB kart botları — robots Disallow olsa da /h/ okuyabilsin. */
+var ONIZLEME_BOTLARI = [
+    'Twitterbot',
+    'facebookexternalhit',
+    'Facebot',
+    'LinkedInBot',
+    'TelegramBot',
+    'WhatsApp',
+    'Slackbot',
+    'Discordbot',
+    'Pinterest'
+];
+
+var ONIZLEME_IZIN = ['/h/', '/itiraf/', '/api/og'];
+
 var lines = [
     '# gunde5.com — otomatik uretim; yayinda: yalnizca anasayfa',
-    'User-agent: *',
-    'Allow: /',
-    ''
+    '# Paylasim onizleme botlari /h/ ve OG gorselini tarayabilir (Google index degil).'
 ];
+
+ONIZLEME_BOTLARI.forEach(function (bot) {
+    lines.push('User-agent: ' + bot);
+    ONIZLEME_IZIN.forEach(function (p) {
+        lines.push('Allow: ' + p);
+    });
+    lines.push('');
+});
+
+lines.push('User-agent: *');
+lines.push('Allow: /');
+lines.push('');
 
 DISALLOW.forEach(function (p) {
     lines.push('Disallow: ' + p);
@@ -60,4 +86,4 @@ lines.push('');
 
 var out = path.join(__dirname, '..', 'robots.txt');
 fs.writeFileSync(out, lines.join('\n'), 'utf8');
-console.log('robots.txt yazildi (' + DISALLOW.length + ' Disallow).');
+console.log('robots.txt yazildi (' + ONIZLEME_BOTLARI.length + ' onizleme botu, ' + DISALLOW.length + ' Disallow).');

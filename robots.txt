@@ -1,4 +1,50 @@
 # gunde5.com — otomatik uretim; yayinda: yalnizca anasayfa
+# Paylasim onizleme botlari /h/ ve OG gorselini tarayabilir (Google index degil).
+User-agent: Twitterbot
+Allow: /h/
+Allow: /itiraf/
+Allow: /api/og
+
+User-agent: facebookexternalhit
+Allow: /h/
+Allow: /itiraf/
+Allow: /api/og
+
+User-agent: Facebot
+Allow: /h/
+Allow: /itiraf/
+Allow: /api/og
+
+User-agent: LinkedInBot
+Allow: /h/
+Allow: /itiraf/
+Allow: /api/og
+
+User-agent: TelegramBot
+Allow: /h/
+Allow: /itiraf/
+Allow: /api/og
+
+User-agent: WhatsApp
+Allow: /h/
+Allow: /itiraf/
+Allow: /api/og
+
+User-agent: Slackbot
+Allow: /h/
+Allow: /itiraf/
+Allow: /api/og
+
+User-agent: Discordbot
+Allow: /h/
+Allow: /itiraf/
+Allow: /api/og
+
+User-agent: Pinterest
+Allow: /h/
+Allow: /itiraf/
+Allow: /api/og
+
 User-agent: *
 Allow: /
 
