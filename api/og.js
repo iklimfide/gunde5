@@ -1,79 +1,324 @@
 import { ImageResponse } from '@vercel/og';
-import { itirafGetir, metinKisalt } from './_lib/itiraf-fetch.js';
-import { OG_DESCRIPTION, OG_TITLE } from './_lib/og-brand.js';
+import { itirafGetir, itirafAyniGunEs, metinKisalt, metinKisaltKart } from './_lib/itiraf-fetch.js';
+import { OG_DESCRIPTION } from './_lib/og-brand.js';
 
 export const config = { runtime: 'edge' };
 
 var FONT =
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+var METIN_LIMIT = 140;
+var CTA = '\uD83D\uDCCC Devam\u0131n\u0131 REKLAMSIZ ve \u00DCCRETS\u0130Z oku';
+var BOYUT = { width: 1200, height: 630 };
+
+var OLCEK_IKILI = {
+    kartW: 586,
+    kartH: 614,
+    ustSerit: 22,
+    altSerit: 24,
+    rumuz: 32,
+    metin: 23,
+    cta: 26,
+    avatar: 54,
+    avatarFont: 26,
+    marka: 14,
+    filigran: 130,
+    padX: 18,
+    padY: 16,
+    govdeH: 480
+};
+
+var OLCEK_TEK = {
+    kartW: 1200,
+    kartH: 630,
+    ustSerit: 28,
+    altSerit: 28,
+    rumuz: 46,
+    metin: 34,
+    cta: 34,
+    avatar: 72,
+    avatarFont: 36,
+    marka: 22,
+    filigran: 200,
+    padX: 40,
+    padY: 24,
+    govdeH: 500
+};
 
 function cinsTema(cins) {
     if (cins === 'male') {
         return {
-            kartBg: '#eff6ff',
-            border: '#bfdbfe',
-            accent: '#2563eb',
-            avatarBg: '#2563eb',
-            simge: '\u2642'
+            bg: 'linear-gradient(165deg, #7eb0e8 0%, #5b8fd9 48%, #4a7bc8 100%)',
+            serit: 'rgba(0, 0, 0, 0.28)',
+            simge: '\uD83D\uDC68'
         };
     }
     return {
-        kartBg: '#fff1f2',
-        border: '#fecdd3',
-        accent: '#db2777',
-        avatarBg: '#db2777',
-        simge: '\u2640'
+        bg: 'linear-gradient(165deg, #f0a4b8 0%, #e8879c 48%, #d97088 100%)',
+        serit: 'rgba(0, 0, 0, 0.22)',
+        simge: '\uD83D\uDC69'
     };
 }
 
-function markaSatir() {
+function temaEmoji(metin) {
+    var t = String(metin || '').toLowerCase();
+    if (/bavul|valiz|gurbet|yurtd|almanya|uçak|havaliman/.test(t)) return '\uD83E\uDDF3';
+    if (/asansör|apartman|kat/.test(t)) return '\uD83D\uDED7';
+    if (/mum|karanlık|elektrik/.test(t)) return '\uD83D\uDD6F';
+    if (/kahve|çay|latte/.test(t)) return '\u2615';
+    if (/aşk|sevgil|flört|aldat/.test(t)) return '\u2764\uFE0F';
+    if (/komik|gül|kahkaha/.test(t)) return '\uD83D\uDE04';
+    if (/okul|sınav|üniversite|öğretmen/.test(t)) return '\uD83D\uDCDA';
+    if (/iş|patron|mesai|maaş|ofis/.test(t)) return '\uD83D\uDCBC';
+    if (/aile|anne|baba|kardeş/.test(t)) return '\uD83C\uDFE0';
+    if (/evlilik|düğün|nişan/.test(t)) return '\uD83D\uDC8D';
+    return '\uD83D\uDCAC';
+}
+
+function rumuzBaslik(rumuz, yas) {
+    var ad = String(rumuz || 'Anonim').trim();
+    if (yas) return ad + ' (' + yas + ')';
+    return ad;
+}
+
+function ozetMetin(kaynak) {
+    return metinKisaltKart(String(kaynak || ''), METIN_LIMIT);
+}
+
+function hikayeKart(rumuz, ozet, yas, cins, filigranEmoji, olcek) {
+    var o = olcek || OLCEK_TEK;
+    var tema = cinsTema(cins);
+    var baslik = rumuzBaslik(rumuz, yas);
+
     return {
         type: 'div',
         props: {
             style: {
+                width: o.kartW,
+                height: o.kartH,
                 display: 'flex',
-                alignItems: 'center',
-                fontSize: 26,
-                fontWeight: 800,
-                letterSpacing: '-0.02em',
-                color: '#6b7280'
+                flexDirection: 'column',
+                background: tema.bg,
+                fontFamily: FONT,
+                color: '#ffffff',
+                flexShrink: 0
             },
             children: [
-                { type: 'span', props: { children: 'gunde' } },
                 {
-                    type: 'span',
-                    props: { style: { color: '#ef4444' }, children: '5' }
+                    type: 'div',
+                    props: {
+                        style: {
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '100%',
+                            backgroundColor: tema.serit,
+                            color: '#ffffff',
+                            fontSize: o.ustSerit,
+                            fontWeight: 700,
+                            padding: '10px 12px',
+                            flexShrink: 0
+                        },
+                        children: 'gunde5.com | ' + rumuz
+                    }
                 },
-                { type: 'span', props: { children: '.com' } }
+                {
+                    type: 'div',
+                    props: {
+                        style: {
+                            position: 'relative',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            flexGrow: 1,
+                            width: '100%',
+                            height: o.govdeH,
+                            padding: o.padY + 'px ' + o.padX + 'px 12px',
+                            overflow: 'hidden'
+                        },
+                        children: [
+                            {
+                                type: 'div',
+                                props: {
+                                    style: {
+                                        position: 'absolute',
+                                        top: 8,
+                                        right: o.padX,
+                                        fontSize: o.marka,
+                                        fontWeight: 700,
+                                        color: 'rgba(255, 255, 255, 0.42)'
+                                    },
+                                    children: 'gunde5.com'
+                                }
+                            },
+                            {
+                                type: 'div',
+                                props: {
+                                    style: {
+                                        position: 'absolute',
+                                        top: '56%',
+                                        left: '50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        fontSize: o.filigran,
+                                        opacity: 0.14,
+                                        display: 'flex'
+                                    },
+                                    children: filigranEmoji
+                                }
+                            },
+                            {
+                                type: 'div',
+                                props: {
+                                    style: {
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 12,
+                                        position: 'relative',
+                                        zIndex: 1,
+                                        flexShrink: 0,
+                                        marginBottom: 10
+                                    },
+                                    children: [
+                                        {
+                                            type: 'div',
+                                            props: {
+                                                style: {
+                                                    width: o.avatar,
+                                                    height: o.avatar,
+                                                    borderRadius: '50%',
+                                                    backgroundColor: '#ffffff',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    fontSize: o.avatarFont,
+                                                    flexShrink: 0
+                                                },
+                                                children: tema.simge
+                                            }
+                                        },
+                                        {
+                                            type: 'div',
+                                            props: {
+                                                style: {
+                                                    fontSize: o.rumuz,
+                                                    fontWeight: 800,
+                                                    lineHeight: 1.1,
+                                                    color: '#ffffff'
+                                                },
+                                                children: baslik
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                type: 'div',
+                                props: {
+                                    style: {
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        flexGrow: 1,
+                                        position: 'relative',
+                                        zIndex: 1
+                                    },
+                                    children: [
+                                        {
+                                            type: 'div',
+                                            props: {
+                                                style: {
+                                                    fontSize: o.metin,
+                                                    lineHeight: 1.48,
+                                                    fontWeight: 500,
+                                                    color: '#ffffff',
+                                                    whiteSpace: 'pre-line',
+                                                    flexShrink: 0
+                                                },
+                                                children: ozet
+                                            }
+                                        },
+                                        {
+                                            type: 'div',
+                                            props: {
+                                                style: {
+                                                    display: 'flex',
+                                                    alignItems: 'flex-end',
+                                                    justifyContent: 'space-between',
+                                                    gap: 8,
+                                                    width: '100%',
+                                                    marginTop: 14,
+                                                    flexShrink: 0
+                                                },
+                                                children: [
+                                                    {
+                                                        type: 'div',
+                                                        props: {
+                                                            style: {
+                                                                fontSize: o.cta,
+                                                                lineHeight: 1.22,
+                                                                fontWeight: 800,
+                                                                color: '#ffffff',
+                                                                flex: 1,
+                                                                marginTop: 0
+                                                            },
+                                                            children: CTA
+                                                        }
+                                                    },
+                                                    {
+                                                        type: 'div',
+                                                        props: {
+                                                            style: {
+                                                                display: 'flex',
+                                                                gap: 8,
+                                                                fontSize: o.cta + 4,
+                                                                opacity: 0.9,
+                                                                flexShrink: 0
+                                                            },
+                                                            children: [
+                                                                { type: 'span', props: { children: '\uD83D\uDC4F' } },
+                                                                { type: 'span', props: { children: '\u2197' } }
+                                                            ]
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    type: 'div',
+                    props: {
+                        style: {
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '100%',
+                            backgroundColor: '#2a2a2a',
+                            color: '#ffffff',
+                            fontSize: o.altSerit,
+                            fontWeight: 700,
+                            padding: '12px 10px',
+                            flexShrink: 0
+                        },
+                        children: rumuz + ' | gunde5.com'
+                    }
+                }
             ]
         }
     };
 }
 
-function filigran() {
-    return {
-        type: 'div',
-        props: {
-            style: {
-                position: 'absolute',
-                top: '42%',
-                left: '50%',
-                transform: 'translate(-50%, -50%) rotate(-32deg)',
-                fontSize: 88,
-                fontWeight: 900,
-                letterSpacing: '-0.04em',
-                color: 'rgba(17, 24, 39, 0.08)',
-                whiteSpace: 'nowrap',
-                pointerEvents: 'none'
-            },
-            children: 'gunde5.com'
-        }
-    };
+function kartFromRow(row, olcek) {
+    var cins = row.gender === 'male' ? 'male' : 'female';
+    var rumuz = row.username || 'Anonim';
+    var kaynak = String(row.content_full || row.content_short || '');
+    var ozet = ozetMetin(kaynak);
+    var emoji = temaEmoji(String(row.baslik || '') + ' ' + kaynak);
+    return hikayeKart(rumuz, ozet, row.age, cins, emoji, olcek);
 }
 
-function kart(rumuz, ozet, metaSatir, cins) {
-    var tema = cinsTema(cins);
-
+function ikiliTuval(sol, sag) {
     return {
         type: 'div',
         props: {
@@ -81,209 +326,31 @@ function kart(rumuz, ozet, metaSatir, cins) {
                 width: '100%',
                 height: '100%',
                 display: 'flex',
-                alignItems: 'center',
+                flexDirection: 'row',
+                alignItems: 'stretch',
                 justifyContent: 'center',
-                background: '#f3f4f6',
-                padding: '40px 48px',
+                gap: 12,
+                padding: 8,
+                background: '#e5e7eb',
                 fontFamily: FONT
             },
-            children: [
-                {
-                type: 'div',
-                props: {
-                    style: {
-                        position: 'relative',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        width: '100%',
-                        height: '100%',
-                        maxHeight: 550,
-                        backgroundColor: tema.kartBg,
-                        border: '3px solid ' + tema.border,
-                        borderRadius: 36,
-                        padding: '40px 44px',
-                        overflow: 'hidden',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06)'
-                    },
-                    children: [
-                        filigran(),
-                        {
-                            type: 'div',
-                            props: {
-                                style: {
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    marginBottom: 28,
-                                    position: 'relative',
-                                    zIndex: 1
-                                },
-                                children: [
-                                    {
-                                        type: 'div',
-                                        props: {
-                                            style: {
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: 20
-                                            },
-                                            children: [
-                                                {
-                                                    type: 'div',
-                                                    props: {
-                                                        style: {
-                                                            width: 64,
-                                                            height: 64,
-                                                            borderRadius: '50%',
-                                                            backgroundColor: tema.avatarBg,
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            color: '#ffffff',
-                                                            fontSize: 30,
-                                                            fontWeight: 700,
-                                                            flexShrink: 0
-                                                        },
-                                                        children: tema.simge
-                                                    }
-                                                },
-                                                {
-                                                    type: 'div',
-                                                    props: {
-                                                        style: {
-                                                            display: 'flex',
-                                                            flexDirection: 'column',
-                                                            gap: 6
-                                                        },
-                                                        children: [
-                                                            {
-                                                                type: 'div',
-                                                                props: {
-                                                                    style: {
-                                                                        fontSize: 36,
-                                                                        fontWeight: 800,
-                                                                        color: tema.accent,
-                                                                        lineHeight: 1.15
-                                                                    },
-                                                                    children: rumuz
-                                                                }
-                                                            },
-                                                            metaSatir
-                                                                ? {
-                                                                      type: 'div',
-                                                                      props: {
-                                                                          style: {
-                                                                              fontSize: 22,
-                                                                              fontWeight: 600,
-                                                                              color: '#6b7280'
-                                                                          },
-                                                                          children: metaSatir
-                                                                      }
-                                                                  }
-                                                                : null
-                                                        ].filter(Boolean)
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    markaSatir()
-                                ]
-                            }
-                        },
-                        {
-                            type: 'div',
-                            props: {
-                                style: {
-                                    flex: 1,
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    position: 'relative',
-                                    zIndex: 1,
-                                    marginBottom: 24
-                                },
-                                children: {
-                                    type: 'div',
-                                    props: {
-                                        style: {
-                                            fontSize: 28,
-                                            lineHeight: 1.55,
-                                            color: '#111827',
-                                            fontWeight: 500,
-                                            textAlign: 'justify'
-                                        },
-                                        children: ozet
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            type: 'div',
-                            props: {
-                                style: {
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    borderTop: '2px solid rgba(0,0,0,0.06)',
-                                    paddingTop: 22,
-                                    position: 'relative',
-                                    zIndex: 1
-                                },
-                                children: [
-                                    {
-                                        type: 'div',
-                                        props: {
-                                            style: {
-                                                fontSize: 20,
-                                                fontWeight: 700,
-                                                color: '#6b7280'
-                                            },
-                                            children:
-                                                '\uD83D\uDCCC Devam\u0131n\u0131 REKLAMSIZ ve \u00DCCRETS\u0130Z oku'
-                                        }
-                                    },
-                                    {
-                                        type: 'div',
-                                        props: {
-                                            style: {
-                                                display: 'flex',
-                                                gap: 16,
-                                                fontSize: 20,
-                                                fontWeight: 700,
-                                                color: '#9ca3af'
-                                            },
-                                            children: [
-                                                {
-                                                    type: 'span',
-                                                    props: { children: '\uD83D\uDC4F Alk\u0131\u015fla' }
-                                                },
-                                                {
-                                                    type: 'span',
-                                                    props: { children: '\uD83D\uDD17 Payla\u015f' }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
-            }
-            ]
+            children: [sol, sag]
         }
     };
 }
 
-function varsayilanKart() {
-    return kart(OG_TITLE, OG_DESCRIPTION, 'gunde5.com', 'female');
+function ikiliSirala(ana, es) {
+    if (ana.gender === 'male' && es.gender !== 'male') return [ana, es];
+    if (es.gender === 'male' && ana.gender !== 'male') return [es, ana];
+    return [ana, es];
 }
 
-async function varsayilanPng() {
-    var img = new ImageResponse(varsayilanKart(), {
-        width: 1200,
-        height: 630
-    });
+function varsayilanKart() {
+    return hikayeKart('gunde5.com', ozetMetin(OG_DESCRIPTION), null, 'female', '\u2615', OLCEK_TEK);
+}
+
+async function pngYanit(tree) {
+    var img = new ImageResponse(tree, BOYUT);
     var buf = await img.arrayBuffer();
     return new Response(buf, {
         headers: {
@@ -300,32 +367,23 @@ export default async function handler(req) {
         var id = url.searchParams.get('id');
         var row = id && /^\d+$/.test(id) ? await itirafGetir(id) : null;
 
-        var cins = row && row.gender === 'male' ? 'male' : 'female';
-        var rumuz = row ? row.username || 'Anonim' : 'gunde5.com';
-        var ozet = row
-            ? metinKisalt(row.content_short || row.content_full, 200)
-            : OG_DESCRIPTION;
-        var meta = [];
-        if (row && row.age) meta.push(row.age + ' ya\u015f');
-        var yer = row && (row.yasadigi_yer || row.city);
-        if (yer) meta.push(String(yer).trim());
-        var metaSatir = meta.join(' \u00b7 ');
+        if (!row) {
+            return pngYanit(varsayilanKart());
+        }
 
-        var tree = row ? kart(rumuz, ozet, metaSatir, cins) : varsayilanKart();
+        var es = await itirafAyniGunEs(row);
+        if (es) {
+            var ikili = ikiliSirala(row, es);
+            return pngYanit(
+                ikiliTuval(
+                    kartFromRow(ikili[0], OLCEK_IKILI),
+                    kartFromRow(ikili[1], OLCEK_IKILI)
+                )
+            );
+        }
 
-        var img = new ImageResponse(tree, {
-            width: 1200,
-            height: 630
-        });
-        var buf = await img.arrayBuffer();
-        return new Response(buf, {
-            headers: {
-                'Content-Type': 'image/png',
-                'Content-Length': String(buf.byteLength),
-                'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800'
-            }
-        });
+        return pngYanit(kartFromRow(row, OLCEK_TEK));
     } catch (e) {
-        return varsayilanPng();
+        return pngYanit(varsayilanKart());
     }
 }

@@ -9,6 +9,7 @@
     var panelAcik = false;
     var sonListe = [];
     var masterMi = false;
+    var yonetimModu = false;
 
     function db() {
         return global.Gunde5DB;
@@ -16,6 +17,13 @@
 
     function ui() {
         return global.Gunde5UI;
+    }
+
+    /** Master yönetim sayfalarında bildirim listesi modal olarak açılır. */
+    function yonetimSayfasiMi() {
+        var path = (global.location.pathname || '').toLowerCase();
+        if (path.indexOf('/admin/') >= 0) return true;
+        return /\/(kamikaze|metrikler|istatistikler|mudavimler|uyeler|sosyal-paylas)(\.html)?$/.test(path);
     }
 
     function esc(s) {
@@ -42,6 +50,7 @@
             '.header-bildirim-panel{position:absolute;top:calc(100% + 8px);right:0;width:min(320px,calc(100vw - 24px));max-height:min(420px,70vh);background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);z-index:230;display:flex;flex-direction:column;overflow:hidden}' +
             'body.dark-mode .header-bildirim-panel{background:var(--bg-card);border-color:var(--border-color)}' +
             '.header-bildirim-panel[hidden]{display:none!important}' +
+            '.header-bildirim-panel-inner{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;width:100%}' +
             '.header-bildirim-baslik{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;font-weight:800}' +
             'body.dark-mode .header-bildirim-baslik{border-color:var(--border-color)}' +
             '.header-bildirim-tumunu{color:#1d9bf0;background:none;border:none;font-size:11px;font-weight:700;cursor:pointer;padding:4px 6px;border-radius:8px}' +
@@ -55,7 +64,14 @@
             'body.dark-mode .header-bildirim-oge-metin{color:var(--text-main)}' +
             '.header-bildirim-oge-zaman{font-size:11px;color:#6b7280;margin-top:4px}' +
             'body.dark-mode .header-bildirim-oge-zaman{color:var(--text-muted)}' +
-            '.header-bildirim-bos{padding:20px 12px;text-align:center;font-size:13px;color:#6b7280}';
+            '.header-bildirim-bos{padding:20px 12px;text-align:center;font-size:13px;color:#6b7280}' +
+            '.header-bildirim-wrap--yonetim .header-bildirim-panel{position:fixed;inset:0;top:0;right:0;width:100%;max-height:none;border:none;border-radius:0;background:rgba(15,23,42,.48);box-shadow:none;z-index:2400;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}' +
+            'body.dark-mode .header-bildirim-wrap--yonetim .header-bildirim-panel{background:rgba(0,0,0,.62)}' +
+            '.header-bildirim-panel-inner{width:min(480px,100%);max-height:min(560px,85vh);background:#fff;border:1px solid #e5e7eb;border-radius:18px;box-shadow:0 20px 48px rgba(0,0,0,.22);display:flex;flex-direction:column;overflow:hidden}' +
+            'body.dark-mode .header-bildirim-panel-inner{background:var(--bg-card);border-color:var(--border-color)}' +
+            '.header-bildirim-wrap--yonetim .header-bildirim-baslik{padding:14px 16px}' +
+            '.header-bildirim-wrap--yonetim .header-bildirim-liste{max-height:min(460px,65vh)}' +
+            'body.bildirim-modal-acik{overflow:hidden}';
         document.head.appendChild(s);
     }
 
@@ -201,6 +217,7 @@
         if (panel) panel.hidden = true;
         var btn = document.getElementById('headerBildirimBtn');
         if (btn) btn.setAttribute('aria-expanded', 'false');
+        if (yonetimModu) document.body.classList.remove('bildirim-modal-acik');
     }
 
     function panelAc() {
@@ -209,6 +226,7 @@
         var btn = document.getElementById('headerBildirimBtn');
         if (panel) panel.hidden = false;
         if (btn) btn.setAttribute('aria-expanded', 'true');
+        if (yonetimModu) document.body.classList.add('bildirim-modal-acik');
         if (ui() && ui().closeProfilMenu) ui().closeProfilMenu();
         if (ui() && ui().closeHeaderMenu) ui().closeHeaderMenu();
         yenile();
@@ -281,8 +299,10 @@
         var sag = document.querySelector('.header-sag');
         if (!sag || document.getElementById('headerBildirimWrap')) return;
 
+        yonetimModu = yonetimSayfasiMi();
+
         var wrap = document.createElement('div');
-        wrap.className = 'header-bildirim-wrap';
+        wrap.className = 'header-bildirim-wrap' + (yonetimModu ? ' header-bildirim-wrap--yonetim' : '');
         wrap.id = 'headerBildirimWrap';
 
         var btn = document.createElement('button');
@@ -299,12 +319,17 @@
         panel.className = 'header-bildirim-panel';
         panel.id = 'headerBildirimPanel';
         panel.hidden = true;
+        panel.setAttribute('role', yonetimModu ? 'dialog' : 'region');
+        panel.setAttribute('aria-label', 'Bildirimler');
+        if (yonetimModu) panel.setAttribute('aria-modal', 'true');
         panel.innerHTML =
+            '<div class="header-bildirim-panel-inner">' +
             '<div class="header-bildirim-baslik">' +
             '<span>Bildirimler</span>' +
             '<button type="button" class="header-bildirim-tumunu" id="headerBildirimTumunu">Tümünü okundu say</button>' +
             '</div>' +
-            '<div class="header-bildirim-liste" id="headerBildirimListe"></div>';
+            '<div class="header-bildirim-liste" id="headerBildirimListe"></div>' +
+            '</div>';
 
         wrap.appendChild(btn);
         wrap.appendChild(panel);
@@ -330,11 +355,20 @@
             });
         }
 
-        document.addEventListener('click', function (e) {
-            if (!panelAcik) return;
-            if (wrap.contains(e.target)) return;
-            panelKapat();
-        });
+        if (yonetimModu) {
+            panel.addEventListener('click', function (e) {
+                if (e.target === panel) panelKapat();
+            });
+            var inner = panel.querySelector('.header-bildirim-panel-inner');
+            if (inner) inner.addEventListener('click', function (e) { e.stopPropagation(); });
+        } else {
+            document.addEventListener('click', function (e) {
+                if (!panelAcik) return;
+                if (wrap.contains(e.target)) return;
+                panelKapat();
+            });
+        }
+
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') panelKapat();
         });
@@ -348,6 +382,7 @@
             wrap.classList.remove('aktif');
             panelKapat();
             badgeGuncelle(0);
+            document.body.classList.remove('bildirim-modal-acik');
         }
     }
 
@@ -399,6 +434,7 @@
         gorunurluk(false);
         abonelikKapat();
         masterMi = false;
+        document.body.classList.remove('bildirim-modal-acik');
     }
 
     function init() {
