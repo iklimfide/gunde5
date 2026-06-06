@@ -1,17 +1,6 @@
--- Bugünün 5'i — master manuel sıra (metrikler sayfasından)
--- SQL Editor'da bir kez Run. Eski index_bugun5_kilit tablosu kullanılmaz.
+-- Aktif baskı: yeni hikâye yayınlanana kadar önceki 5 görünür (saat sınırı yok).
+-- Supabase SQL Editor'da bir kez Run.
 
-create table if not exists public.index_bugun5_sira (
-    gun date primary key,
-    hikaye_ids bigint[] not null,
-    updated_at timestamptz not null default now()
-);
-
-alter table public.index_bugun5_sira enable row level security;
-
-revoke all on public.index_bugun5_sira from public, anon, authenticated;
-
--- Aktif baskı günü: takvim bugününde yayında hikâye varsa o gün; yoksa en son yayın günü.
 create or replace function public.gunde5_aktif_baski_gunu(p_ts timestamptz default now())
 returns date
 language sql
@@ -38,7 +27,6 @@ as $$
     end;
 $$;
 
--- Aktif baskıdan önceki yayın günü (Dünkü 5).
 create or replace function public.gunde5_onceki_baski_gunu(
     p_aktif date,
     p_ts timestamptz default now()
@@ -260,11 +248,5 @@ grant execute on function public.gunde5_aktif_baski_gunu(timestamptz) to anon, a
 
 revoke all on function public.gunde5_onceki_baski_gunu(date, timestamptz) from public;
 grant execute on function public.gunde5_onceki_baski_gunu(date, timestamptz) to anon, authenticated;
-
-revoke all on function public.master_bugun5_sira_kaydet(bigint[]) from public, anon;
-grant execute on function public.master_bugun5_sira_kaydet(bigint[]) to authenticated;
-
-revoke all on function public.master_bugun5_sira_sifirla() from public, anon;
-grant execute on function public.master_bugun5_sira_sifirla() to authenticated;
 
 notify pgrst, 'reload schema';

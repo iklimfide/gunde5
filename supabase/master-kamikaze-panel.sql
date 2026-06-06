@@ -390,10 +390,8 @@ begin
         return jsonb_build_object(
             'ok', true,
             'q', '',
-            'sayilar', jsonb_build_object('uyeler', 0, 'hikayeler', 0, 'yorumlar', 0),
-            'uyeler', '[]'::jsonb,
-            'hikayeler', '[]'::jsonb,
-            'yorumlar', '[]'::jsonb
+            'sayilar', jsonb_build_object('hikayeler', 0),
+            'hikayeler', '[]'::jsonb
         );
     end if;
 
@@ -404,61 +402,7 @@ begin
     return jsonb_build_object(
         'ok', true,
         'q', v_q,
-        'sayilar', jsonb_build_object(
-            'uyeler', (
-                select count(*)::int
-                from public.uye u
-                where lower(coalesce(u.username, '')) like '%' || v_q || '%'
-                   or lower(coalesce(u.email, '')) like '%' || v_q || '%'
-            ),
-            'hikayeler', (
-                select count(*)::int
-                from public.itiraflar i
-                where (v_id is not null and i.id = v_id)
-                   or lower(coalesce(i.content_full, i.content_short, '')) like '%' || v_q || '%'
-                   or lower(coalesce(i.username, '')) like '%' || v_q || '%'
-            ),
-            'yorumlar', (
-                select count(*)::int
-                from public.itiraf_cevaplar c
-                left join public.uye u on u.id = c.user_id
-                where (v_id is not null and (c.id = v_id or c.itiraf_id = v_id))
-                   or lower(coalesce(c.content, '')) like '%' || v_q || '%'
-                   or lower(coalesce(u.username, '')) like '%' || v_q || '%'
-                   or lower(coalesce(u.email, '')) like '%' || v_q || '%'
-            )
-        ),
-        'uyeler', coalesce((
-            select jsonb_agg(row_to_json(t)::jsonb)
-            from (
-                select
-                    u.id,
-                    u.username,
-                    u.email,
-                    u.gender,
-                    u.dogum_yili,
-                    u.yasadigi_yer,
-                    u.yurtdisi_sehir,
-                    coalesce(u.durum, 'aktif') as durum,
-                    coalesce(u.zorunlu_gizli, false) as zorunlu_gizli,
-                    u.created_at,
-                    (
-                        select count(*)::int
-                        from public.itiraflar i
-                        where i.user_id = u.id and i.silindi_at is null
-                    ) as hikaye_sayisi,
-                    (
-                        select count(*)::int
-                        from public.itiraf_cevaplar c
-                        where c.user_id = u.id
-                    ) as yorum_sayisi
-                from public.uye u
-                where lower(coalesce(u.username, '')) like '%' || v_q || '%'
-                   or lower(coalesce(u.email, '')) like '%' || v_q || '%'
-                order by u.created_at desc
-                limit v_lim
-            ) t
-        ), '[]'::jsonb),
+        'sayilar', jsonb_build_object('hikayeler', 0),
         'hikayeler', coalesce((
             select jsonb_agg(row_to_json(t)::jsonb)
             from (
@@ -492,32 +436,6 @@ begin
                    or lower(coalesce(i.content_full, i.content_short, '')) like '%' || v_q || '%'
                    or lower(coalesce(i.username, '')) like '%' || v_q || '%'
                 order by i.created_at desc
-                limit v_lim
-            ) t
-        ), '[]'::jsonb),
-        'yorumlar', coalesce((
-            select jsonb_agg(row_to_json(t)::jsonb)
-            from (
-                select
-                    c.id,
-                    c.itiraf_id as hikaye_id,
-                    c.parent_id,
-                    c.user_id,
-                    c.content,
-                    c.created_at,
-                    u.username,
-                    u.email,
-                    i.status as hikaye_status,
-                    (i.silindi_at is not null) as hikaye_silindi,
-                    left(coalesce(i.content_full, i.content_short, ''), 100) as hikaye_onizleme
-                from public.itiraf_cevaplar c
-                left join public.uye u on u.id = c.user_id
-                left join public.itiraflar i on i.id = c.itiraf_id
-                where (v_id is not null and (c.id = v_id or c.itiraf_id = v_id))
-                   or lower(coalesce(c.content, '')) like '%' || v_q || '%'
-                   or lower(coalesce(u.username, '')) like '%' || v_q || '%'
-                   or lower(coalesce(u.email, '')) like '%' || v_q || '%'
-                order by c.created_at desc
                 limit v_lim
             ) t
         ), '[]'::jsonb)

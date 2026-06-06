@@ -232,26 +232,38 @@ begin
         or (v_haric = 'master' and (e.user_id is null or e.user_id is distinct from v_master))
       );
 
-    select coalesce(jsonb_agg(jsonb_build_object('terim', s.terim, 'adet', s.adet) order by s.adet desc), '[]'::jsonb)
+    select coalesce(jsonb_agg(jsonb_build_object('terim', s.terim, 'adet', s.adet) order by s.adet desc, s.terim asc), '[]'::jsonb)
     into v_arama_terimleri
     from (
-        select q.terim, q.adet
+        select u.terim, max(u.adet)::int as adet
         from (
-            select left(lower(trim(coalesce(e.payload->>'query', ''))), 120) as terim,
-                   count(*)::int as adet
-            from public.site_analytics_events e
-            where e.created_at >= v_since
-              and e.event_type = 'index_search'
-              and length(trim(coalesce(e.payload->>'query', ''))) >= 2
-              and (
-                v_haric = 'yok'
-                or (v_haric = 'uyeler' and e.user_id is null)
-                or (v_haric = 'master' and (e.user_id is null or e.user_id is distinct from v_master))
-              )
-            group by 1
-        ) q
-        where length(q.terim) >= 2
-        order by q.adet desc, q.terim asc
+            select q.terim, q.adet
+            from (
+                select left(lower(trim(coalesce(e.payload->>'query', ''))), 120) as terim,
+                       count(*)::int as adet
+                from public.site_analytics_events e
+                where e.created_at >= v_since
+                  and e.event_type = 'index_search'
+                  and length(trim(coalesce(e.payload->>'query', ''))) >= 2
+                  and (
+                    v_haric = 'yok'
+                    or (v_haric = 'uyeler' and e.user_id is null)
+                    or (v_haric = 'master' and (e.user_id is null or e.user_id is distinct from v_master))
+                  )
+                group by 1
+            ) q
+            where length(q.terim) >= 2
+              and q.terim not in (select x.terim from public.index_arama_terim_engelli x)
+
+            union all
+
+            select lower(trim(t.terim)) as terim, 0 as adet
+            from public.index_arama_terimler t
+            where length(trim(t.terim)) >= 2
+              and t.terim not in (select x.terim from public.index_arama_terim_engelli x)
+        ) u
+        group by u.terim
+        order by max(u.adet) desc, u.terim asc
         limit 40
     ) s;
 

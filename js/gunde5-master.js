@@ -470,7 +470,7 @@
             return;
         }
         var id = card.getAttribute('data-id');
-        var body = { hikaye_id: parseInt(id, 10), islem: islem };
+        var body = { itiraf_id: parseInt(id, 10), islem: islem };
         if (ek) {
             Object.keys(ek).forEach(function (k) {
                 body[k] = ek[k];

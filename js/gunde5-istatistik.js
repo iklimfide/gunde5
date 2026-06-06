@@ -5,6 +5,7 @@
     var seciliGun = 30;
     var seciliHaric = 'master';
     var filtreHazir = false;
+    var aramaTerimOlayHazir = false;
 
     function db() { return global.Gunde5DB; }
     function ui() { return global.Gunde5UI; }
@@ -121,6 +122,201 @@
         return html;
     }
 
+    function escAttr(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;');
+    }
+
+    function toast(mesaj, hata) {
+        if (global.showToast) {
+            global.showToast(mesaj, !!hata);
+            return;
+        }
+        if (hata) global.alert(mesaj);
+    }
+
+    function aramaTerimleriBolumu(terimler) {
+        terimler = arrCoz(terimler);
+        var html = '<section class="istat-bolum istat-bolum--arama-terim">';
+        html += '<div class="istat-bolum-baslik-satir">';
+        html += '<h2 class="istat-bolum-baslik">En çok aranan terimler</h2>';
+        html += '<div class="istat-terim-araclar">';
+        html += '<button type="button" class="istat-terim-btn istat-terim-btn--ekle" data-istat-arama-ekle>Ekle</button>';
+        html += '<button type="button" class="istat-terim-btn istat-terim-btn--sil istat-terim-btn--toplu-sil" data-istat-arama-toplu-sil disabled>Seçilenleri sil</button>';
+        html += '</div></div>';
+        html += '<p class="istat-bolum-not">Arama önerilerini yönetin. Silinen terimler önerilerde görünmez; eklenen terimler öncelikli önerilir. Adet = seçili dönemdeki arama sayısı.</p>';
+        if (!terimler.length) {
+            html += '<p class="istat-bos">Bu dönemde arama kaydı yok.</p></section>';
+            return html;
+        }
+        html += '<div class="istat-tablo-wrap"><table class="istat-tablo"><thead><tr>';
+        html += '<th scope="col" class="istat-terim-sec-kutu"><input type="checkbox" id="istatAramaTumunuSec" data-istat-arama-tumunu-sec aria-label="Tüm terimleri seç"></th>';
+        html += '<th scope="col">Terim</th><th scope="col">Adet</th><th scope="col">İşlem</th>';
+        html += '</tr></thead><tbody>';
+        terimler.forEach(function (r) {
+            var terim = String(r.terim || '').trim();
+            if (!terim) return;
+            html += '<tr>';
+            html += '<td class="istat-terim-sec-kutu"><input type="checkbox" class="istat-arama-terim-sec" data-istat-arama-sec value="' + escAttr(terim) + '" aria-label="' + escAttr(terim) + ' seç"></td>';
+            html += '<td>' + esc(terim) + '</td>';
+            html += '<td>' + esc(fmtSayi(r.adet)) + '</td>';
+            html += '<td><div class="istat-terim-islem">';
+            html += '<button type="button" class="istat-terim-btn istat-terim-btn--duzenle" data-istat-arama-duzenle data-terim="' + escAttr(terim) + '">Düzenle</button>';
+            html += '<button type="button" class="istat-terim-btn istat-terim-btn--sil" data-istat-arama-sil data-terim="' + escAttr(terim) + '">Sil</button>';
+            html += '</div></td></tr>';
+        });
+        html += '</tbody></table></div></section>';
+        return html;
+    }
+
+    async function aramaTerimEkle() {
+        var D = db();
+        if (!D || !D.masterAramaTerimEkle) {
+            toast('Terim yönetimi henüz kurulmamış. Supabase\'de index-arama-terim-yonetim.sql çalıştırın.', true);
+            return;
+        }
+        var terim = global.prompt('Önerilere eklenecek arama terimi:', '');
+        if (terim == null) return;
+        terim = String(terim).trim();
+        if (terim.length < 2) {
+            toast('En az 2 karakter girin.', true);
+            return;
+        }
+        try {
+            await D.masterAramaTerimEkle(terim);
+            toast('Terim eklendi.');
+            await veriYukle(seciliGun, seciliHaric);
+        } catch (e) {
+            toast(D.hataMesaji ? D.hataMesaji(e) : 'Eklenemedi.', true);
+        }
+    }
+
+    async function aramaTerimDuzenle(eski) {
+        var D = db();
+        if (!D || !D.masterAramaTerimGuncelle) {
+            toast('Terim yönetimi henüz kurulmamış.', true);
+            return;
+        }
+        var yeni = global.prompt('Yeni terim:', eski);
+        if (yeni == null) return;
+        yeni = String(yeni).trim();
+        if (yeni.length < 2) {
+            toast('En az 2 karakter girin.', true);
+            return;
+        }
+        if (yeni === eski) return;
+        try {
+            await D.masterAramaTerimGuncelle(eski, yeni);
+            toast('Terim güncellendi.');
+            await veriYukle(seciliGun, seciliHaric);
+        } catch (e) {
+            toast(D.hataMesaji ? D.hataMesaji(e) : 'Güncellenemedi.', true);
+        }
+    }
+
+    function seciliAramaTerimleri() {
+        return Array.prototype.slice.call(
+            document.querySelectorAll('.istat-arama-terim-sec:checked')
+        ).map(function (cb) {
+            return cb.value || '';
+        }).filter(function (t) { return t.length >= 2; });
+    }
+
+    function aramaTerimTopluSilDurumGuncelle() {
+        var btn = document.querySelector('[data-istat-arama-toplu-sil]');
+        if (!btn) return;
+        var n = seciliAramaTerimleri().length;
+        btn.disabled = n === 0;
+        btn.textContent = n > 0 ? ('Seçilenleri sil (' + n + ')') : 'Seçilenleri sil';
+        var tumu = document.getElementById('istatAramaTumunuSec');
+        var kutular = document.querySelectorAll('.istat-arama-terim-sec');
+        if (tumu && kutular.length) {
+            tumu.checked = n > 0 && n === kutular.length;
+            tumu.indeterminate = n > 0 && n < kutular.length;
+        }
+    }
+
+    async function aramaTerimTopluSil() {
+        var D = db();
+        var liste = seciliAramaTerimleri();
+        if (!liste.length) {
+            toast('Önce silinecek terimleri seçin.', true);
+            return;
+        }
+        if (!D || !D.masterAramaTerimTopluSil) {
+            toast('Toplu silme henüz kurulmamış. Supabase\'de index-arama-terim-yonetim.sql güncel sürümünü çalıştırın.', true);
+            return;
+        }
+        if (!global.confirm(liste.length + ' terim önerilerden kaldırılsın mı?')) return;
+        try {
+            var sonuc = await D.masterAramaTerimTopluSil(liste);
+            toast((sonuc.silinen || liste.length) + ' terim kaldırıldı.');
+            await veriYukle(seciliGun, seciliHaric);
+        } catch (e) {
+            toast(D.hataMesaji ? D.hataMesaji(e) : 'Silinemedi.', true);
+        }
+    }
+
+    async function aramaTerimSil(terim) {
+        var D = db();
+        if (!D || !D.masterAramaTerimSil) {
+            toast('Terim yönetimi henüz kurulmamış.', true);
+            return;
+        }
+        if (!global.confirm('«' + terim + '» önerilerden kaldırılsın mı?')) return;
+        try {
+            await D.masterAramaTerimSil(terim);
+            toast('Terim kaldırıldı.');
+            await veriYukle(seciliGun, seciliHaric);
+        } catch (e) {
+            toast(D.hataMesaji ? D.hataMesaji(e) : 'Silinemedi.', true);
+        }
+    }
+
+    function aramaTerimOlayBagla() {
+        if (aramaTerimOlayHazir) return;
+        aramaTerimOlayHazir = true;
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('[data-istat-arama-ekle]')) {
+                e.preventDefault();
+                aramaTerimEkle();
+                return;
+            }
+            if (e.target.closest('[data-istat-arama-toplu-sil]')) {
+                e.preventDefault();
+                aramaTerimTopluSil();
+                return;
+            }
+            var duzenle = e.target.closest('[data-istat-arama-duzenle]');
+            if (duzenle) {
+                e.preventDefault();
+                aramaTerimDuzenle(duzenle.getAttribute('data-terim') || '');
+                return;
+            }
+            var sil = e.target.closest('[data-istat-arama-sil]');
+            if (sil) {
+                e.preventDefault();
+                aramaTerimSil(sil.getAttribute('data-terim') || '');
+            }
+        });
+        document.addEventListener('change', function (e) {
+            if (e.target.matches('[data-istat-arama-tumunu-sec]')) {
+                var sec = !!e.target.checked;
+                document.querySelectorAll('.istat-arama-terim-sec').forEach(function (cb) {
+                    cb.checked = sec;
+                });
+                aramaTerimTopluSilDurumGuncelle();
+                return;
+            }
+            if (e.target.matches('[data-istat-arama-sec]')) {
+                aramaTerimTopluSilDurumGuncelle();
+            }
+        });
+    }
+
     function indexArayuzBolumu(ia) {
         ia = ia || {};
         var terimler = arrCoz(ia.arama_terimleri);
@@ -146,16 +342,7 @@
             'Bu dönemde sıralama değişikliği yok.',
             'Mobil açılır liste ve masaüstü yan menü.'
         );
-        html += tabloHtml(
-            'En çok aranan terimler',
-            [
-                { etiket: 'Terim', deger: function (r) { return r.terim; } },
-                { etiket: 'Adet', deger: function (r) { return fmtSayi(r.adet); } }
-            ],
-            terimler,
-            'Bu dönemde arama kaydı yok.',
-            'Küçük harf, en fazla 40 terim.'
-        );
+        html += aramaTerimleriBolumu(terimler);
         return html + '</section>';
     }
 
@@ -231,6 +418,7 @@
         html += gunlukBolumu(gunluk);
 
         kok.innerHTML = html;
+        aramaTerimTopluSilDurumGuncelle();
     }
 
     function yukleniyor(goster) {
@@ -360,6 +548,7 @@
         }
         icerikGoster();
         filtreBagla();
+        aramaTerimOlayBagla();
         await veriYukle(seciliGun);
     }
 

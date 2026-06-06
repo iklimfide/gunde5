@@ -27,17 +27,17 @@
     <meta name="twitter:description" content="Her sabah 5 yeni anonim hikaye &amp; itiraf. 5 dakikada oku, gül, güne başla 😄">
     <meta name="twitter:image" content="https://gunde5.com/og/anasayfa.png?v=2">
     <meta name="twitter:image:alt" content="Her sabah sadece 5 tane — kısa, anonim hikayeler &amp; itiraf">
-    <meta name="theme-color" content="#6d28d9">
+    <meta name="theme-color" content="#ffffff">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="stylesheet" href="css/index.css?v=26">
-    <link rel="stylesheet" href="css/index-pc.css?v=13">
-    <link rel="stylesheet" href="css/gunde5-topbar.css?v=1">
+    <link rel="stylesheet" href="css/index.css?v=32">
+    <link rel="stylesheet" href="css/index-pc.css?v=14">
+    <link rel="stylesheet" href="css/gunde5-topbar.css?v=5">
     <script src="js/gunde5-shell.js"></script>
     <script src="js/gunde5-perde.js?v=2"></script>
     <script defer src="js/gunde5-config.js?v=17"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js" crossorigin></script>
     <script defer src="js/gunde5-db.js?v=35"></script>
-    <script defer src="js/gunde5-index.js?v=58"></script>
+    <script defer src="js/gunde5-index.js?v=64"></script>
     <script defer src="js/gunde5-index-pc.js?v=11"></script>
     <script defer src="js/gunde5-gonder.js?v=2"></script>
 </head>
@@ -104,15 +104,13 @@
                 <p class="index-tagline">Anonim hikaye ve itiraflar</p>
 
                 <div class="index-toolbar" id="indexToolbar">
-                    <label class="index-arama-kutu" for="indexAramaInput">
-                        <input type="search" class="index-arama-input" id="indexAramaInput" placeholder="Hikaye veya itiraf ara" autocomplete="off" enterkeyhint="search">
-                        <span class="index-arama-ikon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" role="img">
-                                <circle cx="10.5" cy="10.5" r="6.75"/>
-                                <path d="M15.75 15.75L20 20"/>
-                            </svg>
-                        </span>
-                    </label>
+                    <div class="index-arama-wrap">
+                        <label class="index-arama-kutu" for="indexAramaInput">
+                            <input type="search" class="index-arama-input" id="indexAramaInput" placeholder="Hikaye veya itiraf ara" autocomplete="off" enterkeyhint="search" aria-autocomplete="list" aria-controls="indexAramaOneri" aria-expanded="false">
+                            <button type="button" class="index-arama-btn" id="indexAramaBtn" aria-label="Ara">Ara</button>
+                        </label>
+                        <ul class="index-arama-oneri" id="indexAramaOneri" role="listbox" aria-label="Arama önerileri" hidden></ul>
+                    </div>
                     <div class="index-filtre-kutu" id="indexFiltreKutu">
                         <div class="index-filtre-gorunur" aria-hidden="true">
                             <span class="index-filtre-metin">☕ Ne okumak istersin?</span>
@@ -132,11 +130,13 @@
                 <div id="indexListe" aria-live="polite"><p class="index-durum" id="indexListeBekle">Yükleniyor…</p></div>
 
                 <div class="page-tail">
-                    <p class="page-tail-satir">Senin de anlatmak istediklerin mi var?</p>
-                    <button type="button" class="page-tail-cta" id="pageTailGonderBtn">✍️ Hikayeni veya mesajını gönder</button>
+                    <p class="page-tail-satir">☕ Her sabah<br>5 yeni hikaye seni bekliyor.</p>
+                    <p class="page-tail-satir">🔔 Yarınki 5'i kaçırmamak için: <a href="https://x.com/gunde5_com" target="_blank" rel="noopener noreferrer">𝕏 @gunde5_com</a></p>
+                    <p class="page-tail-satir"><a href="#" id="pageTailDunBtn">📅 Dünkü 5'i oku</a></p>
+                    <button type="button" class="page-tail-cta" id="pageTailGonderBtn">✍️ Anlatacak bir hikayen mi var?</button>
                     <p class="page-tail-satir"><a href="#" onclick="openModal(event)">Sıkça Sorulan Sorular</a></p>
                     <p class="page-tail-satir page-tail-iletisim">İletişim: <button type="button" class="mail-link" data-mail="itiraf@gunde5.com" onclick="mailKopyala(event)">itiraf@gunde5.com</button></p>
-                    <p class="page-tail-satir page-tail-satir--kucuk">©️ copyright gunde5.com 2026</p>
+                    <p class="page-tail-satir page-tail-satir--kucuk">©️ gunde5.com 2026</p>
                 </div>
             </section>
 
@@ -170,14 +170,9 @@
             <span class="index-altbar-ikon index-altbar-ikon--emoji" aria-hidden="true">🔍</span>
             <span class="index-altbar-metin">Ara</span>
         </button>
-        <button type="button" class="index-altbar-item index-altbar-item--orta" id="indexAltbarGonder" aria-label="Hikaye yaz">
-            <span class="index-altbar-ikon index-altbar-ikon--orta" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 20h9"/>
-                    <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                </svg>
-            </span>
-            <span class="index-altbar-metin">Hikaye yaz</span>
+        <button type="button" class="index-altbar-item index-altbar-item--orta" id="indexAltbarEnIyiler" aria-label="En iyiler">
+            <span class="index-altbar-ikon index-altbar-ikon--orta index-altbar-ikon--emoji" aria-hidden="true">🔥</span>
+            <span class="index-altbar-metin">En iyiler</span>
         </button>
         <button type="button" class="index-altbar-item" id="indexAltbarDun" aria-label="Dünkü 5 hikaye">
             <span class="index-altbar-ikon index-altbar-ikon--emoji" aria-hidden="true">📅</span>

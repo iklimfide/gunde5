@@ -325,6 +325,33 @@
         return true;
     }
 
+    /** Supabase oturumu localStorage'dan yüklenene kadar bekler (SPA / ilk açılış yarışı). */
+    async function oturumHazirBekle(maxMs) {
+        if (!isConfigured()) return false;
+        await init();
+        var sb = getClient();
+        if (!sb) return false;
+        var limit = maxMs != null ? maxMs : 6000;
+        var start = Date.now();
+        while (Date.now() - start < limit) {
+            var res = await sb.auth.getSession();
+            if (res.data && res.data.session && res.data.session.user) {
+                if (!cachedUser) {
+                    try {
+                        await loadProfile(res.data.session.user.id);
+                    } catch (profileErr) {
+                        /* profil yüklenemese bile JWT var */
+                    }
+                }
+                return true;
+            }
+            await new Promise(function (resolve) {
+                setTimeout(resolve, 50);
+            });
+        }
+        return false;
+    }
+
     async function kayitOl(form) {
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı. js/gunde5-config.js dosyasını doldurun.');
@@ -463,7 +490,7 @@
 
     /** Index — yalnızca kartta kullanılan sütunlar (ek sorgu / profil birleştirme yok). */
     var INDEX_ITIRAF_SELECT =
-        'id,baslik,username,age,gender,city,yasadigi_yer,content_short,content_full,up_votes,down_votes,created_at';
+        'id,baslik,username,age,gender,city,yasadigi_yer,yurtdisi_sehir,content_short,content_full,up_votes,down_votes,created_at';
 
     /** Gelecek tarihli kayıtlar (planlı yayın) anasayfada görünmez. */
     function indexYayindaFiltre(q) {
@@ -508,6 +535,17 @@
         return res.data || [];
     }
 
+    function ymdGunEkle(ymd, delta) {
+        var p = String(ymd || '').split('-');
+        if (p.length !== 3) return null;
+        var d = new Date(Date.UTC(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)));
+        d.setUTCDate(d.getUTCDate() + delta);
+        var y = d.getUTCFullYear();
+        var m = d.getUTCMonth() + 1;
+        var g = d.getUTCDate();
+        return y + '-' + (m < 10 ? '0' : '') + m + '-' + (g < 10 ? '0' : '') + g;
+    }
+
     function istanbulYmdSimdi() {
         return new Intl.DateTimeFormat('en-CA', {
             timeZone: 'Europe/Istanbul',
@@ -517,32 +555,120 @@
         }).format(new Date());
     }
 
-    function istanbulYmdDun() {
-        var bugun = istanbulYmdSimdi();
-        if (!bugun) return null;
-        var p = bugun.split('-');
-        var d = new Date(Date.UTC(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)));
-        d.setUTCDate(d.getUTCDate() - 1);
-        var y = d.getUTCFullYear();
-        var m = d.getUTCMonth() + 1;
-        var g = d.getUTCDate();
-        return y + '-' + (m < 10 ? '0' : '') + m + '-' + (g < 10 ? '0' : '') + g;
+    function istanbulYmdFromIso(iso) {
+        if (!iso) return null;
+        var t = new Date(iso);
+        if (isNaN(t.getTime())) return null;
+        return new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Europe/Istanbul',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).format(t);
     }
 
-    /** YYYY-MM-DD (İstanbul günü) → [gün başı, ertesi gün başı) ISO aralığı. */
+    function istanbulYmdDun() {
+        return ymdGunEkle(istanbulYmdSimdi(), -1);
+    }
+
+    /** YYYY-MM-DD (İstanbul takvim günü) → [00:00, ertesi 00:00) ISO aralığı. */
     function istanbulGunAraligi(ymd) {
-        var p = String(ymd || '').split('-');
-        if (p.length !== 3) return null;
-        var son = new Date(Date.UTC(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)));
-        son.setUTCDate(son.getUTCDate() + 1);
-        var sy = son.getUTCFullYear();
-        var sm = son.getUTCMonth() + 1;
-        var sg = son.getUTCDate();
-        var sonYmd = sy + '-' + (sm < 10 ? '0' : '') + sm + '-' + (sg < 10 ? '0' : '') + sg;
+        var sonYmd = ymdGunEkle(ymd, 1);
+        if (!sonYmd) return null;
         return {
             bas: ymd + 'T00:00:00+03:00',
             son: sonYmd + 'T00:00:00+03:00'
         };
+    }
+
+    function rpcTarihCoz(data) {
+        if (data == null) return null;
+        var s = String(data);
+        return s.length >= 10 ? s.slice(0, 10) : null;
+    }
+
+    /** Aktif baskı: bugün yayında hikâye varsa bugün, yoksa en son yayın günü. */
+    async function aktifBaskiGunGetir() {
+        var sb = getClient();
+        if (!sb) return null;
+
+        try {
+            var rpcRes = await sb.rpc('gunde5_aktif_baski_gunu');
+            if (!rpcRes.error && rpcRes.data != null) {
+                return rpcTarihCoz(rpcRes.data);
+            }
+        } catch (eRpc) { /* istemci yedeği */ }
+
+        var takvim = istanbulYmdSimdi();
+        if (!takvim) return null;
+        var aralik = istanbulGunAraligi(takvim);
+        if (!aralik) return null;
+
+        var bugunRes = await indexYayindaFiltre(
+            sb
+                .from('itiraflar')
+                .select('id')
+                .gte('created_at', aralik.bas)
+                .lt('created_at', aralik.son)
+        ).limit(1);
+        if (!bugunRes.error && bugunRes.data && bugunRes.data.length) {
+            return takvim;
+        }
+
+        var sonRes = await indexYayindaFiltre(
+            sb
+                .from('itiraflar')
+                .select('created_at')
+                .order('created_at', { ascending: false })
+        ).limit(1);
+        if (sonRes.error || !sonRes.data || !sonRes.data.length) {
+            return null;
+        }
+        return istanbulYmdFromIso(sonRes.data[0].created_at);
+    }
+
+    async function oncekiBaskiGunGetir(aktifGun) {
+        var sb = getClient();
+        if (!sb || !aktifGun) return null;
+
+        try {
+            var rpcRes = await sb.rpc('gunde5_onceki_baski_gunu', { p_aktif: aktifGun });
+            if (!rpcRes.error && rpcRes.data != null) {
+                return rpcTarihCoz(rpcRes.data);
+            }
+        } catch (eRpc) { /* istemci yedeği */ }
+
+        var aralik = istanbulGunAraligi(aktifGun);
+        if (!aralik) return null;
+        var res = await indexYayindaFiltre(
+            sb
+                .from('itiraflar')
+                .select('created_at')
+                .lt('created_at', aralik.bas)
+                .order('created_at', { ascending: false })
+        ).limit(1);
+        if (res.error || !res.data || !res.data.length) {
+            return null;
+        }
+        return istanbulYmdFromIso(res.data[0].created_at);
+    }
+
+    async function baskiGunHikayeleriGetir(ymd, limit) {
+        var sb = getClient();
+        if (!sb || !ymd) return [];
+        var aralik = istanbulGunAraligi(ymd);
+        if (!aralik) return [];
+        var res = await indexYayindaFiltre(
+            sb
+                .from('itiraflar')
+                .select(INDEX_ITIRAF_SELECT)
+                .gte('created_at', aralik.bas)
+                .lt('created_at', aralik.son)
+        )
+            .order('created_at', { ascending: true })
+            .limit(limit || 5);
+        if (res.error) throw res.error;
+        return res.data || [];
     }
 
     function rpcSatirlarCoz(data) {
@@ -566,21 +692,9 @@
             }
         } catch (eRpc) { /* RPC yoksa istemci yedeği */ }
 
-        var bugun = istanbulYmdSimdi();
+        var bugun = await aktifBaskiGunGetir();
         if (!bugun) return [];
-        var aralik = istanbulGunAraligi(bugun);
-        if (!aralik) return [];
-        var res = await indexYayindaFiltre(
-            sb
-                .from('itiraflar')
-                .select(INDEX_ITIRAF_SELECT)
-                .gte('created_at', aralik.bas)
-                .lt('created_at', aralik.son)
-        )
-            .order('created_at', { ascending: true })
-            .limit(5);
-        if (res.error) throw res.error;
-        return res.data || [];
+        return baskiGunHikayeleriGetir(bugun, 5);
     }
 
     async function masterBugun5SiraKaydet(hikayeIds) {
@@ -615,25 +729,22 @@
         return data;
     }
 
-    /** Anasayfa — İstanbul takviminde dünün en fazla 5 hikâyesi (07:00–07:04 sırası). */
+    /** Anasayfa — aktif baskıdan önceki günün en fazla 5 hikâyesi. */
     async function indexDunun5Getir() {
         var sb = getClient();
         if (!sb) return [];
-        var dun = istanbulYmdDun();
+
+        try {
+            var rpcRes = await sb.rpc('index_dunun5_getir');
+            if (!rpcRes.error && rpcRes.data != null) {
+                return rpcSatirlarCoz(rpcRes.data);
+            }
+        } catch (eRpc) { /* istemci yedeği */ }
+
+        var aktif = await aktifBaskiGunGetir();
+        var dun = aktif ? await oncekiBaskiGunGetir(aktif) : null;
         if (!dun) return [];
-        var aralik = istanbulGunAraligi(dun);
-        if (!aralik) return [];
-        var res = await indexYayindaFiltre(
-            sb
-                .from('itiraflar')
-                .select(INDEX_ITIRAF_SELECT)
-                .gte('created_at', aralik.bas)
-                .lt('created_at', aralik.son)
-        )
-            .order('created_at', { ascending: true })
-            .limit(5);
-        if (res.error) throw res.error;
-        return res.data || [];
+        return baskiGunHikayeleriGetir(dun, 5);
     }
 
     /** Ortaya karışık: yayında tüm hikayeler (sayfalı çekim). */
@@ -660,11 +771,39 @@
         return tumu;
     }
 
+    async function indexAramaGecmisiOneri(q, limit) {
+        var sb = getClient();
+        if (!sb) return [];
+        var metin = String(q || '').trim();
+        if (metin.length < 3) return [];
+        var lim = Math.min(limit || 6, 8);
+
+        try {
+            var rpcRes = await sb.rpc('index_arama_oneri_getir', {
+                p_onek: metin,
+                p_limit: lim
+            });
+            if (!rpcRes.error && rpcRes.data != null) {
+                return rpcSatirlarCoz(rpcRes.data).map(function (row) {
+                    if (typeof row === 'string') return row.trim();
+                    if (row && row.terim) return String(row.terim).trim();
+                    return '';
+                }).filter(function (s) { return s.length >= 3; });
+            }
+        } catch (eRpc) { /* RPC yoksa boş */ }
+
+        return [];
+    }
+
+    async function indexItirafAraOneri(q, limit) {
+        return indexAramaGecmisiOneri(q, limit);
+    }
+
     async function indexItirafAra(q, offset, limit) {
         var sb = getClient();
         if (!sb) return [];
         var metin = String(q || '').trim();
-        if (metin.length < 2) return [];
+        if (metin.length < 3) return [];
         var lim = limit || INDEX_SAYFA_BOYUT;
         var off = offset || 0;
         var p = '%' + metin.replace(/[%_\\]/g, '') + '%';
@@ -672,7 +811,14 @@
             sb
                 .from('itiraflar')
                 .select(INDEX_ITIRAF_SELECT)
-                .or('username.ilike.' + p + ',baslik.ilike.' + p + ',content_full.ilike.' + p + ',content_short.ilike.' + p)
+                .or(
+                    'username.ilike.' + p +
+                    ',baslik.ilike.' + p +
+                    ',content_full.ilike.' + p +
+                    ',content_short.ilike.' + p +
+                    ',yasadigi_yer.ilike.' + p +
+                    ',city.ilike.' + p
+                )
         )
             .order('created_at', { ascending: false })
             .range(off, off + lim - 1);
@@ -928,9 +1074,6 @@
             res = await rpcPromise;
         }
 
-        if (bilet !== masterRpcBilet) {
-            throw new Error('Gönderim iptal edildi. Tekrar dene.');
-        }
         if (res.error) throw res.error;
         var data = res.data;
         if (typeof data === 'string') {
@@ -949,6 +1092,10 @@
 
     async function masterHikayeIslem(body) {
         var b = Object.assign({}, body || {});
+        if (b.itiraf_id == null && b.hikaye_id != null) {
+            b.itiraf_id = b.hikaye_id;
+        }
+        delete b.hikaye_id;
         if (b.content_full != null) {
             b.content_full = metinPerdele(String(b.content_full).replace(/^\s+|\s+$/g, ''));
         }
@@ -1084,14 +1231,20 @@
     }
 
     async function masterKamikazePanel() {
+        await init();
         var sb = getClient();
-        if (!sb) return { ok: false };
+        if (!sb) return { ok: false, hata: 'Supabase yapılandırılmadı.' };
+        var oturum = await sb.auth.getSession();
+        if (!oturum.data || !oturum.data.session) {
+            return { ok: false, hata: 'Oturum hazır değil. Birkaç saniye sonra yenile veya tekrar giriş yap.' };
+        }
         var res = await sb.rpc('master_kamikaze_panel');
         if (res.error) throw res.error;
         return res.data || { ok: false };
     }
 
     async function masterKamikazeAra(q, limit) {
+        await init();
         return masterRpc('master_kamikaze_ara', {
             q: q != null ? q : '',
             limit: limit || 40
@@ -1099,11 +1252,21 @@
     }
 
     async function masterKamikazeHikayeDetay(hikayeId) {
-        return masterRpc('master_kamikaze_hikaye_detay', { hikaye_id: hikayeId });
+        await init();
+        var id = parseInt(hikayeId, 10);
+        if (!id) {
+            return { ok: false, hata: 'hikaye_id gerekli' };
+        }
+        return masterRpc('master_kamikaze_hikaye_detay', { hikaye_id: id });
     }
 
     async function masterOyIslem(body) {
-        return masterRpc('master_oy_islem', body);
+        var b = Object.assign({}, body || {});
+        if (b.hikaye_id == null && b.itiraf_id != null) {
+            b.hikaye_id = b.itiraf_id;
+        }
+        delete b.itiraf_id;
+        return masterRpc('master_oy_islem', b);
     }
 
     function avatarDosyaDogrula(file) {
@@ -1702,6 +1865,67 @@
         });
         if (res.error) throw res.error;
         return res.data || { ok: false };
+    }
+
+    async function masterAramaTerimEkle(terim) {
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var res = await sb.rpc('master_arama_terim_ekle', { p_terim: terim });
+        if (res.error) throw res.error;
+        var data = res.data;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { data = {}; }
+        }
+        if (!data || !data.ok) {
+            throw new Error((data && data.hata) || 'Terim eklenemedi.');
+        }
+        return data;
+    }
+
+    async function masterAramaTerimGuncelle(eski, yeni) {
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var res = await sb.rpc('master_arama_terim_guncelle', { p_eski: eski, p_yeni: yeni });
+        if (res.error) throw res.error;
+        var data = res.data;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { data = {}; }
+        }
+        if (!data || !data.ok) {
+            throw new Error((data && data.hata) || 'Terim güncellenemedi.');
+        }
+        return data;
+    }
+
+    async function masterAramaTerimSil(terim) {
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var res = await sb.rpc('master_arama_terim_sil', { p_terim: terim });
+        if (res.error) throw res.error;
+        var data = res.data;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { data = {}; }
+        }
+        if (!data || !data.ok) {
+            throw new Error((data && data.hata) || 'Terim silinemedi.');
+        }
+        return data;
+    }
+
+    async function masterAramaTerimTopluSil(terimler) {
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var liste = Array.isArray(terimler) ? terimler : [];
+        var res = await sb.rpc('master_arama_terim_toplu_sil', { p_terimler: liste });
+        if (res.error) throw res.error;
+        var data = res.data;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { data = {}; }
+        }
+        if (!data || !data.ok) {
+            throw new Error((data && data.hata) || 'Terimler silinemedi.');
+        }
+        return data;
     }
 
     /** @deprecated master_trafik_istatistik + master_metrik_istatistik kullanın */
@@ -2350,6 +2574,7 @@
 
     global.Gunde5DB = {
         init: init,
+        oturumHazirBekle: oturumHazirBekle,
         isConfigured: isConfigured,
         isReady: function () { return ready; },
         getSupabaseClient: getClient,
@@ -2388,6 +2613,10 @@
         analyticsEventKaydet: analyticsEventKaydet,
         masterTrafikIstatistik: masterTrafikIstatistik,
         masterGunlukIstatistik: masterGunlukIstatistik,
+        masterAramaTerimEkle: masterAramaTerimEkle,
+        masterAramaTerimGuncelle: masterAramaTerimGuncelle,
+        masterAramaTerimSil: masterAramaTerimSil,
+        masterAramaTerimTopluSil: masterAramaTerimTopluSil,
         masterMetrikIstatistik: masterMetrikIstatistik,
         masterBugun5SiraKaydet: masterBugun5SiraKaydet,
         masterBugun5SiraSifirla: masterBugun5SiraSifirla,
@@ -2403,7 +2632,11 @@
         indexItirafListeleSayfa: indexHikayeListeleSayfa,
         indexBugunun5Getir: indexBugunun5Getir,
         indexDunun5Getir: indexDunun5Getir,
+        aktifBaskiGunGetir: aktifBaskiGunGetir,
+        oncekiBaskiGunGetir: oncekiBaskiGunGetir,
         indexItirafAra: indexItirafAra,
+        indexItirafAraOneri: indexItirafAraOneri,
+        indexAramaGecmisiOneri: indexAramaGecmisiOneri,
         indexItirafHavuzGetir: indexItirafHavuzGetir,
         INDEX_ITIRAF_SELECT: INDEX_ITIRAF_SELECT,
         kokCevapSayilari: kokCevapSayilari,

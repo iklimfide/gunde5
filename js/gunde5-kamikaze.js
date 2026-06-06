@@ -10,8 +10,11 @@
     var tabloDurum = Object.create(null);
     var aramaZamanlayici = null;
     var aramaIstekNo = 0;
-    var kolonFiltreZamanlayici = null;
-    var kolonFiltreOdak = null;
+    var aramaBekliyor = false;
+    var yuklemeIstekNo = 0;
+    var initSuruyor = null;
+    var hikayeDetayIstekNo = 0;
+    var modalIslemSuruyor = false;
     var modalState = {
         type: '',
         title: '',
@@ -81,6 +84,41 @@
         } catch (e) {
             return esc(iso);
         }
+    }
+
+    function ikiHane(n) {
+        return n < 10 ? '0' + n : String(n);
+    }
+
+    /** ISO → datetime-local (yerel saat). */
+    function isoDatetimeLocalValue(iso) {
+        if (!iso) return '';
+        try {
+            var d = new Date(iso);
+            if (isNaN(d.getTime())) return '';
+            return d.getFullYear() + '-' + ikiHane(d.getMonth() + 1) + '-' + ikiHane(d.getDate()) +
+                'T' + ikiHane(d.getHours()) + ':' + ikiHane(d.getMinutes());
+        } catch (e) {
+            return '';
+        }
+    }
+
+    /** datetime-local → Date (yerel saat). */
+    function datetimeLocalOku(raw) {
+        var metin = String(raw || '').trim();
+        if (!metin) return null;
+        var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/.exec(metin);
+        if (!m) return null;
+        var d = new Date(
+            parseInt(m[1], 10),
+            parseInt(m[2], 10) - 1,
+            parseInt(m[3], 10),
+            parseInt(m[4], 10),
+            parseInt(m[5], 10),
+            m[6] ? parseInt(m[6], 10) : 0,
+            0
+        );
+        return isNaN(d.getTime()) ? null : d;
     }
 
     function kisaMetin(s, max) {
@@ -283,16 +321,6 @@
         var durum = tabloState(id);
         var liste = arr(satirlar).slice();
 
-        kolonlar.forEach(function (kolon) {
-            var filtre = strNorm(durum.filters[kolon.key]);
-            if (!filtre || !kolon.filter) return;
-            liste = liste.filter(function (row) {
-                var deger = strNorm(tabloFilterValue(kolon, row));
-                if (kolon.filter === 'select') return tabloSelectEslesir(kolon, deger, filtre);
-                return deger.indexOf(filtre) >= 0;
-            });
-        });
-
         if (durum.sortKey) {
             var hedef = null;
             kolonlar.some(function (kolon) {
@@ -328,33 +356,14 @@
     }
 
     function renderHeaderControl(tableId, kolon, state) {
-        var html = '';
-        if (kolon.sortable !== false) {
-            html +=
-                '<button type="button" class="kamikaze-th-btn" data-km-sort="' + esc(tableId) +
-                '" data-key="' + esc(kolon.key) + '">' +
-                '<span>' + esc(kolon.etiket) + '</span><span>' + headerSortIcon(state, kolon) + '</span></button>';
-        } else {
-            html += '<div class="kamikaze-th-label">' + esc(kolon.etiket) + '</div>';
+        if (kolon.sortable === false) {
+            return '<div class="kamikaze-th-label">' + esc(kolon.etiket) + '</div>';
         }
-
-        if (!kolon.filter) return html;
-
-        if (kolon.filter === 'select') {
-            html += '<select class="kamikaze-th-input kamikaze-th-select" data-km-filter="' + esc(tableId) +
-                '" data-key="' + esc(kolon.key) + '"><option value="">Hepsi</option>';
-            arr(kolon.options).forEach(function (opt) {
-                var sec = strNorm(state.filters[kolon.key]) === strNorm(opt.value) ? ' selected' : '';
-                html += '<option value="' + esc(opt.value) + '"' + sec + '>' + esc(opt.label) + '</option>';
-            });
-            html += '</select>';
-            return html;
-        }
-
-        html += '<input type="text" class="kamikaze-th-input" data-km-filter="' + esc(tableId) +
-            '" data-key="' + esc(kolon.key) + '" value="' + esc(state.filters[kolon.key] || '') +
-            '" placeholder="Filtrele" autocomplete="off">';
-        return html;
+        return (
+            '<button type="button" class="kamikaze-th-btn" data-km-sort="' + esc(tableId) +
+            '" data-key="' + esc(kolon.key) + '">' +
+            '<span>' + esc(kolon.etiket) + '</span><span>' + headerSortIcon(state, kolon) + '</span></button>'
+        );
     }
 
     function renderTableSection(opts) {
@@ -433,7 +442,8 @@
             '.kamikaze-badge--aktif{background:linear-gradient(180deg, rgba(34,197,94,.18) 0%, rgba(34,197,94,.10) 100%);color:#15803d;border-color:rgba(21,128,61,.18)}' +
             '.kamikaze-badge--warn{background:linear-gradient(180deg, rgba(245,158,11,.18) 0%, rgba(245,158,11,.10) 100%);color:#b45309;border-color:rgba(180,83,9,.18)}' +
             '.kamikaze-inline{display:flex;flex-wrap:wrap;gap:12px}' +
-            '.kamikaze-inline label{display:grid;gap:6px;font-size:12px;font-weight:700;color:var(--text-muted)}' +
+            '.kamikaze-modal-section > label{display:grid;gap:6px;font-size:12px;font-weight:700;color:var(--text-muted);margin-top:10px}' +
+            '.kamikaze-modal-section > label textarea{width:100%}' +
             '.kamikaze-inline input,.kamikaze-inline select,.kamikaze-inline textarea,.kamikaze-modal-body input,.kamikaze-modal-body select,.kamikaze-modal-body textarea{border:1px solid var(--border-color);border-radius:12px;padding:10px 12px;background:var(--bg-card);color:var(--text-main);font:inherit}' +
             '.kamikaze-inline textarea,.kamikaze-modal-body textarea{width:100%;resize:vertical;line-height:1.45}' +
             '.kamikaze-modal{position:fixed;inset:0;z-index:1200;display:flex;align-items:stretch;justify-content:flex-end}' +
@@ -482,33 +492,7 @@
     }
 
     function ensureToolbar() {
-        var toolbar = document.getElementById('kamikazeAraclar');
-        var yenile = document.getElementById('kamikazeYenile');
-        if (!toolbar || !yenile || document.getElementById('kamikazeAra')) return;
-
-        var input = document.createElement('input');
-        input.type = 'search';
-        input.id = 'kamikazeAra';
-        input.className = 'kamikaze-select kamikaze-input';
-        input.placeholder = 'Üye, hikaye veya yorum ara…';
-        input.autocomplete = 'off';
-
-        var araBtn = document.createElement('button');
-        araBtn.type = 'button';
-        araBtn.id = 'kamikazeAraBtn';
-        araBtn.className = 'kamikaze-btn';
-        araBtn.textContent = 'Ara';
-
-        var temizleBtn = document.createElement('button');
-        temizleBtn.type = 'button';
-        temizleBtn.id = 'kamikazeAraTemizle';
-        temizleBtn.className = 'kamikaze-btn kamikaze-btn--ikincil';
-        temizleBtn.textContent = 'Temizle';
-        temizleBtn.hidden = true;
-
-        toolbar.insertBefore(input, yenile);
-        toolbar.insertBefore(araBtn, yenile);
-        toolbar.insertBefore(temizleBtn, yenile);
+        /* Arama alanları kamikaze.html içinde */
     }
 
     function toolbarAramaGuncelle() {
@@ -536,7 +520,12 @@
         document.body.appendChild(wrap);
     }
 
+    function modalAcikMi() {
+        return !!modalState.type;
+    }
+
     function modalKapat() {
+        hikayeDetayIstekNo += 1;
         var modal = document.getElementById('kamikazeModal');
         if (modal) modal.hidden = true;
         modalState = {
@@ -673,12 +662,8 @@
 
     function hikayeActionHtml(r) {
         return (
-            '<div class="kamikaze-actions">' +
-            '<button type="button" class="kamikaze-action-btn" data-km-act="story-open" data-story-id="' + esc(r.id) + '">Yönet</button>' +
-            (r.user_id
-                ? '<button type="button" class="kamikaze-action-btn" data-km-act="user-open" data-user-id="' + esc(r.user_id) + '">Üye</button>'
-                : '') +
-            '</div>'
+            '<button type="button" class="kamikaze-action-btn" data-km-act="story-open" data-story-id="' +
+            esc(r.id) + '">Düzenle</button>'
         );
     }
 
@@ -691,8 +676,6 @@
         }
         if (veri) {
             ekle(veri.son_hikayeler);
-            ekle(veri.index_lider);
-            ekle(veri.kulis_lider);
         }
         if (arama) {
             ekle(arama.hikayeler);
@@ -731,8 +714,6 @@
         if (!map || !Object.keys(map).length) return veri;
 
         veri.son_hikayeler = goruntulenmeMapUygula(veri.son_hikayeler, map);
-        veri.index_lider = goruntulenmeMapUygula(veri.index_lider, map);
-        veri.kulis_lider = goruntulenmeMapUygula(veri.kulis_lider, map);
         if (arama && arama.hikayeler) {
             arama.hikayeler = goruntulenmeMapUygula(arama.hikayeler, map);
         }
@@ -762,9 +743,7 @@
                 etiket: 'ID',
                 cellClass: 'kamikaze-col-id',
                 value: function (r) { return '#' + r.id; },
-                sortValue: function (r) { return num(r.id, 0); },
-                filterValue: function (r) { return r.id; },
-                filter: 'text'
+                sortValue: function (r) { return num(r.id, 0); }
             },
             {
                 key: 'durum',
@@ -775,58 +754,31 @@
                 sortValue: hikayeDurumText
             },
             {
-                key: 'kullanici',
-                etiket: 'Kullanıcı',
+                key: 'baslik',
+                etiket: 'Başlık',
+                cellClass: 'kamikaze-col-baslik',
+                value: function (r) { return kisaMetin(r.baslik || '—', 52); },
+                sortValue: function (r) { return r.baslik || ''; }
+            },
+            {
+                key: 'rumuz',
+                etiket: 'Rumuz',
                 cellClass: 'kamikaze-col-user',
                 value: function (r) {
                     return '<span class="kamikaze-user">' + esc(r.username || '—') +
                         (r.is_gizli ? ' <span class="kamikaze-lock" title="Gizli">🔒</span>' : '') + '</span>';
                 },
                 raw: true,
-                filter: 'text',
-                filterValue: function (r) { return (r.username || '') + ' ' + (r.user_email || ''); },
                 sortValue: function (r) { return r.username || ''; }
             },
             {
-                key: 'yas',
-                etiket: 'Yaş',
-                cellClass: 'kamikaze-col-yas',
-                value: function (r) { return r.age != null && r.age !== '' ? esc(String(r.age)) : '—'; },
-                filter: 'text',
-                filterValue: function (r) { return r.age != null ? String(r.age) : ''; },
-                sortValue: function (r) { return num(r.age, -1); }
-            },
-            {
-                key: 'cinsiyet',
-                etiket: 'Cinsiyet',
-                cellClass: 'kamikaze-col-cinsiyet',
-                value: cinsiyetHucre,
-                raw: true,
-                filter: 'select',
-                options: cinsiyetFiltreSecenekleri(),
-                filterValue: function (r) { return genderLabel(r.gender); },
-                sortValue: function (r) { return genderLabel(r.gender); }
-            },
-            {
-                key: 'il',
-                etiket: 'İl',
-                cellClass: 'kamikaze-col-il',
-                value: function (r) { return '<span class="kamikaze-il">' + esc(yerGoster(r)) + '</span>'; },
-                raw: true,
-                filter: 'select',
-                filterSelectPrefix: true,
-                options: ilFiltreSecenekleri(),
-                filterValue: function (r) { return yerGoster(r); },
-                sortValue: function (r) { return yerGoster(r); }
-            },
-            {
                 key: 'icerik',
-                etiket: 'İçerik',
+                etiket: 'Hikaye',
                 cellClass: 'kamikaze-col-icerik',
-                value: function (r) { return '<span class="kamikaze-icerik">' + kisaMetin(r.content_full || r.onizleme, 160) + '</span>'; },
+                value: function (r) {
+                    return '<span class="kamikaze-icerik">' + kisaMetin(r.content_full || r.onizleme, 120) + '</span>';
+                },
                 raw: true,
-                filter: 'text',
-                filterValue: function (r) { return r.content_full || r.onizleme || ''; },
                 sortable: false
             },
             {
@@ -834,151 +786,31 @@
                 etiket: 'Tarih',
                 cellClass: 'kamikaze-col-tarih',
                 value: function (r) { return fmtTarih(r.created_at); },
-                sortValue: function (r) { return new Date(r.created_at || 0).getTime(); },
-                filterValue: function (r) { return fmtTarih(r.created_at); },
-                filter: 'text'
+                sortValue: function (r) { return new Date(r.created_at || 0).getTime(); }
             },
             {
                 key: 'aksiyon',
-                etiket: 'İşlem',
+                etiket: '',
                 cellClass: 'kamikaze-col-islem',
                 value: hikayeActionHtml,
                 raw: true,
-                sortable: false,
-                filter: false
-            }
-        ];
-    }
-
-    function uyeKolonlari() {
-        return [
-            {
-                key: 'id',
-                etiket: 'ID',
-                value: function (r) { return '<code>' + esc(shortUuid(r.id)) + '</code>'; },
-                raw: true,
-                filter: 'text',
-                filterValue: function (r) { return r.id; },
-                sortValue: function (r) { return r.id || ''; }
-            },
-            {
-                key: 'rumuz',
-                etiket: 'Rumuz',
-                value: function (r) { return esc(r.username || '—') + (r.zorunlu_gizli ? ' <span class="kamikaze-badge kamikaze-badge--warn">gizli</span>' : ''); },
-                raw: true,
-                filter: 'text',
-                filterValue: function (r) { return r.username; },
-                sortValue: function (r) { return r.username || ''; }
-            },
-            {
-                key: 'durum',
-                etiket: 'Durum',
-                value: userDurumBadge,
-                raw: true,
-                filter: 'select',
-                options: [
-                    { value: 'aktif', label: 'Aktif' },
-                    { value: 'askıda', label: 'Askıda' },
-                    { value: 'ban', label: 'Ban' }
-                ],
-                filterValue: userDurumText,
-                sortValue: userDurumText
-            },
-            {
-                key: 'eposta',
-                etiket: 'E-posta',
-                value: function (r) { return kisaMetin(r.email, 48); },
-                raw: true,
-                filter: 'text',
-                filterValue: function (r) { return r.email; },
-                sortValue: function (r) { return r.email || ''; }
-            },
-            {
-                key: 'icerik',
-                etiket: 'İçerik',
-                value: function (r) {
-                    return fmtSayi(r.hikaye_sayisi != null ? r.hikaye_sayisi : (r.istatistik && r.istatistik.hikaye) || 0) +
-                        ' hikaye / ' +
-                        fmtSayi(r.yorum_sayisi != null ? r.yorum_sayisi : (r.istatistik && r.istatistik.yorum) || 0) +
-                        ' yorum';
-                },
-                filter: 'text',
-                filterValue: function (r) {
-                    return String(r.hikaye_sayisi != null ? r.hikaye_sayisi : 0) + ' ' +
-                        String(r.yorum_sayisi != null ? r.yorum_sayisi : 0);
-                },
-                sortValue: function (r) { return num(r.hikaye_sayisi, 0) + num(r.yorum_sayisi, 0); }
-            },
-            {
-                key: 'kayit',
-                etiket: 'Kayıt',
-                value: function (r) { return fmtTarih(r.created_at); },
-                filter: 'text',
-                filterValue: function (r) { return fmtTarih(r.created_at); },
-                sortValue: function (r) { return new Date(r.created_at || 0).getTime(); }
-            },
-            {
-                key: 'aksiyon',
-                etiket: 'İşlem',
-                value: uyeActionHtml,
-                raw: true,
                 sortable: false
             }
         ];
     }
 
-    function yorumKolonlari() {
-        return [
-            {
-                key: 'id',
-                etiket: 'ID',
-                value: function (r) { return '#' + r.id; },
-                filter: 'text',
-                filterValue: function (r) { return String(r.id) + ' ' + String(r.hikaye_id); },
-                sortValue: function (r) { return num(r.id, 0); }
-            },
-            {
-                key: 'hikaye',
-                etiket: 'Hikaye',
-                value: function (r) { return '#' + r.hikaye_id + ' ' + yorumDurumBadge(r); },
-                raw: true,
-                filter: 'text',
-                filterValue: function (r) { return String(r.hikaye_id) + ' ' + (r.hikaye_status || ''); },
-                sortValue: function (r) { return num(r.hikaye_id, 0); }
-            },
-            {
-                key: 'kullanici',
-                etiket: 'Kullanıcı',
-                value: function (r) { return r.username || '—'; },
-                filter: 'text',
-                filterValue: function (r) { return (r.username || '') + ' ' + (r.email || ''); },
-                sortValue: function (r) { return r.username || ''; }
-            },
-            {
-                key: 'yorum',
-                etiket: 'Yorum',
-                value: function (r) { return kisaMetin(r.content, 140); },
-                raw: true,
-                filter: 'text',
-                filterValue: function (r) { return r.content || ''; },
-                sortable: false
-            },
-            {
-                key: 'tarih',
-                etiket: 'Tarih',
-                value: function (r) { return fmtTarih(r.created_at); },
-                filter: 'text',
-                filterValue: function (r) { return fmtTarih(r.created_at); },
-                sortValue: function (r) { return new Date(r.created_at || 0).getTime(); }
-            },
-            {
-                key: 'aksiyon',
-                etiket: 'İşlem',
-                value: yorumActionHtml,
-                raw: true,
-                sortable: false
-            }
-        ];
+    function aramaSonucSayilariGuncelle(sonuc) {
+        if (!sonuc || !sonuc.ok) return sonuc;
+        var lim = 40;
+        var h = arr(sonuc.hikayeler).length;
+        sonuc.sayilar = {
+            hikayeler: h,
+            gosterilen: true
+        };
+        if (h >= lim) {
+            sonuc.sayilar.not = 'İlk ' + lim + ' hikaye gösteriliyor';
+        }
+        return sonuc;
     }
 
     function renderAramaBolumu() {
@@ -987,15 +819,21 @@
         var html = '<section class="kamikaze-section"><div class="kamikaze-section-head"><h2>Arama sonuçları</h2></div>';
         html += '<div class="kamikaze-search-summary">';
         html += '<span class="kamikaze-search-pill">Sorgu: <strong>' + esc(aramaMetni) + '</strong></span>';
-        html += '<span class="kamikaze-search-pill">Üye: ' + esc(fmtSayi(sayilar.uyeler)) + '</span>';
+        if (aramaBekliyor) {
+            html += '<span class="kamikaze-search-pill">Aranıyor…</span>';
+            html += '</div></section>';
+            return html;
+        }
         html += '<span class="kamikaze-search-pill">Hikaye: ' + esc(fmtSayi(sayilar.hikayeler)) + '</span>';
-        html += '<span class="kamikaze-search-pill">Yorum: ' + esc(fmtSayi(sayilar.yorumlar)) + '</span>';
+        if (sayilar.not) {
+            html += '<span class="kamikaze-search-pill kamikaze-search-pill--not">' + esc(sayilar.not) + '</span>';
+        }
         html += '</div>';
         if (!aramaData || !aramaData.ok) {
             html += '<p class="kamikaze-error">' + esc((aramaData && aramaData.hata) || 'Arama yapılamadı.') + '</p></section>';
             return html;
         }
-        if (!arr(aramaData.uyeler).length && !arr(aramaData.hikayeler).length && !arr(aramaData.yorumlar).length) {
+        if (!arr(aramaData.hikayeler).length) {
             html += '<p class="kamikaze-empty">Sonuç bulunamadı.</p></section>';
             return html;
         }
@@ -1010,20 +848,6 @@
             sectionClass: 'kamikaze-section--wide',
             empty: 'Hikaye sonucu yok.'
         });
-        html += renderTableSection({
-            id: 'arama-uyeler',
-            title: 'Aranan üyeler',
-            rows: arr(aramaData.uyeler),
-            columns: uyeKolonlari(),
-            empty: 'Üye sonucu yok.'
-        });
-        html += renderTableSection({
-            id: 'arama-yorumlar',
-            title: 'Aranan yorumlar',
-            rows: arr(aramaData.yorumlar),
-            columns: yorumKolonlari(),
-            empty: 'Yorum sonucu yok.'
-        });
         return html;
     }
 
@@ -1035,39 +859,30 @@
         toolbarAramaGuncelle();
 
         if (!veri || !veri.ok) {
-            kok.innerHTML = '<p class="kamikaze-error">' + esc((veri && veri.hata) || 'Veri alınamadı.') + '</p>';
+            kok.innerHTML =
+                '<p class="kamikaze-error">' + esc((veri && veri.hata) || 'Veri alınamadı.') + '</p>' +
+                '<div class="kamikaze-modal-actions" style="justify-content:center;margin-top:12px">' +
+                '<button type="button" class="kamikaze-btn" data-km-act="retry-load">Tekrar dene</button></div>';
             if (meta) meta.textContent = '—';
             return;
         }
 
         var hikayeler = hikayeleriFiltrele(veri.son_hikayeler, aktifFiltre);
-        var html = '';
-        html += renderAramaBolumu();
-        html += kpiHtml(veri.ozet);
-        html += renderTableSection({
-            id: 'hikayeler',
-            title: 'Hikayeler',
-            rows: hikayeler,
-            columns: hikayeKolonlari(),
-            wrapClass: 'kamikaze-table-wrap--pc',
-            tableClass: 'kamikaze-table--hikayeler',
-            sectionClass: 'kamikaze-section--wide',
-            empty: 'Bu filtrede hikaye yok.'
-        });
-        html += renderTableSection({
-            id: 'index-lider',
-            title: 'Index liderlik (r sırası)',
-            rows: arr(veri.index_lider || veri.kulis_lider),
-            columns: hikayeKolonlari(),
-            wrapClass: 'kamikaze-table-wrap--pc',
-            tableClass: 'kamikaze-table--hikayeler',
-            sectionClass: 'kamikaze-section--wide',
-            empty: 'Anasayfada hikaye yok.'
-        });
-        html += '<p class="kamikaze-note">Durum üst çubuktan; cinsiyet ve il listeden seçilir, diğer sütunlarda yazarak filtreleyebilirsiniz.</p>';
+        var html = renderAramaBolumu();
+        if (!aramaMetni) {
+            html += renderTableSection({
+                id: 'hikayeler',
+                title: 'Son hikayeler',
+                rows: hikayeler,
+                columns: hikayeKolonlari(),
+                wrapClass: 'kamikaze-table-wrap--pc',
+                tableClass: 'kamikaze-table--hikayeler',
+                sectionClass: 'kamikaze-section--wide',
+                empty: 'Bu filtrede hikaye yok.'
+            });
+        }
 
         kok.innerHTML = html;
-        kolonFiltreOdagiGeriYukle();
         if (meta) meta.textContent = 'Son güncelleme: ' + fmtTarih(veri.zaman);
     }
 
@@ -1106,28 +921,36 @@
         if (i) i.hidden = false;
     }
 
-    async function veriYukle() {
+    async function veriYukle(opts) {
         var D = db();
+        var o = opts || {};
+        var sessiz = !!o.sessiz;
         if (!D || !D.masterKamikazePanel) return;
-        yukleniyor(true);
+        var istekNo = ++yuklemeIstekNo;
+        if (!sessiz) yukleniyor(true);
         try {
-            panelData = await D.masterKamikazePanel();
-            panelData = await goruntulenmeZenginlestir(panelData, aramaData);
+            var veri = await D.masterKamikazePanel();
+            if (istekNo !== yuklemeIstekNo) return;
+            panelData = veri;
             render(panelData);
         } catch (e) {
+            if (istekNo !== yuklemeIstekNo) return;
             render({ ok: false, hata: D.hataMesaji ? D.hataMesaji(e) : String(e) });
         } finally {
-            yukleniyor(false);
+            if (istekNo === yuklemeIstekNo && !sessiz) yukleniyor(false);
         }
     }
 
-    async function panelVeAramaYenile() {
+    async function panelVeAramaYenile(opts) {
         var D = db();
+        var o = opts || {};
         var q = aramaMetni;
-        await veriYukle();
+        await veriYukle({ sessiz: !!o.sessiz });
         if (!D || !q || !D.masterKamikazeAra) return;
         try {
-            aramaData = await D.masterKamikazeAra(q, 40);
+            var sonuc = await D.masterKamikazeAra(q, 40);
+            aramaSonucSayilariGuncelle(sonuc);
+            aramaData = sonuc;
         } catch (e) {
             aramaData = { ok: false, hata: D.hataMesaji ? D.hataMesaji(e) : String(e) };
         }
@@ -1157,26 +980,32 @@
             return;
         }
         istekNo = ++aramaIstekNo;
-        yukleniyor(true);
+        aramaBekliyor = true;
+        aramaData = null;
+        renderCurrent();
         try {
             var sonuc = await D.masterKamikazeAra(aramaMetni, 40);
             if (istekNo !== aramaIstekNo) return;
+            aramaSonucSayilariGuncelle(sonuc);
             aramaData = sonuc;
-            if (panelData && panelData.ok) {
-                await goruntulenmeZenginlestir(panelData, aramaData);
+            aramaBekliyor = false;
+            renderCurrent();
+            if (panelData && panelData.ok && sonuc && sonuc.ok) {
+                goruntulenmeZenginlestir(panelData, aramaData).then(function () {
+                    if (istekNo === aramaIstekNo) renderCurrent();
+                }).catch(function () { /* sessiz */ });
             }
         } catch (e) {
             if (istekNo !== aramaIstekNo) return;
+            aramaBekliyor = false;
             aramaData = { ok: false, hata: D.hataMesaji ? D.hataMesaji(e) : String(e) };
-        } finally {
-            if (istekNo !== aramaIstekNo) return;
-            yukleniyor(false);
             renderCurrent();
         }
     }
 
     function aramaTemizle() {
         aramaIstekNo += 1;
+        aramaBekliyor = false;
         if (aramaZamanlayici) {
             clearTimeout(aramaZamanlayici);
             aramaZamanlayici = null;
@@ -1187,36 +1016,25 @@
         renderCurrent();
     }
 
-    function aramaCanliTetikle() {
-        if (aramaZamanlayici) clearTimeout(aramaZamanlayici);
-        aramaZamanlayici = setTimeout(function () {
-            aramaYap(false);
-        }, 250);
+    function kamikazeAuthBagla() {
+        if (global.__g5KamikazeAuthBound) return;
+        global.__g5KamikazeAuthBound = true;
+        var onceki = global.gunde5AuthDegisti;
+        global.gunde5AuthDegisti = function (event) {
+            if (typeof onceki === 'function') onceki(event);
+            if (event !== 'SIGNED_IN' && event !== 'INITIAL_SESSION' && event !== 'TOKEN_REFRESHED') return;
+            var y = document.getElementById('kamikazeYetkisiz');
+            var kok = document.getElementById('kamikazeIcerik');
+            var yetkisiz = y && !y.hidden;
+            var hataVar = kok && kok.querySelector('.kamikaze-error');
+            if (yetkisiz || hataVar) init(true);
+        };
     }
 
     function hikayeModalHtml(veri) {
         var hikaye = (veri && veri.hikaye) || {};
-        var yorumlar = arr(veri && veri.yorumlar);
-        var oylar = arr(veri && veri.oylar);
         var yerSecili = hikaye.yasadigi_yer || '';
         var yurtdisiAcik = yerSecili === 'yurtdisi';
-        var sonucHtml = '';
-
-        if (modalState.voteUserQuery && modalState.voteUserResults.length) {
-            sonucHtml += '<div class="kamikaze-vote-results">';
-            modalState.voteUserResults.forEach(function (u) {
-                sonucHtml +=
-                    '<div class="kamikaze-vote-result">' +
-                    '<div><strong>' + esc(u.username || '—') + '</strong><div class="kamikaze-note">' + esc(u.email || '—') + '</div></div>' +
-                    '<div class="kamikaze-vote-row-actions">' +
-                    '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-vote-add" data-user-id="' + esc(u.id) + '" data-vote="1">Like</button>' +
-                    '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-vote-add" data-user-id="' + esc(u.id) + '" data-vote="-1">Dislike</button>' +
-                    '</div></div>';
-            });
-            sonucHtml += '</div>';
-        } else if (modalState.voteUserQuery && !modalState.voteUserResults.length) {
-            sonucHtml = '<p class="kamikaze-note">Bu aramada üye bulunamadı.</p>';
-        }
 
         return (
             '<section class="kamikaze-modal-section">' +
@@ -1225,98 +1043,48 @@
             '<span>' + statusBadge(hikaye.status, hikaye.silindi_at, hikaye.created_at) + '</span>' +
             '<span>' + esc(fmtTarih(hikaye.created_at)) + '</span>' +
             '<span>👍 ' + esc(fmtSayi(hikaye.up_votes)) + ' · 👎 ' + esc(fmtSayi(hikaye.down_votes)) + '</span>' +
-            '<span>👁 ' + esc(fmtSayi(hikaye.tekil_goruntulenme)) + ' tekil · ' + esc(fmtSayi(hikaye.sayfa_goruntulenme)) + ' çoğul</span>' +
+            '<span>👁 ' + esc(fmtSayi(hikaye.tekil_goruntulenme)) + ' · ' + esc(fmtSayi(hikaye.sayfa_goruntulenme)) + '</span>' +
             '</div>' +
             '<div class="kamikaze-modal-actions">' +
-            (hikaye.user_id
-                ? '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="open-user" data-user-id="' + esc(hikaye.user_id) + '">Üye profilini aç</button>'
-                : '') +
             '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="refresh-story">Yenile</button>' +
             '</div>' +
             '</section>' +
 
             '<section class="kamikaze-modal-section">' +
-            '<h3>Hikaye yönetimi</h3>' +
-            '<textarea id="kmStoryText" rows="8">' + esc(hikaye.content_full || '') + '</textarea>' +
+            '<h3>Hikaye</h3>' +
+            '<div class="kamikaze-modal-grid kamikaze-modal-grid--tek">' +
+            '<label>Başlık<input type="text" id="kmStoryBaslik" maxlength="120" value="' + esc(hikaye.baslik || '') + '"></label>' +
+            '<label>Rumuz<input type="text" id="kmStoryRumuz" maxlength="50" value="' + esc(hikaye.username || '') + '"></label>' +
+            '</div>' +
+            '<label>Hikaye metni<textarea id="kmStoryText" rows="10">' + esc(hikaye.content_full || '') + '</textarea></label>' +
             '<div class="kamikaze-modal-actions">' +
-            '<button type="button" class="kamikaze-modal-btn kamikaze-modal-btn--primary" data-km-modal-act="story-save-text">Metni kaydet</button>' +
+            '<button type="button" class="kamikaze-modal-btn kamikaze-modal-btn--primary" data-km-modal-act="story-save-text">Kaydet</button>' +
             '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-toggle-visibility">' + (hikaye.is_gizli ? 'Gizliyi kaldır' : 'Gizle') + '</button>' +
             (hikaye.silindi_at
                 ? '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-restore">Geri al</button>'
                 : '<button type="button" class="kamikaze-modal-btn kamikaze-modal-btn--tehlike" data-km-modal-act="story-delete">Sil</button>') +
             '</div>' +
-            '<div class="kamikaze-modal-grid">' +
-            '<label>Durum<select id="kmStoryStatus"><option value="kulis"' + (hikaye.status === 'kulis' ? ' selected' : '') + '>Index</option><option value="podyum"' + (hikaye.status === 'podyum' ? ' selected' : '') + '>Podyum</option></select></label>' +
-            '<label>Like/Dislike<input id="kmStoryVoteSummary" value="👍 ' + esc(fmtSayi(hikaye.up_votes)) + ' · 👎 ' + esc(fmtSayi(hikaye.down_votes)) + '" disabled></label>' +
-            '</div>' +
-            '<div class="kamikaze-modal-actions"><button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-save-status">Durumu uygula</button></div>' +
             '</section>' +
 
             '<section class="kamikaze-modal-section">' +
-            '<h3>Kart meta</h3>' +
+            '<h3>Durum ve kart</h3>' +
             '<div class="kamikaze-modal-grid">' +
+            '<label>Durum<select id="kmStoryStatus"><option value="kulis"' + (hikaye.status === 'kulis' ? ' selected' : '') + '>Index</option><option value="podyum"' + (hikaye.status === 'podyum' ? ' selected' : '') + '>Podyum</option></select></label>' +
+            '<label>Yayın / planlama<input type="datetime-local" id="kmStoryYayin" step="60" value="' + esc(isoDatetimeLocalValue(hikaye.created_at)) + '"></label>' +
             '<label>Yaş<input type="number" min="18" max="120" id="kmStoryAge" value="' + esc(hikaye.age != null ? hikaye.age : '') + '"></label>' +
             '<label>Cinsiyet<select id="kmStoryGender"><option value="female"' + (hikaye.gender === 'female' ? ' selected' : '') + '>Kadın</option><option value="male"' + (hikaye.gender === 'male' ? ' selected' : '') + '>Erkek</option></select></label>' +
             '<label>Yaşadığı yer<select id="kmStoryYer">' + selectYerHtml(yerSecili) + '</select></label>' +
             '<label id="kmStoryYurtdisiWrap"' + (yurtdisiAcik ? '' : ' hidden') + '>Yurtdışı şehir<input type="text" id="kmStoryYurtdisi" maxlength="80" value="' + esc(hikaye.yurtdisi_sehir || '') + '"></label>' +
-            '</div>' +
-            '<div class="kamikaze-modal-actions"><button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-save-meta">Meta kaydet</button></div>' +
-            '</section>' +
-
-            '<section class="kamikaze-modal-section">' +
-            '<h3>Oy sayaçları</h3>' +
-            '<div class="kamikaze-modal-grid">' +
             '<label>Like<input type="number" min="0" id="kmStoryUpVotes" value="' + esc(num(hikaye.up_votes, 0)) + '"></label>' +
             '<label>Dislike<input type="number" min="0" id="kmStoryDownVotes" value="' + esc(num(hikaye.down_votes, 0)) + '"></label>' +
             '</div>' +
-            '<div class="kamikaze-modal-actions"><button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-save-counts">Sayaçları kaydet</button></div>' +
-            '</section>' +
-
-            '<section class="kamikaze-modal-section">' +
-            '<h3>Yorumlar</h3>' +
-            (yorumlar.length
-                ? yorumlar.map(function (y) {
-                    var highlight = String(modalState.highlightCommentId || '') === String(y.id) ? ' kamikaze-highlight' : '';
-                    return (
-                        '<article class="kamikaze-mini-card' + highlight + '">' +
-                        '<div class="kamikaze-mini-head"><span>#' + esc(y.id) + ' · ' + esc(y.username || '—') + '</span><span>' + esc(fmtTarih(y.created_at)) + '</span></div>' +
-                        '<textarea rows="4" data-km-comment-text="' + esc(y.id) + '">' + esc(y.content || '') + '</textarea>' +
-                        '<div class="kamikaze-mini-actions">' +
-                        '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="comment-save" data-comment-id="' + esc(y.id) + '">Kaydet</button>' +
-                        '<button type="button" class="kamikaze-modal-btn kamikaze-modal-btn--tehlike" data-km-modal-act="comment-delete" data-comment-id="' + esc(y.id) + '">Sil</button>' +
-                        (y.user_id ? '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="open-user" data-user-id="' + esc(y.user_id) + '">Üye</button>' : '') +
-                        '</div></article>'
-                    );
-                }).join('')
-                : '<p class="kamikaze-empty">Bu hikayede yorum yok.</p>') +
-            '</section>' +
-
-            '<section class="kamikaze-modal-section">' +
-            '<h3>Oy kayıtları</h3>' +
-            '<div class="kamikaze-modal-grid kamikaze-modal-grid--tek">' +
-            '<label>Üye ara<input type="search" id="kmVoteUserQuery" value="' + esc(modalState.voteUserQuery || '') + '" placeholder="Rumuz veya e-posta"></label>' +
+            '<p class="kamikaze-note">Gelecek tarih → planlı (index’te henüz görünmez). Geçmiş/şimdi → yayında.</p>' +
+            '<div class="kamikaze-modal-actions">' +
+            '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-save-status">Durumu kaydet</button>' +
+            '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-save-yayin">Tarihi kaydet</button>' +
+            '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-save-meta">Kart bilgisini kaydet</button>' +
+            '<button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-save-counts">Oy sayılarını kaydet</button>' +
             '</div>' +
-            '<div class="kamikaze-modal-actions"><button type="button" class="kamikaze-modal-btn" data-km-modal-act="story-vote-search">Üye ara</button></div>' +
-            sonucHtml +
-            (oylar.length
-                ? '<div class="kamikaze-table-wrap"><table class="kamikaze-table"><thead><tr><th>Üye</th><th>Oy</th><th>Tarih</th><th>İşlem</th></tr></thead><tbody>' +
-                oylar.map(function (o) {
-                    return (
-                        '<tr>' +
-                        '<td>' + esc(o.username || '—') + '<div class="kamikaze-note">' + esc(o.email || '') + '</div></td>' +
-                        '<td><select data-km-vote-select="' + esc(o.id) + '">' +
-                        '<option value="1"' + (num(o.oy, 0) === 1 ? ' selected' : '') + '>Like</option>' +
-                        '<option value="-1"' + (num(o.oy, 0) === -1 ? ' selected' : '') + '>Dislike</option>' +
-                        '</select></td>' +
-                        '<td>' + esc(fmtTarih(o.created_at)) + '</td>' +
-                        '<td><div class="kamikaze-actions">' +
-                        '<button type="button" class="kamikaze-action-btn" data-km-modal-act="vote-save" data-vote-id="' + esc(o.id) + '">Kaydet</button>' +
-                        '<button type="button" class="kamikaze-action-btn kamikaze-action-btn--tehlike" data-km-modal-act="vote-delete" data-vote-id="' + esc(o.id) + '">Sil</button>' +
-                        '</div></td>' +
-                        '</tr>'
-                    );
-                }).join('') + '</tbody></table></div>'
-                : '<p class="kamikaze-empty">Bu hikayede oy kaydı yok.</p>') +
             '</section>'
         );
     }
@@ -1464,16 +1232,14 @@
     }
 
     function yorumSatiriBul(cevapId) {
-        var kaynaklar = [arr(aramaData && aramaData.yorumlar), arr(panelData && panelData.son_yorumlar)];
+        var liste = arr(panelData && panelData.son_yorumlar);
         var bulunan = null;
-        kaynaklar.some(function (liste) {
-            return liste.some(function (item) {
-                if (String(item.id) === String(cevapId)) {
-                    bulunan = item;
-                    return true;
-                }
-                return false;
-            });
+        liste.some(function (item) {
+            if (String(item.id) === String(cevapId)) {
+                bulunan = item;
+                return true;
+            }
+            return false;
         });
         return bulunan;
     }
@@ -1481,29 +1247,33 @@
     async function hikayeDetayAc(hikayeId, focusCommentId) {
         var D = db();
         if (!D || !D.masterKamikazeHikayeDetay) return;
+        var istekNo = ++hikayeDetayIstekNo;
         modalState.type = 'loading';
         modalState.title = 'Hikaye #' + hikayeId;
         modalState.highlightCommentId = focusCommentId || null;
         modalGuncelle();
         try {
             var sonuc = await D.masterKamikazeHikayeDetay(hikayeId);
+            if (istekNo !== hikayeDetayIstekNo) return;
             if (!sonuc || !sonuc.ok) throw new Error((sonuc && sonuc.hata) || 'Hikaye yüklenemedi');
-            if (sonuc.hikaye && (D.masterHikayeGoruntulenmeToplu || D.hikayeGoruntulenmeToplu)) {
-                try {
-                    var fn = D.masterHikayeGoruntulenmeToplu || D.hikayeGoruntulenmeToplu;
-                    var gMap = await fn([hikayeId]);
-                    var g = gMap[hikayeId];
-                    if (g) {
-                        sonuc.hikaye.tekil_goruntulenme = g.tekil_goruntulenme;
-                        sonuc.hikaye.sayfa_goruntulenme = g.sayfa_goruntulenme;
-                    }
-                } catch (eG) { /* sessiz */ }
-            }
             modalState.type = 'story';
             modalState.title = 'Hikaye #' + hikayeId;
             modalState.data = sonuc;
             modalGuncelle();
+            if (sonuc.hikaye && (D.masterHikayeGoruntulenmeToplu || D.hikayeGoruntulenmeToplu)) {
+                var fn = D.masterHikayeGoruntulenmeToplu || D.hikayeGoruntulenmeToplu;
+                fn([hikayeId]).then(function (gMap) {
+                    if (istekNo !== hikayeDetayIstekNo) return;
+                    if (modalState.type !== 'story' || !modalState.data || !modalState.data.hikaye) return;
+                    var g = gMap[hikayeId];
+                    if (!g) return;
+                    modalState.data.hikaye.tekil_goruntulenme = g.tekil_goruntulenme;
+                    modalState.data.hikaye.sayfa_goruntulenme = g.sayfa_goruntulenme;
+                    modalGuncelle();
+                }).catch(function () { /* sessiz */ });
+            }
         } catch (e) {
+            if (istekNo !== hikayeDetayIstekNo) return;
             modalState.type = 'error';
             modalState.title = 'Hata';
             modalState.error = D.hataMesaji ? D.hataMesaji(e) : String(e);
@@ -1559,7 +1329,12 @@
             var sonuc = await D.masterHikayeIslem(body);
             if (!sonuc || !sonuc.ok) throw new Error((sonuc && sonuc.hata) || 'İşlem başarısız');
             if (ui() && ui().showToast) ui().showToast('Hikaye güncellendi');
-            await panelVeAramaYenile();
+            try {
+                global.dispatchEvent(new CustomEvent('gunde5-itiraf-guncellendi', {
+                    detail: { id: body.itiraf_id || body.hikaye_id }
+                }));
+            } catch (eEv) { /* sessiz */ }
+            await panelVeAramaYenile({ sessiz: true });
             return true;
         } catch (e) {
             if (ui() && ui().showToast) ui().showToast(D.hataMesaji ? D.hataMesaji(e) : String(e), 'hata');
@@ -1574,7 +1349,7 @@
             var sonuc = await D.masterCevapIslem(body);
             if (!sonuc || !sonuc.ok) throw new Error((sonuc && sonuc.hata) || 'İşlem başarısız');
             if (ui() && ui().showToast) ui().showToast(siliniyor ? 'Yorum silindi' : 'Yorum güncellendi');
-            await panelVeAramaYenile();
+            await panelVeAramaYenile({ sessiz: true });
             return true;
         } catch (e) {
             if (ui() && ui().showToast) ui().showToast(D.hataMesaji ? D.hataMesaji(e) : String(e), 'hata');
@@ -1589,7 +1364,7 @@
             var sonuc = await D.masterOyIslem(body);
             if (!sonuc || !sonuc.ok) throw new Error((sonuc && sonuc.hata) || 'Oy işlemi başarısız');
             if (ui() && ui().showToast) ui().showToast(siliniyor ? 'Oy silindi' : 'Oy güncellendi');
-            await panelVeAramaYenile();
+            await panelVeAramaYenile({ sessiz: true });
             return true;
         } catch (e) {
             if (ui() && ui().showToast) ui().showToast(D.hataMesaji ? D.hataMesaji(e) : String(e), 'hata');
@@ -1614,62 +1389,78 @@
         }
         if (act === 'story-save-text') {
             success = await hikayeIslemUygula({
-                hikaye_id: id,
+                itiraf_id: id,
                 islem: 'guncelle',
-                content_full: document.getElementById('kmStoryText').value
+                content_full: document.getElementById('kmStoryText').value,
+                baslik: document.getElementById('kmStoryBaslik').value,
+                username: document.getElementById('kmStoryRumuz').value
             });
-            if (success) await hikayeDetayAc(id, modalState.highlightCommentId);
+            if (success && modalAcikMi()) await hikayeDetayAc(id, modalState.highlightCommentId);
             return;
         }
         if (act === 'story-toggle-visibility') {
             success = await hikayeIslemUygula({
-                hikaye_id: id,
+                itiraf_id: id,
                 islem: hikaye.is_gizli ? 'goster' : 'gizle'
             });
-            if (success) await hikayeDetayAc(id, modalState.highlightCommentId);
+            if (success && modalAcikMi()) await hikayeDetayAc(id, modalState.highlightCommentId);
             return;
         }
         if (act === 'story-delete') {
             if (!global.confirm('Bu hikayeyi silmek istiyor musun?')) return;
-            success = await hikayeIslemUygula({ hikaye_id: id, islem: 'sil' });
-            if (success) await hikayeDetayAc(id, modalState.highlightCommentId);
+            success = await hikayeIslemUygula({ itiraf_id: id, islem: 'sil' });
+            if (success && modalAcikMi()) await hikayeDetayAc(id, modalState.highlightCommentId);
             return;
         }
         if (act === 'story-restore') {
-            success = await hikayeIslemUygula({ hikaye_id: id, islem: 'geri_al' });
-            if (success) await hikayeDetayAc(id, modalState.highlightCommentId);
+            success = await hikayeIslemUygula({ itiraf_id: id, islem: 'geri_al' });
+            if (success && modalAcikMi()) await hikayeDetayAc(id, modalState.highlightCommentId);
             return;
         }
         if (act === 'story-save-status') {
             success = await hikayeIslemUygula({
-                hikaye_id: id,
+                itiraf_id: id,
                 islem: 'status',
                 status: document.getElementById('kmStoryStatus').value
             });
-            if (success) await hikayeDetayAc(id, modalState.highlightCommentId);
+            if (success && modalAcikMi()) await hikayeDetayAc(id, modalState.highlightCommentId);
+            return;
+        }
+        if (act === 'story-save-yayin') {
+            var planTarih = datetimeLocalOku(document.getElementById('kmStoryYayin') && document.getElementById('kmStoryYayin').value);
+            if (!planTarih) {
+                if (ui() && ui().showToast) ui().showToast('Geçerli bir yayın tarihi seç.', 'hata');
+                return;
+            }
+            success = await hikayeIslemUygula({
+                itiraf_id: id,
+                islem: 'yayin_tarihi',
+                created_at: planTarih.toISOString()
+            });
+            if (success && modalAcikMi()) await hikayeDetayAc(id, modalState.highlightCommentId);
             return;
         }
         if (act === 'story-save-counts') {
             success = await hikayeIslemUygula({
-                hikaye_id: id,
+                itiraf_id: id,
                 islem: 'oylar',
                 up_votes: parseInt(document.getElementById('kmStoryUpVotes').value, 10) || 0,
                 down_votes: parseInt(document.getElementById('kmStoryDownVotes').value, 10) || 0
             });
-            if (success) await hikayeDetayAc(id, modalState.highlightCommentId);
+            if (success && modalAcikMi()) await hikayeDetayAc(id, modalState.highlightCommentId);
             return;
         }
         if (act === 'story-save-meta') {
             var yer = document.getElementById('kmStoryYer').value;
             success = await hikayeIslemUygula({
-                hikaye_id: id,
+                itiraf_id: id,
                 islem: 'meta',
                 age: parseInt(document.getElementById('kmStoryAge').value, 10),
                 gender: document.getElementById('kmStoryGender').value,
                 yasadigi_yer: yer || null,
                 yurtdisi_sehir: yer === 'yurtdisi' ? String(document.getElementById('kmStoryYurtdisi').value || '').trim() || null : null
             });
-            if (success) await hikayeDetayAc(id, modalState.highlightCommentId);
+            if (success && modalAcikMi()) await hikayeDetayAc(id, modalState.highlightCommentId);
             return;
         }
         if (act === 'comment-save') {
@@ -1711,7 +1502,7 @@
         }
         if (act === 'story-vote-add') {
             success = await oyIslemUygula({
-                hikaye_id: id,
+                itiraf_id: id,
                 uye_id: btn.getAttribute('data-user-id'),
                 islem: 'ekle',
                 oy: parseInt(btn.getAttribute('data-vote'), 10) || 1
@@ -1770,7 +1561,7 @@
                 });
                 if (!sonuc || !sonuc.ok) throw new Error((sonuc && sonuc.hata) || 'Kaydedilemedi');
                 if (ui() && ui().showToast) ui().showToast('Üye kaydedildi');
-                await panelVeAramaYenile();
+                await panelVeAramaYenile({ sessiz: true });
                 await uyeDetayAc(uye.id);
             } catch (e) {
                 if (ui() && ui().showToast) ui().showToast(D.hataMesaji ? D.hataMesaji(e) : String(e), 'hata');
@@ -1789,7 +1580,7 @@
                 var cevap = await D.masterUyeIslem({ uye_id: uye.id, islem: islem, not: not });
                 if (!cevap || !cevap.ok) throw new Error((cevap && cevap.hata) || 'İşlem başarısız');
                 if (ui() && ui().showToast) ui().showToast(islem === 'sil' ? 'Üye silindi' : 'Üye güncellendi');
-                await panelVeAramaYenile();
+                await panelVeAramaYenile({ sessiz: true });
                 if (islem === 'sil') {
                     modalKapat();
                     return;
@@ -1810,7 +1601,7 @@
             try {
                 await D.masterUyeAvatarKaldir(uye.id);
                 if (ui() && ui().showToast) ui().showToast('Profil fotoğrafı kaldırıldı');
-                await panelVeAramaYenile();
+                await panelVeAramaYenile({ sessiz: true });
                 await uyeDetayAc(uye.id);
             } catch (e3) {
                 if (ui() && ui().showToast) ui().showToast(D.hataMesaji ? D.hataMesaji(e3) : String(e3), 'hata');
@@ -1819,7 +1610,7 @@
         }
         if (act === 'user-story-save') {
             success = await hikayeIslemUygula({
-                hikaye_id: btn.getAttribute('data-story-id'),
+                itiraf_id: btn.getAttribute('data-story-id'),
                 islem: 'guncelle',
                 content_full: (document.querySelector('[data-km-user-story-text="' + btn.getAttribute('data-story-id') + '"]') || {}).value || ''
             });
@@ -1828,7 +1619,7 @@
         }
         if (act === 'user-story-toggle') {
             success = await hikayeIslemUygula({
-                hikaye_id: btn.getAttribute('data-story-id'),
+                itiraf_id: btn.getAttribute('data-story-id'),
                 islem: btn.getAttribute('data-hidden') === '1' ? 'goster' : 'gizle'
             });
             if (success) await uyeDetayAc(uye.id);
@@ -1837,7 +1628,7 @@
         if (act === 'user-story-delete') {
             if (!global.confirm('Bu hikayeyi silmek istiyor musun?')) return;
             success = await hikayeIslemUygula({
-                hikaye_id: btn.getAttribute('data-story-id'),
+                itiraf_id: btn.getAttribute('data-story-id'),
                 islem: 'sil'
             });
             if (success) await uyeDetayAc(uye.id);
@@ -1845,7 +1636,7 @@
         }
         if (act === 'user-story-restore') {
             success = await hikayeIslemUygula({
-                hikaye_id: btn.getAttribute('data-story-id'),
+                itiraf_id: btn.getAttribute('data-story-id'),
                 islem: 'geri_al'
             });
             if (success) await uyeDetayAc(uye.id);
@@ -1912,7 +1703,7 @@
         try {
             await D.masterUyeAvatarYukle(uye.id, file);
             if (ui() && ui().showToast) ui().showToast('Profil fotoğrafı güncellendi');
-            await panelVeAramaYenile();
+            await panelVeAramaYenile({ sessiz: true });
             await uyeDetayAc(uye.id);
         } catch (e) {
             if (ui() && ui().showToast) ui().showToast(D.hataMesaji ? D.hataMesaji(e) : String(e), 'hata');
@@ -1931,9 +1722,6 @@
         if (sec) {
             sec.addEventListener('change', function () {
                 aktifFiltre = sec.value || 'hepsi';
-                if (tabloDurum.hikayeler && tabloDurum.hikayeler.filters) {
-                    delete tabloDurum.hikayeler.filters.durum;
-                }
                 renderCurrent();
             });
         }
@@ -1965,9 +1753,7 @@
                 var yeniMetin = String(araInp.value || '').trim();
                 if (!yeniMetin) {
                     aramaTemizle();
-                    return;
                 }
-                aramaCanliTetikle();
             });
         }
 
@@ -2000,40 +1786,12 @@
                 if (!actBtn) return;
                 var act = actBtn.getAttribute('data-km-act');
                 if (act === 'story-open') {
-                    hikayeDetayAc(actBtn.getAttribute('data-story-id'), actBtn.getAttribute('data-comment-focus'));
-                } else if (act === 'user-open') {
-                    uyeDetayAc(actBtn.getAttribute('data-user-id'));
-                } else if (act === 'comment-open') {
-                    yorumDetayAc(actBtn.getAttribute('data-comment-id'));
+                    hikayeDetayAc(actBtn.getAttribute('data-story-id')).catch(function (e) {
+                        if (ui() && ui().showToast) ui().showToast(db().hataMesaji ? db().hataMesaji(e) : String(e), 'hata');
+                    });
+                } else if (act === 'retry-load') {
+                    veriYukle();
                 }
-            });
-
-            icerik.addEventListener('input', function (e) {
-                var filtre = e.target.closest('[data-km-filter]');
-                if (!filtre || filtre.tagName === 'SELECT') return;
-                var tablo = filtre.getAttribute('data-km-filter');
-                var key = filtre.getAttribute('data-key');
-                tabloState(tablo).filters[key] = filtre.value || '';
-                kolonFiltreOdagiKaydet(filtre);
-                if (kolonFiltreZamanlayici) clearTimeout(kolonFiltreZamanlayici);
-                kolonFiltreZamanlayici = setTimeout(function () {
-                    kolonFiltreZamanlayici = null;
-                    renderCurrent();
-                }, 200);
-            });
-
-            icerik.addEventListener('change', function (e) {
-                var filtre = e.target.closest('[data-km-filter]');
-                if (!filtre) return;
-                var tablo = filtre.getAttribute('data-km-filter');
-                var key = filtre.getAttribute('data-key');
-                tabloState(tablo).filters[key] = filtre.value || '';
-                if (kolonFiltreZamanlayici) {
-                    clearTimeout(kolonFiltreZamanlayici);
-                    kolonFiltreZamanlayici = null;
-                }
-                kolonFiltreOdak = null;
-                renderCurrent();
             });
         }
 
@@ -2047,19 +1805,27 @@
                 var btn = e.target.closest('[data-km-modal-act]');
                 if (!btn) return;
                 var act = btn.getAttribute('data-km-modal-act');
+                if (modalIslemSuruyor) return;
+                modalIslemSuruyor = true;
+                var islem = Promise.resolve();
                 if (modalState.type === 'story') {
-                    storyModalAction(act, btn);
+                    islem = storyModalAction(act, btn);
                 } else if (modalState.type === 'user') {
-                    userModalAction(act, btn);
+                    islem = userModalAction(act, btn);
                 } else if (modalState.type === 'comment') {
                     if (act === 'open-story') {
-                        hikayeDetayAc(btn.getAttribute('data-story-id'), btn.getAttribute('data-comment-focus'));
+                        islem = hikayeDetayAc(btn.getAttribute('data-story-id'), btn.getAttribute('data-comment-focus'));
                     } else if (act === 'open-user') {
-                        uyeDetayAc(btn.getAttribute('data-user-id'));
+                        islem = uyeDetayAc(btn.getAttribute('data-user-id'));
                     } else {
-                        yorumModalAction(act);
+                        islem = yorumModalAction(act);
                     }
                 }
+                Promise.resolve(islem).catch(function (e) {
+                    if (ui() && ui().showToast) ui().showToast(db().hataMesaji ? db().hataMesaji(e) : String(e), 'hata');
+                }).finally(function () {
+                    modalIslemSuruyor = false;
+                });
             });
 
             modal.addEventListener('change', function (e) {
@@ -2076,15 +1842,22 @@
         });
     }
 
-    async function init(yeniden) {
+    async function initBaslat() {
         var D = db();
         var U = ui();
         if (!D) return;
 
-        if (!yeniden) {
+        kamikazeAuthBagla();
+        yukleniyor(true);
+
+        try {
+            await D.init();
+        } catch (e) { /* sessiz */ }
+
+        if (D.oturumHazirBekle) {
             try {
-                await D.init();
-            } catch (e) { /* sessiz */ }
+                await D.oturumHazirBekle(8000);
+            } catch (eO) { /* sessiz */ }
         }
 
         if (U && U.guncelleHeaderOturum) {
@@ -2096,10 +1869,17 @@
             } catch (e2) { /* sessiz */ }
         }
 
-        filtreBagla();
-
         var oturum = D.getGunde5User && D.getGunde5User();
-        if (!oturum || !oturum.id) {
+        var sb = D.getSupabaseClient && D.getSupabaseClient();
+        var jwtVar = false;
+        if (sb) {
+            try {
+                var sess = await sb.auth.getSession();
+                jwtVar = !!(sess.data && sess.data.session);
+            } catch (eS) { /* sessiz */ }
+        }
+        if (!oturum || !oturum.id || !jwtVar) {
+            yukleniyor(false);
             yetkisizGoster('Kamikaze panelini görmek için site yöneticisi hesabıyla giriş yapın.', true);
             return;
         }
@@ -2112,12 +1892,22 @@
         }
 
         if (!durum || !durum.master) {
+            yukleniyor(false);
             yetkisizGoster('Bu sayfa yalnızca site yöneticisi (master) hesabı içindir.', false);
             return;
         }
 
+        filtreBagla();
         icerikGoster();
         await veriYukle();
+    }
+
+    function init(yeniden) {
+        if (initSuruyor) return initSuruyor;
+        initSuruyor = initBaslat().finally(function () {
+            initSuruyor = null;
+        });
+        return initSuruyor;
     }
 
     global.Gunde5Kamikaze = {
@@ -2125,9 +1915,13 @@
         yenile: veriYukle
     };
 
+    global.addEventListener('pageshow', function (ev) {
+        if (ev.persisted) init(true);
+    });
+
     if (global.document.readyState === 'loading') {
-        global.document.addEventListener('DOMContentLoaded', init);
+        global.document.addEventListener('DOMContentLoaded', function () { init(false); });
     } else {
-        init();
+        init(false);
     }
 })(window);

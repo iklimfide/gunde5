@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <meta name="description" content="Gunde5 site istatistikleri (yönetici).">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#6d28d9">
+    <meta name="theme-color" content="#ffffff">
     <style>
         :root {
             --bg-main: #f7f7f7;
@@ -614,6 +614,84 @@
             margin: 0 0 10px;
             letter-spacing: -0.02em;
         }
+        .istat-bolum-baslik-satir {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px 10px;
+            margin: 0 0 10px;
+        }
+        .istat-bolum-baslik-satir .istat-bolum-baslik {
+            margin: 0;
+            flex: 1 1 auto;
+        }
+        .istat-terim-araclar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .istat-terim-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .istat-terim-btn:hover { filter: brightness(0.97); }
+        .istat-terim-btn--ekle {
+            border-color: #38bdf8;
+            color: #0369a1;
+            background: #f0f9ff;
+        }
+        .istat-terim-btn--duzenle {
+            border-color: #fbbf24;
+            color: #92400e;
+            background: #fffbeb;
+        }
+        .istat-terim-btn--sil {
+            border-color: #fca5a5;
+            color: #991b1b;
+            background: #fef2f2;
+        }
+        body.dark-mode .istat-terim-btn--ekle {
+            background: rgba(29, 155, 240, 0.12);
+            color: #7dd3fc;
+            border-color: rgba(56, 189, 248, 0.35);
+        }
+        body.dark-mode .istat-terim-btn--duzenle {
+            background: rgba(245, 158, 11, 0.12);
+            color: #fbbf24;
+            border-color: rgba(251, 191, 36, 0.35);
+        }
+        body.dark-mode .istat-terim-btn--sil {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.35);
+        }
+        .istat-terim-islem {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .istat-terim-sec-kutu {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .istat-terim-sec-kutu input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .istat-terim-btn--toplu-sil:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
         .istat-kpi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -785,7 +863,7 @@
     <script src="js/gunde5-db.js"></script>
     <script src="js/gunde5-paylas.js"></script>
     <script src="js/gunde5-bildirim.js"></script>
-    <script src="js/gunde5-istatistik.js?v=4"></script>
+    <script src="js/gunde5-istatistik.js?v=6"></script>
     <link rel="stylesheet" href="css/gunde5-topbar.css?v=1">
     <link rel="stylesheet" href="css/master-panel.css?v=2">
 </head>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <meta name="description" content="gunde5 master Kamikaze paneli.">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#6d28d9">
+    <meta name="theme-color" content="#ffffff">
     <style>
         :root {
             --bg-main: #f7f7f7;
@@ -213,7 +213,8 @@
             margin-bottom: 16px;
         }
         .kamikaze-select,
-        .kamikaze-btn {
+        .kamikaze-btn,
+        .kamikaze-input {
             border: 1px solid var(--border-color);
             background: var(--bg-card);
             color: var(--text-main);
@@ -221,6 +222,23 @@
             padding: 10px 12px;
             font-size: 13px;
             font-weight: 700;
+        }
+        .kamikaze-btn--ikincil {
+            background: transparent;
+            color: var(--text-main);
+            border-color: var(--border-color);
+            box-shadow: none;
+        }
+        .kamikaze-btn--ikincil:hover {
+            background: rgba(29, 155, 240, 0.08);
+            box-shadow: none;
+            transform: none;
+            filter: none;
+        }
+        .kamikaze-input {
+            min-width: 220px;
+            flex: 1 1 280px;
+            cursor: text;
         }
         .kamikaze-btn {
             cursor: pointer;
@@ -380,7 +398,7 @@
             font-size: 12px;
         }
         .kamikaze-table--hikayeler {
-            min-width: 1080px;
+            min-width: 720px;
         }
         .kamikaze-table th,
         .kamikaze-table td {
@@ -446,6 +464,7 @@
             body.dark-mode .kamikaze-table--hikayeler tbody tr:hover td {
                 background: rgba(29, 155, 240, 0.10);
             }
+            .kamikaze-col-baslik { width: 10rem; }
             .kamikaze-col-id { width: 3.25rem; }
             .kamikaze-col-durum { width: 4.75rem; }
             .kamikaze-col-user { width: 7.5rem; }
@@ -547,10 +566,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
     <script src="js/gunde5-profil.js"></script>
     <script src="js/gunde5-ui.js"></script>
-    <script src="js/gunde5-db.js"></script>
+    <script src="js/gunde5-db.js?v=4"></script>
     <script src="js/gunde5-bildirim.js"></script>
     <script src="js/gunde5-master.js"></script>
-    <script src="js/gunde5-kamikaze.js?v=4"></script>
+    <script src="js/gunde5-kamikaze.js?v=12"></script>
     <link rel="stylesheet" href="css/gunde5-topbar.css?v=1">
     <link rel="stylesheet" href="css/master-panel.css?v=2">
 </head>
@@ -578,7 +597,7 @@
 
     <main class="container kamikaze-page">
         <h1 class="page-title">☄️ Kamikaze</h1>
-        <p class="intro">Master hesap için anasayfa hikayelerini arayıp yönetebileceğin panel. Durum filtresi üst çubuktan (Tümü, Index, Planlı, Podyum).</p>
+        <p class="intro">Hikayeleri ara, düzenle ve durumunu yönet. Arama yalnızca başlık, hikaye metni ve rumuza bakar.</p>
 
         <div id="kamikazeYetkisiz" class="kamikaze-yetkisiz" hidden>
             <p id="kamikazeYetkisizMetin"></p>
@@ -588,13 +607,16 @@
         </div>
 
         <div id="kamikazeAraclar" class="kamikaze-toolbar" hidden>
+            <input type="search" id="kamikazeAra" class="kamikaze-select kamikaze-input" placeholder="Başlık, hikaye metni veya rumuz…" autocomplete="off" aria-label="Hikaye ara">
+            <button type="button" class="kamikaze-btn" id="kamikazeAraBtn">Ara</button>
+            <button type="button" class="kamikaze-btn kamikaze-btn--ikincil" id="kamikazeAraTemizle" hidden>Temizle</button>
             <select id="kamikazeHikayeFilter" class="kamikaze-select" aria-label="Hikaye durumu">
                 <option value="hepsi">Tümü</option>
                 <option value="index">Index</option>
                 <option value="planli">Planlı</option>
                 <option value="podyum">Podyum</option>
             </select>
-            <button type="button" class="kamikaze-btn" id="kamikazeYenile">Yenile</button>
+            <button type="button" class="kamikaze-btn kamikaze-btn--ikincil" id="kamikazeYenile">Yenile</button>
             <div class="kamikaze-meta" id="kamikazeSonMeta">—</div>
         </div>
 

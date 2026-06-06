@@ -1,18 +1,5 @@
--- Master: bot/seed kartlarda yaş, cinsiyet, yaşadığı yer düzenleme
--- Canlı şema: public.itiraflar — master_hikaye_islem → islem: meta | guncelle | …
--- p_body: itiraf_id (veya geriye dönük hikaye_id), islem, …
-
-alter table public.itiraflar
-    drop constraint if exists itiraflar_status_check;
-
-alter table public.itiraflar
-    add constraint itiraflar_status_check
-    check (status in ('kulis', 'podyum', 'silindi'));
-
-update public.itiraflar
-set status = 'silindi'
-where silindi_at is not null
-  and status <> 'silindi';
+-- Kamikaze: hikaye yayın / planlama tarihi (created_at) düzenleme
+-- SQL Editor'da bir kez Run.
 
 create or replace function public.master_hikaye_islem(p_body jsonb)
 returns jsonb
@@ -109,13 +96,11 @@ begin
         update public.itiraflar set is_gizli = false where id = v_id;
     elsif v_islem = 'sil' then
         update public.itiraflar
-        set silindi_at = now(),
-            status = 'silindi'
+        set silindi_at = now(), status = 'silindi'
         where id = v_id;
     elsif v_islem = 'geri_al' then
         update public.itiraflar
-        set silindi_at = null,
-            status = 'kulis'
+        set silindi_at = null, status = 'kulis'
         where id = v_id;
     elsif v_islem = 'oylar' then
         v_up := coalesce((p_body->>'up_votes')::int, v_row.up_votes);
@@ -123,9 +108,7 @@ begin
         if v_up < 0 or v_down < 0 then
             return jsonb_build_object('ok', false, 'hata', 'oy sayisi negatif olamaz');
         end if;
-        update public.itiraflar
-        set up_votes = v_up, down_votes = v_down
-        where id = v_id;
+        update public.itiraflar set up_votes = v_up, down_votes = v_down where id = v_id;
         if to_regprocedure('public.itiraf_puan_guncelle(bigint)') is not null then
             perform public.itiraf_puan_guncelle(v_id);
         elsif to_regprocedure('public.hikaye_puan_guncelle(bigint)') is not null then

@@ -1,26 +1,33 @@
-/* gunde5 — site geneli mor üst bar (index .page-topbar ile uyumlu) */
+/* gunde5 — site geneli üst bar (sosyal medya kartları ile aynı mavi) */
 :root {
-    --g5-topbar-chrome: #6d28d9;
-    --g5-topbar-chrome-dark: #5b21b6;
+    --g5-topbar-start: #1d9bf0;
+    --g5-topbar-end: #0c4a6e;
+    --g5-topbar-border: #1a8cd8;
+    --g5-topbar-shadow: rgba(29, 155, 240, 0.25);
 }
 
-/* Mobil: tarayıcı / çentik bandı beyaz kalmasın */
+/* Mobil: overscroll / çentik — sayfa zemini */
 html {
-    background-color: var(--g5-topbar-chrome);
+    background-color: #ffffff;
+}
+
+/* İçerik kısa iken alttan html rengi görünmesin */
+body {
+    min-height: 100dvh;
 }
 
 html.g5-tema-koyu {
-    background-color: var(--g5-topbar-chrome-dark);
+    background-color: #0f1419;
 }
 
 header,
 .page-topbar,
 #indexSiteHeader {
-    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+    background: linear-gradient(135deg, var(--g5-topbar-start) 0%, var(--g5-topbar-end) 100%) !important;
     color: #ffffff !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
+    border-bottom: 1px solid var(--g5-topbar-border) !important;
     border-top: none !important;
-    box-shadow: 0 8px 24px rgba(91, 33, 182, 0.22);
+    box-shadow: 0 8px 24px var(--g5-topbar-shadow);
 }
 
 header:not(.page-topbar),
@@ -41,7 +48,8 @@ body.dark-mode #indexSiteHeader,
 html.g5-tema-koyu header,
 html.g5-tema-koyu .page-topbar,
 html.g5-tema-koyu #indexSiteHeader {
-    background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%) !important;
+    background: linear-gradient(165deg, #1a8cd8 0%, #0c4a6e 52%, #0f172a 100%) !important;
+    border-bottom-color: rgba(26, 140, 216, 0.45) !important;
     box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 }
 
@@ -49,6 +57,24 @@ header .header-brand,
 header a.header-brand,
 .page-topbar .brand {
     color: #ffffff !important;
+}
+
+header .header-brand-red,
+.page-topbar .brand-five,
+#indexSiteHeader .header-brand-red {
+    color: #ef4444 !important;
+}
+
+body.dark-mode header .header-brand-red,
+body.dark-mode .page-topbar .brand-five,
+body.dark-mode #indexSiteHeader .header-brand-red,
+[data-theme="dark"] header .header-brand-red,
+[data-theme="dark"] .page-topbar .brand-five,
+[data-theme="dark"] #indexSiteHeader .header-brand-red,
+html.g5-tema-koyu header .header-brand-red,
+html.g5-tema-koyu .page-topbar .brand-five,
+html.g5-tema-koyu #indexSiteHeader .header-brand-red {
+    color: #f87171 !important;
 }
 
 /* Anasayfa: üst bar ekranın tepesine yapışsın (main padding üstünde boşluk kalmasın) */

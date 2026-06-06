@@ -50,8 +50,8 @@ begin
     end if;
     v_since := now() - (v_gun || ' days')::interval;
     v_master := private.gunde5_master_user_uuid();
-    v_bugun := (now() at time zone 'Europe/Istanbul')::date;
-    v_dun := v_bugun - 1;
+    v_bugun := public.gunde5_aktif_baski_gunu();
+    v_dun := public.gunde5_onceki_baski_gunu(v_bugun);
 
     with fe as materialized (
         select e.*

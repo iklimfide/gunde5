@@ -12,8 +12,9 @@
             --male-color: #2563eb;
             --male-bg: #eff6ff;
             --male-border: #bfdbfe;
-            --brand-purple: #7c3aed;
-            --brand-purple-dark: #6d28d9;
+            --topbar-bg-start: #1d9bf0;
+            --topbar-bg-end: #0c4a6e;
+            --topbar-border: #1a8cd8;
             --topbar-fg: #ffffff;
         }
 
@@ -32,8 +33,9 @@
             --male-color: #1d9bf0;
             --male-bg: #0e1924;
             --male-border: #1d354b;
-            --brand-purple: #6d28d9;
-            --brand-purple-dark: #5b21b6;
+            --topbar-bg-start: #1a8cd8;
+            --topbar-bg-end: #0f172a;
+            --topbar-border: rgba(26, 140, 216, 0.45);
             --topbar-fg: #ffffff;
         }
 
@@ -88,11 +90,11 @@
             top: 0;
             z-index: 300;
             color: var(--topbar-fg);
-            background: linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-purple-dark) 100%);
+            background: linear-gradient(135deg, var(--topbar-bg-start) 0%, var(--topbar-bg-end) 100%);
             border: none;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+            border-bottom: 1px solid var(--topbar-border);
             border-radius: 0 0 10px 10px;
-            box-shadow: 0 8px 24px rgba(91, 33, 182, 0.22);
+            box-shadow: 0 8px 24px rgba(29, 155, 240, 0.25);
         }
 
         .page-topbar-sol {
@@ -195,7 +197,7 @@
         }
 
         .page-topbar .brand-five {
-            color: #fecaca;
+            color: #ef4444;
         }
 
         #indexSiteHeader[hidden] {
@@ -203,15 +205,15 @@
         }
 
         #indexSiteHeader {
-            background: linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-purple-dark) 100%);
+            background: linear-gradient(135deg, var(--topbar-bg-start) 0%, var(--topbar-bg-end) 100%);
             color: #ffffff;
             padding: 16px;
             text-align: center;
             font-size: 24px;
             font-weight: 900;
             letter-spacing: -1px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-            box-shadow: 0 8px 24px rgba(91, 33, 182, 0.22);
+            border-bottom: 1px solid var(--topbar-border);
+            box-shadow: 0 8px 24px rgba(29, 155, 240, 0.25);
             position: sticky;
             top: 0;
             z-index: 200;
@@ -422,10 +424,6 @@
             color: #ef4444;
         }
 
-        .page-topbar .brand-five {
-            color: #fecaca;
-        }
-
         .story-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -458,14 +456,14 @@
         }
 
         .story-card.focused {
-            border-width: 2px;
-            animation: pulse 2s infinite;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35), 0 4px 12px rgba(0, 0, 0, 0.03);
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.01); }
-            100% { transform: scale(1); }
+        body.dark-mode .story-card.focused,
+        [data-theme="dark"] .story-card.focused {
+            border-color: #1d9bf0;
+            box-shadow: 0 0 0 1px rgba(29, 155, 240, 0.4), 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .story-card .card-header {
@@ -1359,6 +1357,11 @@
             box-shadow: none;
         }
 
+        .index-arama-wrap {
+            position: relative;
+            width: 100%;
+        }
+
         .index-arama-kutu {
             position: relative;
             display: flex;
@@ -1367,7 +1370,7 @@
 
         .index-arama-input {
             width: 100%;
-            padding: 13px 48px 13px 16px;
+            padding: 13px 72px 13px 16px;
             border: 2px solid #38bdf8;
             border-radius: 14px;
             font-size: 16px;
@@ -1404,30 +1407,100 @@
             color: #71767b;
         }
 
-        .index-arama-ikon {
+        .index-arama-btn {
             position: absolute;
             right: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 34px;
+            min-width: 52px;
             height: 34px;
+            padding: 0 12px;
+            border: none;
             border-radius: 10px;
-            pointer-events: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 800;
+            font-family: inherit;
+            letter-spacing: 0.02em;
             color: #fff;
             background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
             box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
         }
 
-        body.dark-mode .index-arama-ikon,
-        [data-theme="dark"] .index-arama-ikon {
+        .index-arama-btn:active {
+            transform: scale(0.97);
+        }
+
+        body.dark-mode .index-arama-btn,
+        [data-theme="dark"] .index-arama-btn {
             background: linear-gradient(135deg, #1d9bf0 0%, #1e40af 100%);
         }
 
-        .index-arama-ikon svg {
-            display: block;
-            width: 18px;
-            height: 18px;
+        .index-arama-oneri {
+            list-style: none;
+            margin: 0;
+            padding: 4px 6px 6px;
+            border: 2px solid #bae6fd;
+            border-top: none;
+            border-radius: 0 0 14px 14px;
+            background: #fff;
+            box-shadow: 0 10px 28px rgba(14, 165, 233, 0.18);
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .index-arama-oneri[hidden] {
+            display: none !important;
+        }
+
+        .index-arama-oneri-item {
+            padding: 11px 12px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #0c4a6e;
+            cursor: pointer;
+            line-height: 1.35;
+        }
+
+        .index-arama-oneri-item:hover,
+        .index-arama-oneri-item:focus {
+            background: #f0f9ff;
+            outline: none;
+        }
+
+        body.dark-mode .index-arama-oneri,
+        [data-theme="dark"] .index-arama-oneri {
+            background: #15202b;
+            border-color: #1d4ed8;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+        }
+
+        body.dark-mode .index-arama-oneri-item,
+        [data-theme="dark"] .index-arama-oneri-item {
+            color: #e0f2fe;
+        }
+
+        body.dark-mode .index-arama-oneri-item:hover,
+        [data-theme="dark"] .index-arama-oneri-item:hover {
+            background: rgba(29, 155, 240, 0.12);
+        }
+
+        .index-toolbar--arama-oneri .index-arama-input {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-bottom-color: #bae6fd;
+            box-shadow: none;
+        }
+
+        .index-toolbar--arama-oneri .index-arama-input:focus {
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.35);
+        }
+
+        body.dark-mode .index-toolbar--arama-oneri .index-arama-input,
+        [data-theme="dark"] .index-toolbar--arama-oneri .index-arama-input {
+            border-bottom-color: #1d4ed8;
         }
 
         .index-filtre-kutu {
@@ -1554,13 +1627,13 @@
         }
 
         /* Arama: alt bardaki Ara ile açılır */
-        .index-toolbar .index-arama-kutu,
+        .index-toolbar .index-arama-wrap,
         .index-toolbar > .index-arama-durum {
             display: none;
         }
 
-        .index-toolbar.index-toolbar--arama-acik .index-arama-kutu {
-            display: flex;
+        .index-toolbar.index-toolbar--arama-acik .index-arama-wrap {
+            display: block;
             position: fixed;
             left: 50%;
             transform: translateX(-50%);
@@ -1568,6 +1641,10 @@
             width: calc(100% - 24px);
             max-width: 476px;
             z-index: 290;
+        }
+
+        .index-toolbar.index-toolbar--arama-acik .index-filtre-kutu {
+            display: none;
         }
 
         .index-toolbar.index-toolbar--arama-acik > .index-arama-durum:not(:empty) {
@@ -1702,32 +1779,32 @@
 
         .index-altbar-item--orta {
             padding: 6px 4px 5px;
-            border-color: rgba(124, 58, 237, 0.35);
-            background: linear-gradient(180deg, #faf5ff 0%, #f3e8ff 100%);
+            border-color: rgba(56, 189, 248, 0.45);
+            background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
             box-shadow:
                 0 1px 0 rgba(255, 255, 255, 1) inset,
-                0 3px 12px rgba(91, 33, 182, 0.18),
+                0 3px 12px rgba(37, 99, 235, 0.14),
                 0 2px 6px rgba(15, 23, 42, 0.06);
         }
 
         body.dark-mode .index-altbar-item--orta,
         [data-theme="dark"] .index-altbar-item--orta {
-            background: linear-gradient(180deg, #2d2640 0%, #252038 100%);
-            border-color: rgba(167, 139, 250, 0.35);
+            background: linear-gradient(180deg, #1a2836 0%, #15202b 100%);
+            border-color: rgba(56, 189, 248, 0.35);
             box-shadow:
                 0 1px 0 rgba(255, 255, 255, 0.1) inset,
-                0 3px 14px rgba(91, 33, 182, 0.35);
+                0 3px 14px rgba(29, 155, 240, 0.2);
         }
 
         .index-altbar-item--orta .index-altbar-metin {
-            color: var(--brand-purple-dark);
+            color: #0c4a6e;
             font-size: 10px;
             font-weight: 900;
         }
 
         body.dark-mode .index-altbar-item--orta .index-altbar-metin,
         [data-theme="dark"] .index-altbar-item--orta .index-altbar-metin {
-            color: #c4b5fd;
+            color: #7dd3fc;
         }
 
         .index-altbar-ikon--orta {
@@ -1736,10 +1813,10 @@
             margin-top: 0;
             border-radius: 10px;
             color: #fff;
-            background: linear-gradient(145deg, #8b5cf6 0%, #6d28d9 100%);
+            background: linear-gradient(145deg, #38bdf8 0%, #2563eb 100%);
             box-shadow:
                 0 1px 0 rgba(255, 255, 255, 0.35) inset,
-                0 2px 8px rgba(91, 33, 182, 0.45);
+                0 2px 8px rgba(37, 99, 235, 0.35);
         }
 
         body.dark-mode .index-altbar-ikon--orta,
@@ -1747,6 +1824,11 @@
             box-shadow:
                 0 1px 0 rgba(255, 255, 255, 0.2) inset,
                 0 2px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .index-altbar-ikon--orta.index-altbar-ikon--emoji {
+            font-size: 20px;
+            line-height: 1;
         }
 
         .index-altbar-ikon--orta svg {
