@@ -806,6 +806,22 @@
         if (metin.length < 3) return [];
         var lim = limit || INDEX_SAYFA_BOYUT;
         var off = offset || 0;
+
+        try {
+            var rpcRes = await sb.rpc('index_itiraf_ara', {
+                p_q: metin,
+                p_offset: off,
+                p_limit: lim
+            });
+            if (!rpcRes.error && rpcRes.data != null) {
+                var rpcRows = rpcRes.data;
+                if (typeof rpcRows === 'string') {
+                    try { rpcRows = JSON.parse(rpcRows); } catch (eParse) { rpcRows = []; }
+                }
+                if (Array.isArray(rpcRows)) return rpcRows;
+            }
+        } catch (eRpc) { /* RPC yoksa ilike yedek */ }
+
         var p = '%' + metin.replace(/[%_\\]/g, '') + '%';
         var res = await indexYayindaFiltre(
             sb

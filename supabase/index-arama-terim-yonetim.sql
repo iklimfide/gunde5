@@ -1,6 +1,28 @@
 -- Anasayfa arama terimleri: master ekle / düzenle / sil + öneri birleşimi
 -- SQL Editor'da bir kez Run (index-arama-oneri.sql sonrası).
 
+create or replace function public.tr_arama_norm(p text)
+returns text
+language sql
+immutable
+parallel safe
+set search_path = public
+as $$
+    select replace(
+        lower(
+            translate(
+                coalesce(p, ''),
+                E'İIĞÜŞÖÇ',
+                E'iıguşöç'
+            )
+        ),
+        'ı', 'i'
+    );
+$$;
+
+revoke all on function public.tr_arama_norm(text) from public;
+grant execute on function public.tr_arama_norm(text) to anon, authenticated;
+
 create table if not exists public.index_arama_terimler (
     id bigserial primary key,
     terim text not null unique,
@@ -33,7 +55,7 @@ language sql
 immutable
 set search_path = public
 as $$
-    select lower(trim(coalesce(p, '')));
+    select public.tr_arama_norm(trim(coalesce(p, '')));
 $$;
 
 revoke all on function private.arama_terim_norm(text) from public;

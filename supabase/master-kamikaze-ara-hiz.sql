@@ -1,6 +1,28 @@
 -- Kamikaze arama: başlık, hikaye metni, rumuz (+ #id)
 -- SQL Editor'da bir kez Run.
 
+create or replace function public.tr_arama_norm(p text)
+returns text
+language sql
+immutable
+parallel safe
+set search_path = public
+as $$
+    select replace(
+        lower(
+            translate(
+                coalesce(p, ''),
+                E'İIĞÜŞÖÇ',
+                E'iıguşöç'
+            )
+        ),
+        'ı', 'i'
+    );
+$$;
+
+revoke all on function public.tr_arama_norm(text) from public;
+grant execute on function public.tr_arama_norm(text) to anon, authenticated;
+
 create or replace function public.master_kamikaze_ara(p_body jsonb)
 returns jsonb
 language plpgsql
@@ -17,12 +39,12 @@ begin
         return jsonb_build_object('ok', false, 'hata', 'yetkisiz');
     end if;
 
-    v_q := lower(trim(coalesce(p_body->>'q', '')));
+    v_q := public.tr_arama_norm(trim(coalesce(p_body->>'q', '')));
     v_lim := least(greatest(coalesce((p_body->>'limit')::int, 40), 1), 80);
     v_id := null;
 
-    if v_q ~ '^[0-9]+$' then
-        v_id := v_q::bigint;
+    if trim(coalesce(p_body->>'q', '')) ~ '^[0-9]+$' then
+        v_id := trim(p_body->>'q')::bigint;
     end if;
 
     if v_q = '' then
@@ -67,9 +89,9 @@ begin
                     left(coalesce(i.content_full, i.content_short, ''), 200) as onizleme
                 from public.itiraflar i
                 where (v_id is not null and i.id = v_id)
-                   or lower(coalesce(i.baslik, '')) like '%' || v_q || '%'
-                   or lower(coalesce(i.content_full, i.content_short, '')) like '%' || v_q || '%'
-                   or lower(coalesce(i.username, '')) like '%' || v_q || '%'
+                   or public.tr_arama_norm(coalesce(i.baslik, '')) like '%' || v_q || '%'
+                   or public.tr_arama_norm(coalesce(i.content_full, i.content_short, '')) like '%' || v_q || '%'
+                   or public.tr_arama_norm(coalesce(i.username, '')) like '%' || v_q || '%'
                 order by i.created_at desc
                 limit v_lim
             ) t
