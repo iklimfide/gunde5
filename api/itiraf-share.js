@@ -6,12 +6,18 @@ export const config = { runtime: 'edge' };
 
 var SITE = 'https://gunde5.com';
 
-/** X/Telegram/FB önizleme botları — anında yönlendirme kartı bozar */
+/** X/Telegram/FB önizleme botları — yönlendirme kartı bozar */
 function onizlemeBotu(ua) {
     if (!ua) return false;
     return /twitterbot|facebookexternalhit|facebot|linkedinbot|telegrambot|whatsapp|slackbot|discordbot|pinterest|embedly|quora link preview|vkshare|w3c_validator/i.test(
         ua
     );
+}
+
+/** Google/Bing vb. — /h/ sayfasındaki metni indexlemeli */
+function aramaMotoruBotu(ua) {
+    if (!ua) return false;
+    return /googlebot|google-inspectiontool|storebot-google|bingbot|yandex|duckduckbot|baiduspider|slurp|applebot/i.test(ua);
 }
 
 function escHtml(s) {
@@ -73,6 +79,23 @@ export default async function handler(req) {
         });
     }
 
+    var ua = req.headers.get('user-agent') || '';
+    var onizleme = onizlemeBotu(ua);
+    var arama = aramaMotoruBotu(ua);
+    var okumaUrl = id ? SITE + '/?itiraf=' + id : SITE + '/';
+
+    /* İnsan ziyaretçi → anasayfa kart deneyimi; botlar → SEO HTML kalır */
+    if (row && id && !onizleme && !arama) {
+        return new Response(null, {
+            status: 302,
+            headers: {
+                Location: okumaUrl,
+                'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+                Vary: 'User-Agent'
+            }
+        });
+    }
+
     var indexle = indexlenebilirMi(row);
     var rumuz = row ? row.username || 'Anonim' : 'gunde5.com';
     var aciklama = row
@@ -80,10 +103,8 @@ export default async function handler(req) {
         : OG_DESCRIPTION;
     var baslik = sayfaBaslik(row);
     var paylasUrl = row && row.slug ? SITE + '/h/' + row.slug : id ? SITE + '/h/' + id : SITE + '/';
-    var okumaUrl = id ? SITE + '/?itiraf=' + id : SITE + '/';
     var ogImage = id ? SITE + '/api/og?id=' + encodeURIComponent(id) + '&v=5' : OG_IMAGE_URL;
     var ogImageAlt = row ? rumuz + ' — gunde5.com' : OG_IMAGE_ALT;
-    var bot = onizlemeBotu(req.headers.get('user-agent') || '');
     var govdeMetin = row ? row.content_full || row.content_short || '' : '';
 
     var html =
@@ -178,10 +199,6 @@ export default async function handler(req) {
             '</article>';
     } else {
         html += '<p><a href="' + escHtml(SITE) + '">Anasayfaya dön</a></p>';
-    }
-
-    if (!bot && row && !indexle) {
-        html += '<script>location.replace(' + JSON.stringify(okumaUrl) + ');</script>';
     }
 
     html += '</body></html>';
