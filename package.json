@@ -4,6 +4,7 @@
   "scripts": {
     "build": "node scripts/write-config.js && node scripts/generate-sitemap.js",
     "sitemap": "node scripts/generate-sitemap.js",
+    "test:slug": "node scripts/slug-test.js",
     "start": "python dev-server.py 8080",
     "start:serve": "serve . -l 8080 -c serve.json",
     "dev": "python dev-server.py 8080"

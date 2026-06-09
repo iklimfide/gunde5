@@ -564,15 +564,46 @@
         return html;
     }
 
+    function slugOnizlemeUret(hint, metin, id) {
+        var S = global.Gunde5Slug;
+        if (!S || !S.slugUret || !id) return '';
+        return '/h/' + S.slugUret(hint, metin, id);
+    }
+
+    function slugOnizlemeGuncelle(mod, id) {
+        var el = qs('kmSlugOnizleme');
+        if (!el) return;
+        var hintEl = qs(mod === 'yeni' ? 'kmYeniSlugHint' : 'kmDetaySlugHint');
+        var metinEl = qs(mod === 'yeni' ? 'kmYeniMetin' : 'kmDetayMetin');
+        var yol = slugOnizlemeUret(
+            hintEl ? hintEl.value : '',
+            metinEl ? metinEl.value : '',
+            id
+        );
+        el.textContent = yol || '—';
+    }
+
+    function slugOnizlemeBagla(mod, id) {
+        var hintEl = qs(mod === 'yeni' ? 'kmYeniSlugHint' : 'kmDetaySlugHint');
+        var metinEl = qs(mod === 'yeni' ? 'kmYeniMetin' : 'kmDetayMetin');
+        function guncelle() { slugOnizlemeGuncelle(mod, id); }
+        if (hintEl) hintEl.addEventListener('input', guncelle);
+        if (metinEl) metinEl.addEventListener('input', guncelle);
+        guncelle();
+    }
+
     function detayFormHtml(h) {
         var yer = h.yasadigi_yer || '';
+        var onizleme = slugOnizlemeUret(h.slug_hint, h.content_full, h.id) || (h.slug ? '/h/' + h.slug : '');
         return (
             '<p class="km-not">Planlı hikaye: yayın tarihi gelecekteyse sitede görünmez. Günde5 ritmine uygun sabah saati seç.</p>' +
             '<div class="km-grid km-grid--tek">' +
             '<div class="km-alan"><label>Rumuz<input type="text" id="kmDetayRumuz" maxlength="50" value="' + esc(h.username || '') + '"></label></div>' +
             '<div class="km-alan"><label>URL adı <span class="km-not-inline">(isteğe bağlı, 3–5 kelime)</span>' +
             '<input type="text" id="kmDetaySlugHint" maxlength="80" value="' + esc(h.slug_hint || '') + '" placeholder="örn. telefonsuz-market-listesi"></label>' +
-            (h.slug ? '<p class="km-not">Canlı URL: <code>/h/' + esc(h.slug) + '</code></p>' : '') +
+            '<p class="km-not">URL önizleme: <code id="kmSlugOnizleme">' + esc(onizleme || '—') + '</code></p>' +
+            (h.slug && h.slug !== onizleme.replace(/^\/h\//, '') ?
+                '<p class="km-not">Kayıtlı canlı URL: <code>/h/' + esc(h.slug) + '</code> (slug_hint değişince güncellenir)</p>' : '') +
             '</div>' +
             '</div>' +
             '<div class="km-alan"><label>Hikaye metni<textarea id="kmDetayMetin">' + esc(h.content_full || '') + '</textarea></label></div>' +
@@ -608,7 +639,8 @@
             '<div class="km-grid km-grid--tek">' +
             '<div class="km-alan"><label>Rumuz *<input type="text" id="kmYeniRumuz" maxlength="50" placeholder="En az 2 karakter"></label></div>' +
             '<div class="km-alan"><label>URL adı <span class="km-not-inline">(isteğe bağlı)</span>' +
-            '<input type="text" id="kmYeniSlugHint" maxlength="80" placeholder="örn. telefonsuz-market-listesi"></label></div>' +
+            '<input type="text" id="kmYeniSlugHint" maxlength="80" placeholder="örn. telefonsuz-market-listesi"></label>' +
+            '<p class="km-not">URL önizleme: <code id="kmSlugOnizleme">—</code> <span class="km-not-inline">(kayıt sonrası ID eklenir)</span></p></div>' +
             '</div>' +
             '<div class="km-alan"><label>Hikaye metni *<textarea id="kmYeniMetin" placeholder="Hikaye…"></textarea></label></div>' +
             '<div class="km-grid">' +
@@ -651,7 +683,10 @@
     }
 
     function drawerFormBagla() {
-        if (drawerMod === 'detay') yerBagla('kmDetay');
+        if (drawerMod === 'detay') {
+            yerBagla('kmDetay');
+            if (drawerId) slugOnizlemeBagla('detay', parseInt(drawerId, 10));
+        }
         if (drawerMod === 'yeni') yerBagla('kmYeni');
     }
 

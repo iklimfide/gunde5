@@ -69,14 +69,19 @@ export default async function handler(req) {
     var parsed = cozum.parsed;
     var id = row ? String(row.id) : parsed.id || queryId || null;
 
-    if (id && /^\d+$/.test(String(id)) && row && row.slug && parsed.id && !parsed.slug) {
-        return new Response(null, {
-            status: 301,
-            headers: {
-                Location: SITE + '/h/' + row.slug,
-                'Cache-Control': 'public, s-maxage=86400'
-            }
-        });
+    if (row && row.slug) {
+        var canonical = SITE + '/h/' + row.slug;
+        var eskiSlug = parsed.slug && parsed.slug !== row.slug;
+        var sadeceId = parsed.id && !parsed.slug;
+        if (eskiSlug || sadeceId) {
+            return new Response(null, {
+                status: 301,
+                headers: {
+                    Location: canonical,
+                    'Cache-Control': 'public, s-maxage=86400'
+                }
+            });
+        }
     }
 
     var ua = req.headers.get('user-agent') || '';

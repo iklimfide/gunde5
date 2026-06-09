@@ -1,19 +1,22 @@
-/** gunde5 — hikaye URL slug (itiraf-slug.sql ile aynı mantık) */
+/** gunde5 — hikaye URL slug (supabase/itiraf-slug*.sql ile aynı mantık) */
+
+var SLUG_MAX_KELIME = 7;
+var SLUG_MAX_UZUNLUK = 60;
 
 var STOP_KELIMELER = new Set([
-    'gecen', 'guncen', 'gun', 'gunde', 'ben', 'bana', 'beni', 'bir', 'bu', 'su', 'ya',
-    'gibi', 'diye', 'falan', 'aslinda', 'o', 'da', 'de', 'ki', 'mi', 'mu', 'mü', 'mı',
-    'icin', 'ile', 've', 'ama', 'hem', 'ne', 'var', 'yok', 'cok', 'daha', 'en', 'her', 'hic',
-    'ise', 'olan', 'olur', 'sey', 'kendi', 'onun', 'ona', 'onu', 'sen', 'sana', 'seni',
-    'biz', 'bize', 'siz', 'onlar', 'nasil', 'neden', 'boyle', 'simdi', 'sonra', 'once',
-    'bile', 'sadece', 'artik', 'yani', 'zaten', 'hala', 'hep', 'bazi', 'butun', 'tum',
-    'cunku', 'eger', 'olarak', 'degil', 'uzerine', 'kadar', 'beri', 'gore', 'arada',
-    'arasinda', 'hani', 'iste', 'tabi', 'tabii', 'yoksa', 'belki', 'keske', 'hala',
-    'baya', 'bayağı', 'bayagi', 'falan', 'filan', 'hani', 'iste', 'sanki', 'galiba'
+    'bir', 'bu', 'su', 'sü', 'ben', 'bana', 'beni', 'benim', 'biz', 'bizim', 'siz', 'sizin',
+    'gecen', 'guncen', 'gun', 'gunde', 'birkac', 'once', 'sonra', 'aslinda', 'falan', 'yani',
+    'diye', 'gibi', 'kadar', 'beri', 'cok', 'daha', 'yine', 'sey', 'hicbir', 'hic',
+    'ya', 'o', 'da', 'de', 'ki', 'mi', 'mu', 'mü', 'mı', 'icin', 'ile', 've', 'ama', 'hem',
+    'ne', 'var', 'yok', 'en', 'her', 'ise', 'olan', 'olur', 'kendi', 'onun', 'ona', 'onu',
+    'sen', 'sana', 'seni', 'bize', 'onlar', 'nasil', 'neden', 'boyle', 'simdi', 'bile',
+    'sadece', 'artik', 'zaten', 'hala', 'hep', 'bazi', 'butun', 'tum', 'cunku', 'eger',
+    'olarak', 'degil', 'uzerine', 'gore', 'arada', 'arasinda', 'hani', 'iste', 'tabi',
+    'tabii', 'yoksa', 'belki', 'keske', 'baya', 'bayagi', 'filan', 'sanki', 'galiba'
 ]);
 
 export function slugNormalize(metin) {
-    var t = String(metin || '')
+    return String(metin || '')
         .toLowerCase()
         .replace(/ç/g, 'c')
         .replace(/ğ/g, 'g')
@@ -24,7 +27,50 @@ export function slugNormalize(metin) {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
-    return t.slice(0, 80);
+}
+
+export function slugKelimeGecerli(kelime, stopFiltre) {
+    var w = String(kelime || '').trim();
+    if (!w) return false;
+    if (stopFiltre && STOP_KELIMELER.has(w)) return false;
+    if (/^[0-9]+$/.test(w)) return true;
+    if (w.length === 1 && /^[a-z]$/.test(w)) return false;
+    return /^[a-z0-9]+$/.test(w);
+}
+
+export function slugKelimelerdenBase(kelimeler, opts) {
+    var maxK = (opts && opts.maxKelimeler) || SLUG_MAX_KELIME;
+    var maxLen = (opts && opts.maxUzunluk) || SLUG_MAX_UZUNLUK;
+    var stopFiltre = !opts || opts.stopFiltre !== false;
+    var liste = Array.isArray(kelimeler) ? kelimeler : [];
+    var secilen = [];
+    var i;
+
+    for (i = 0; i < liste.length && secilen.length < maxK; i++) {
+        if (slugKelimeGecerli(liste[i], stopFiltre)) {
+            secilen.push(liste[i]);
+        }
+    }
+
+    if (!secilen.length) {
+        for (i = 0; i < liste.length && secilen.length < Math.min(3, maxK); i++) {
+            var w = String(liste[i] || '').trim();
+            if (w && /^[a-z0-9]{2,}$/.test(w)) secilen.push(w);
+        }
+    }
+
+    if (!secilen.length) return 'hikaye';
+
+    var parcalar = [];
+    for (i = 0; i < secilen.length; i++) {
+        var deneme = parcalar.length ? parcalar.join('-') + '-' + secilen[i] : secilen[i];
+        if (deneme.length > maxLen) break;
+        parcalar.push(secilen[i]);
+    }
+
+    if (parcalar.length) return parcalar.join('-');
+    if (secilen[0].length <= maxLen) return secilen[0];
+    return 'hikaye';
 }
 
 export function slugUret(hint, content, id) {
@@ -32,9 +78,13 @@ export function slugUret(hint, content, id) {
     var base;
 
     if (hintTrim) {
-        base = slugNormalize(hintTrim);
+        var normHint = slugNormalize(hintTrim);
+        base = slugKelimelerdenBase(
+            normHint.split('-').filter(Boolean),
+            { stopFiltre: false }
+        );
     } else {
-        var raw = String(content || '').slice(0, 250).toLowerCase();
+        var raw = String(content || '').slice(0, 400).toLowerCase();
         raw = raw
             .replace(/ç/g, 'c')
             .replace(/ğ/g, 'g')
@@ -43,14 +93,7 @@ export function slugUret(hint, content, id) {
             .replace(/ş/g, 's')
             .replace(/ü/g, 'u')
             .replace(/[^a-z0-9\s]+/g, ' ');
-        var kelimeler = raw.split(/\s+/).filter(Boolean);
-        var secilen = [];
-        var i;
-        for (i = 0; i < kelimeler.length && secilen.length < 7; i++) {
-            if (STOP_KELIMELER.has(kelimeler[i])) continue;
-            secilen.push(kelimeler[i]);
-        }
-        base = secilen.join('-');
+        base = slugKelimelerdenBase(raw.split(/\s+/).filter(Boolean));
     }
 
     if (!base) base = 'hikaye';
