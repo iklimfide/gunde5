@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -83,6 +83,11 @@
         }
         .km-input { flex: 1 1 220px; min-width: 0; }
         .km-select { min-width: 140px; }
+        .km-tarih-grup { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .km-tarih-grup .km-select { min-width: 0; }
+        .km-tarih-grup .km-select--yil { min-width: 92px; flex: 0 1 92px; }
+        .km-tarih-grup .km-select--ay { min-width: 118px; flex: 0 1 118px; }
+        .km-tarih-grup .km-select--gun { min-width: 72px; flex: 0 1 72px; }
         .km-btn { cursor: pointer; font-weight: 800; font-size: 13px; }
         .km-btn:hover { filter: brightness(.98); }
         .km-btn--primary { background: var(--km-accent); border-color: var(--km-accent); color: #fff; }
@@ -149,10 +154,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
     <script src="js/gunde5-profil.js"></script>
     <script src="js/gunde5-ui.js"></script>
-    <script src="js/gunde5-db.js?v=43"></script>
+    <script src="js/gunde5-db.js?v=51"></script>
     <script src="js/gunde5-bildirim.js?v=3"></script>
     <script src="js/gunde5-master.js?v=2"></script>
-    <script src="js/gunde5-kamikaze.js?v=4"></script>
+    <script src="js/gunde5-kamikaze.js?v=13"></script>
     <link rel="stylesheet" href="css/gunde5-topbar.css?v=1">
     <link rel="stylesheet" href="css/master-panel.css?v=2">
 </head>
@@ -182,6 +187,10 @@
         <h1 class="km-title">☄️ Kamikaze</h1>
         <p class="km-intro">Hikayeleri ara, düzenle, planla. Gelen kutusundan onaylanan planlı hikayeler burada görünür. Arama: başlık, metin, rumuz veya ID.</p>
 
+        <div id="kmYukleniyor" class="km-yetkisiz">
+            <p>Oturum ve panel hazırlanıyor…</p>
+        </div>
+
         <div id="kmYetkisiz" class="km-yetkisiz" hidden>
             <p id="kmYetkisizMetin"></p>
             <button type="button" class="km-btn km-btn--primary" id="kmGirisBtn" hidden style="margin-top:12px">Giriş yap</button>
@@ -197,6 +206,21 @@
                     <option value="podyum">Podyum</option>
                     <option value="gizli">Gizli</option>
                     <option value="silinen">Silinen</option>
+                </select>
+                <div class="km-tarih-grup" role="group" aria-label="Tarih filtresi">
+                    <select id="kmYil" class="km-select km-select--yil" aria-label="Yıl">
+                        <option value="">Yıl</option>
+                    </select>
+                    <select id="kmAy" class="km-select km-select--ay" aria-label="Ay" disabled>
+                        <option value="">Ay</option>
+                    </select>
+                    <select id="kmGun" class="km-select km-select--gun" aria-label="Gün" disabled>
+                        <option value="">Gün</option>
+                    </select>
+                </div>
+                <select id="kmSira" class="km-select" aria-label="Sıralama">
+                    <option value="desc">Yeniden eskiye</option>
+                    <option value="asc">Eskiden yeniye</option>
                 </select>
                 <button type="button" class="km-btn" id="kmYenile">Yenile</button>
                 <button type="button" class="km-btn km-btn--primary" id="kmYeni">Yeni hikaye</button>

@@ -5,6 +5,9 @@
     var ready = false;
     var authListenerKayitli = false;
     var masterRpcBilet = 0;
+    var authGate = { hazir: false, oturum: null, bekle: null };
+    var masterPanelHazirPromise = null;
+    var initPromise = null;
 
     function isConfigured() {
         var url = global.GUNDE5_SUPABASE_URL;
@@ -36,6 +39,11 @@
                 url,
                 key,
                 {
+                    auth: {
+                        persistSession: true,
+                        autoRefreshToken: true,
+                        detectSessionInUrl: false
+                    },
                     global: {
                         headers: {
                             apikey: key
@@ -101,7 +109,11 @@
     async function loadProfile(userId) {
         var sb = getClient();
         if (!sb) return null;
-        var res = await sb.from('uye').select(PROFIL_SELECT).eq('id', userId).maybeSingle();
+        var res = await supabaseRace(
+            sb.from('uye').select(PROFIL_SELECT).eq('id', userId).maybeSingle(),
+            10000,
+            'Profil yüklenemedi.'
+        );
         if (res.error) throw res.error;
         if (!res.data) {
             cacheUser(null);
@@ -325,76 +337,210 @@
         return { sb: sb, uid: user.id };
     }
 
-    async function init() {
-        if (ready) return true;
-        if (!isConfigured()) {
-            ready = false;
-            return false;
-        }
-        var sb = getClient();
-        if (!sb) return false;
-
-        var authRes = await sb.auth.getUser();
-        if (authRes.data && authRes.data.user) {
-            try {
-                await loadProfile(authRes.data.user.id);
-            } catch (profileErr) {
-                cacheUser(null);
-            }
-        } else {
-            cacheUser(null);
-        }
-
-        if (!authListenerKayitli) {
-            authListenerKayitli = true;
-            sb.auth.onAuthStateChange(async function (event, session) {
-                if (session && session.user) {
-                    try {
-                        await loadProfile(session.user.id);
-                    } catch (profileErr) {
-                        cacheUser(null);
-                    }
-                } else if (event === 'SIGNED_OUT') {
-                    cacheUser(null);
-                }
-                if (typeof global.guncelleHeaderOturum === 'function') {
-                    global.guncelleHeaderOturum();
-                }
-                if (typeof global.gunde5AuthDegisti === 'function') {
-                    global.gunde5AuthDegisti(event);
-                }
-            });
-        }
-
-        ready = true;
-        return true;
+    function authGateTamamla(oturum) {
+        authGate.hazir = true;
+        authGate.oturum = oturum || null;
     }
 
-    /** Supabase oturumu localStorage'dan yüklenene kadar bekler (SPA / ilk açılış yarışı). */
-    async function oturumHazirBekle(maxMs) {
-        if (!isConfigured()) return false;
+    function authGateSifirla() {
+        authGate.hazir = false;
+        authGate.oturum = null;
+        authGate.bekle = null;
+        masterPanelHazirPromise = null;
+    }
+
+    function authGateBekle(maxMs) {
+        if (authGate.hazir) {
+            return Promise.resolve(authGate.oturum);
+        }
+        if (authGate.bekle) return authGate.bekle;
+        var limit = maxMs != null ? maxMs : 15000;
+        authGate.bekle = new Promise(function (resolve) {
+            var start = Date.now();
+            function kontrol() {
+                if (authGate.hazir || Date.now() - start >= limit) {
+                    resolve(authGate.oturum);
+                    return;
+                }
+                setTimeout(kontrol, 40);
+            }
+            kontrol();
+        });
+        return authGate.bekle;
+    }
+
+    function authDinleyiciKaydet(sb) {
+        if (authListenerKayitli || !sb) return;
+        authListenerKayitli = true;
+        sb.auth.onAuthStateChange(function (event, session) {
+            if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                authGateTamamla(session);
+                if (session && session.user) {
+                    loadProfile(session.user.id).catch(function () {
+                        /* JWT geçerli; profil yüklenemese yedek kalsın */
+                    });
+                }
+            } else if (event === 'SIGNED_OUT') {
+                cacheUser(null);
+                authGateSifirla();
+            }
+            if (typeof global.guncelleHeaderOturum === 'function') {
+                global.guncelleHeaderOturum();
+            }
+            if (typeof global.gunde5AuthDegisti === 'function') {
+                global.gunde5AuthDegisti(event);
+            }
+        });
+    }
+
+    async function init() {
+        if (ready) return true;
+        if (initPromise) return initPromise;
+        initPromise = (async function () {
+            if (!isConfigured()) {
+                ready = false;
+                return false;
+            }
+            var sb = getClient();
+            if (!sb) return false;
+
+            authDinleyiciKaydet(sb);
+
+            try {
+                var sesRes = await sb.auth.getSession();
+                if (sesRes.data && sesRes.data.session) {
+                    if (!authGate.hazir) authGateTamamla(sesRes.data.session);
+                    loadProfile(sesRes.data.session.user.id).catch(function () {
+                        /* JWT geçerli; profil yüklenemese yedek kalsın */
+                    });
+                }
+            } catch (eSes) { /* */ }
+
+            if (!authGate.hazir) {
+                await authGateBekle(2000);
+            }
+
+            if (!authGate.hazir) {
+                try {
+                    var refInit = await supabaseRace(sb.auth.refreshSession(), 10000, '');
+                    if (refInit.data && refInit.data.session) {
+                        authGateTamamla(refInit.data.session);
+                    } else {
+                        var ses2 = await sb.auth.getSession();
+                        if (ses2.data && ses2.data.session) {
+                            authGateTamamla(ses2.data.session);
+                        } else {
+                            authGateTamamla(null);
+                        }
+                    }
+                } catch (e2) {
+                    authGateTamamla(null);
+                }
+            }
+
+            ready = true;
+            return true;
+        })();
+        return initPromise;
+    }
+
+    /** Tüm master RPC öncesi tek kapı: JWT localStorage'dan yüklenene / yenilenene kadar bekler. */
+    async function authHazir() {
         await init();
         var sb = getClient();
-        if (!sb) return false;
-        var limit = maxMs != null ? maxMs : 6000;
-        var start = Date.now();
-        while (Date.now() - start < limit) {
-            var res = await sb.auth.getSession();
-            if (res.data && res.data.session && res.data.session.user) {
-                if (!cachedUser) {
-                    try {
-                        await loadProfile(res.data.session.user.id);
-                    } catch (profileErr) {
-                        /* profil yüklenemese bile JWT var */
-                    }
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+
+        var sesRes = await sb.auth.getSession();
+        var session = sesRes.data && sesRes.data.session;
+        if (session) {
+            var exp = session.expires_at;
+            if (exp && exp * 1000 < Date.now() + 45000) {
+                var yenile = await supabaseRace(sb.auth.refreshSession(), 12000, 'Oturum yenilenemedi.');
+                if (yenile.data && yenile.data.session) {
+                    authGateTamamla(yenile.data.session);
+                    return yenile.data.session;
                 }
-                return true;
             }
-            await new Promise(function (resolve) {
-                setTimeout(resolve, 50);
-            });
+            authGateTamamla(session);
+            return session;
         }
-        return false;
+
+        if (!authGate.hazir) {
+            await authGateBekle(2000);
+            sesRes = await sb.auth.getSession();
+            session = sesRes.data && sesRes.data.session;
+            if (session) {
+                authGateTamamla(session);
+                return session;
+            }
+        }
+
+        var ref = await supabaseRace(sb.auth.refreshSession(), 12000, 'Oturum yenilenemedi.');
+        if (ref.data && ref.data.session) {
+            authGateTamamla(ref.data.session);
+            return ref.data.session;
+        }
+
+        var userRes = await supabaseRace(sb.auth.getUser(), 12000, 'Kullanıcı doğrulanamadı.');
+        if (userRes.data && userRes.data.user) {
+            sesRes = await sb.auth.getSession();
+            if (sesRes.data && sesRes.data.session) {
+                authGateTamamla(sesRes.data.session);
+                return sesRes.data.session;
+            }
+        }
+
+        throw new Error('Oturum hazır değil. /bulut sayfasından tekrar giriş yap.');
+    }
+
+    async function masterPanelHazir() {
+        if (masterPanelHazirPromise) return masterPanelHazirPromise;
+        masterPanelHazirPromise = supabaseRace(
+            (async function () {
+                var session = await authHazir();
+                if (!session || !session.user) {
+                    throw new Error('Giriş gerekli');
+                }
+                var sb = getClient();
+                var res = await sb.rpc('master_durum');
+                if (res.error || !res.data || !res.data.master) {
+                    throw new Error('yetkisiz');
+                }
+                return { master: true, user: getGunde5User(), session: session };
+            })(),
+            20000,
+            'Panel oturumu hazır değil (20 sn). /bulut sayfasından giriş yapıp tekrar dene.'
+        ).catch(function (e) {
+            masterPanelHazirPromise = null;
+            throw e;
+        });
+        return masterPanelHazirPromise;
+    }
+
+    /** @deprecated authHazir kullan */
+    async function oturumHazirBekle(maxMs) {
+        try {
+            await authHazir();
+            return true;
+        } catch (e) {
+            if (maxMs != null && maxMs > 0) {
+                try {
+                    await authGateBekle(maxMs);
+                    await authHazir();
+                    return true;
+                } catch (e2) { /* */ }
+            }
+            return false;
+        }
+    }
+
+    async function oturumGecerliMi() {
+        try {
+            await authHazir();
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 
     async function kayitOl(form) {
@@ -1109,18 +1255,13 @@
         return profilGuncelle({ avatarUrl: null });
     }
 
-    async function masterRpc(fn, body, opts) {
+    async function masterRpcCagir(fn, body, opts) {
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
 
-        var oturum = await sb.auth.getSession();
-        if (!oturum.data.session) {
-            throw new Error('Oturum süresi doldu. Sayfayı yenileyip tekrar giriş yap.');
-        }
-
         var o = opts || {};
         var timeoutMs = o.timeoutMs != null ? o.timeoutMs : 20000;
-        var bilet = ++masterRpcBilet;
+        ++masterRpcBilet;
 
         var rpcPromise = sb.rpc(fn, { p_body: body || {} });
         var res;
@@ -1144,9 +1285,19 @@
         return data;
     }
 
+    async function masterRpc(fn, body, opts) {
+        await authHazir();
+        return masterRpcCagir(fn, body, opts);
+    }
+
     async function masterDurum() {
         var sb = getClient();
         if (!sb) return { master: false };
+        try {
+            await authHazir();
+        } catch (eAuth) {
+            return { master: false };
+        }
         var res = await sb.rpc('master_durum');
         if (res.error) return { master: false };
         return res.data || { master: false };
@@ -1174,6 +1325,7 @@
     }
 
     async function masterHikayeIslem(body) {
+        await init();
         var b = Object.assign({}, body || {});
         if (b.itiraf_id == null && b.hikaye_id != null) {
             b.itiraf_id = b.hikaye_id;
@@ -1222,10 +1374,7 @@
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
 
-        var oturum = await sb.auth.getSession();
-        if (!oturum.data.session) {
-            throw new Error('Oturum süresi doldu. Sayfayı yenileyip tekrar giriş yap.');
-        }
+        await authHazir();
 
         var durum = await masterDurum();
         if (!durum || !durum.master) {
@@ -1403,19 +1552,132 @@
         };
     }
 
-    /** Durum filtresi — panel yalnızca son N kayıt döndürdüğü için filtrede tam liste REST ile. */
-    async function masterKamikazeListe(filtre, limit) {
+    function kamikazeGunAraligi(tarihKey) {
+        var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(tarihKey || ''));
+        if (!m) return null;
+        var y = parseInt(m[1], 10);
+        var mo = parseInt(m[2], 10);
+        var d = parseInt(m[3], 10);
+        var sonraki = new Date(y, mo - 1, d + 1);
+        return {
+            bas: m[1] + '-' + m[2] + '-' + m[3] + 'T00:00:00+03:00',
+            bit: sonraki.getFullYear() + '-' + ikiHanePlan(sonraki.getMonth() + 1) + '-' +
+                ikiHanePlan(sonraki.getDate()) + 'T00:00:00+03:00'
+        };
+    }
+
+    function kamikazeAyAraligi(yil, ay) {
+        var y = parseInt(yil, 10);
+        var mo = parseInt(ay, 10);
+        if (!y || !mo || mo < 1 || mo > 12) return null;
+        var bitY = mo === 12 ? y + 1 : y;
+        var bitM = mo === 12 ? 1 : mo + 1;
+        return {
+            bas: yil + '-' + ay + '-01T00:00:00+03:00',
+            bit: bitY + '-' + ikiHanePlan(bitM) + '-01T00:00:00+03:00'
+        };
+    }
+
+    function kamikazeYilAraligi(yil) {
+        var y = parseInt(yil, 10);
+        if (!y) return null;
+        return {
+            bas: yil + '-01-01T00:00:00+03:00',
+            bit: (y + 1) + '-01-01T00:00:00+03:00'
+        };
+    }
+
+    function kamikazeTarihAraligi(opts) {
+        var o = opts || {};
+        if (o.tarih) return kamikazeGunAraligi(o.tarih);
+        if (o.yil && o.ay && o.gun) {
+            return kamikazeGunAraligi(o.yil + '-' + o.ay + '-' + o.gun);
+        }
+        if (o.yil && o.ay) return kamikazeAyAraligi(o.yil, o.ay);
+        if (o.yil) return kamikazeYilAraligi(o.yil);
+        return null;
+    }
+
+    function kamikazeGunAnahtar(iso) {
+        if (!iso) return '';
+        try {
+            var d = new Date(iso);
+            if (isNaN(d.getTime())) return '';
+            var p = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Europe/Istanbul',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            }).format(d);
+            return p;
+        } catch (e) {
+            return '';
+        }
+    }
+
+    async function masterKamikazeTarihlerYerel() {
+        var sb = getClient();
+        if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var res = await sb
+            .from('itiraflar')
+            .select('created_at')
+            .not('created_at', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(8000);
+        if (res.error) throw res.error;
+        var seen = {};
+        var gunler = [];
+        (res.data || []).forEach(function (row) {
+            var key = kamikazeGunAnahtar(row.created_at);
+            if (!key || seen[key]) return;
+            seen[key] = true;
+            gunler.push(key);
+        });
+        gunler.sort(function (a, b) { return a < b ? 1 : a > b ? -1 : 0; });
+        return { ok: true, tarihler: gunler };
+    }
+
+    async function masterKamikazeTarihler() {
+        await init();
+        var sb = getClient();
+        if (!sb) return { ok: false, hata: 'Supabase yapılandırılmadı.' };
+        try {
+            await authHazir();
+            var res = await sb.rpc('master_kamikaze_tarihler');
+            if (!res.error && res.data && res.data.ok) {
+                var liste = res.data.tarihler || [];
+                return {
+                    ok: true,
+                    tarihler: liste.map(function (g) {
+                        if (typeof g === 'string') return g.slice(0, 10);
+                        return kamikazeGunAnahtar(g);
+                    }).filter(Boolean)
+                };
+            }
+        } catch (eRpc) { /* yerel yedek */ }
+        return masterKamikazeTarihlerYerel();
+    }
+
+    /** Durum / tarih / sıra — panel yalnızca son N kayıt döndürdüğü için filtrede tam liste REST ile. */
+    async function masterKamikazeListe(filtre, limit, opts) {
         await init();
         var sb = getClient();
         if (!sb) throw new Error('Supabase yapılandırılmadı.');
+        var o = opts || {};
         var kod = filtre || 'hepsi';
-        var lim = limit || (kod === 'index' ? 250 : kod === 'podyum' ? 200 : 150);
+        var tarihVar = !!(o.tarih || o.yil);
+        var lim = limit || (tarihVar ? 500 : (kod === 'index' ? 250 : kod === 'podyum' ? 200 : 150));
         var simdi = new Date().toISOString();
         var q = sb.from('itiraflar').select(KAMIKAZE_ARA_SELECT);
+        var aralik = kamikazeTarihAraligi(o);
+
+        if (aralik) {
+            q = q.gte('created_at', aralik.bas).lt('created_at', aralik.bit);
+        }
 
         if (kod === 'silinen') {
             q = q.or('silindi_at.not.is.null,status.eq.silindi');
-        } else {
+        } else if (kod !== 'hepsi') {
             q = q.is('silindi_at', null).neq('status', 'silindi');
             if (kod === 'podyum') {
                 q = q.eq('status', 'podyum');
@@ -1431,11 +1693,14 @@
             }
         }
 
-        var res = await q.order('created_at', { ascending: false }).limit(lim);
+        var asc = o.sira === 'asc';
+        var res = await q.order('created_at', { ascending: asc }).limit(lim);
         if (res.error) throw res.error;
         return {
             ok: true,
             filtre: kod,
+            tarih: o.tarih || null,
+            sira: asc ? 'asc' : 'desc',
             hikayeler: (res.data || []).map(kamikazeSatirOnizleme)
         };
     }
@@ -1444,9 +1709,10 @@
         await init();
         var sb = getClient();
         if (!sb) return { ok: false, hata: 'Supabase yapılandırılmadı.' };
-        var oturum = await sb.auth.getSession();
-        if (!oturum.data || !oturum.data.session) {
-            return { ok: false, hata: 'Oturum hazır değil. Birkaç saniye sonra yenile veya tekrar giriş yap.' };
+        try {
+            await authHazir();
+        } catch (eAuth) {
+            return { ok: false, hata: 'Oturum hazır değil. /bulut sayfasından tekrar giriş yap.' };
         }
         var res = await sb.rpc('master_kamikaze_panel');
         if (res.error) throw res.error;
@@ -2860,7 +3126,10 @@
 
     global.Gunde5DB = {
         init: init,
+        authHazir: authHazir,
+        masterPanelHazir: masterPanelHazir,
         oturumHazirBekle: oturumHazirBekle,
+        oturumGecerliMi: oturumGecerliMi,
         isConfigured: isConfigured,
         isReady: function () { return ready; },
         getSupabaseClient: getClient,
@@ -2962,6 +3231,8 @@
         masterCevapIslem: masterCevapIslem,
         masterKamikazePanel: masterKamikazePanel,
         masterKamikazeListe: masterKamikazeListe,
+        masterKamikazeTarihler: masterKamikazeTarihler,
+        kamikazeGunAnahtar: kamikazeGunAnahtar,
         masterKamikazeAra: masterKamikazeAra,
         masterKamikazeHikayeDetay: masterKamikazeHikayeDetay,
         masterOyIslem: masterOyIslem,
@@ -2980,4 +3251,8 @@
     };
 
     global.getGunde5User = getGunde5User;
+
+    if (isConfigured() && global.supabase) {
+        init().catch(function () { /* ilk oturum yüklemesi */ });
+    }
 })(window);
