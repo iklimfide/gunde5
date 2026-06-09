@@ -233,6 +233,10 @@
         if (msg.indexOf('baslik') >= 0 && (msg.indexOf('column') >= 0 || err.code === 'PGRST204')) {
             return 'Başlık sütunu yok. Supabase SQL Editor\'da supabase/itiraf-hikaye-yaz-kurulum.sql dosyasını bir kez çalıştırın.';
         }
+        if ((msg.indexOf('slug') >= 0 || msg.indexOf('slug_hint') >= 0) &&
+            (msg.indexOf('column') >= 0 || err.code === 'PGRST204')) {
+            return 'URL slug kurulumu eksik. Supabase SQL Editor\'da supabase/itiraf-slug.sql dosyasını bir kez çalıştırın.';
+        }
         if (msg.indexOf('bildirimler') >= 0 && (msg.indexOf('relation') >= 0 || err.code === 'PGRST205')) {
             return 'Bildirim tablosu yok. Supabase SQL Editor\'da supabase/bildirimler.sql dosyasını çalıştırın.';
         }
@@ -681,7 +685,7 @@
 
     /** Index — yalnızca kartta kullanılan sütunlar (ek sorgu / profil birleştirme yok). */
     var INDEX_ITIRAF_SELECT =
-        'id,baslik,username,age,gender,city,yasadigi_yer,yurtdisi_sehir,content_short,content_full,up_votes,down_votes,created_at';
+        'id,baslik,slug,slug_hint,username,age,gender,city,yasadigi_yer,yurtdisi_sehir,content_short,content_full,up_votes,down_votes,created_at';
 
     /** Gelecek tarihli kayıtlar (planlı yayın) anasayfada görünmez. */
     function indexYayindaFiltre(q) {
@@ -1398,6 +1402,9 @@
         var baslikMetin = b.baslik != null ? String(b.baslik).replace(/^\s+|\s+$/g, '') : '';
         if (baslikMetin.length > 120) throw new Error('Başlık en fazla 120 karakter olabilir.');
 
+        var slugHint = b.slug_hint != null ? String(b.slug_hint).replace(/^\s+|\s+$/g, '') : '';
+        if (slugHint.length > 80) throw new Error('URL adı en fazla 80 karakter olabilir.');
+
         var yer = b.yasadigi_yer != null ? String(b.yasadigi_yer).replace(/^\s+|\s+$/g, '') : '';
         var yurtdisi = b.yurtdisi_sehir != null ? String(b.yurtdisi_sehir).replace(/^\s+|\s+$/g, '') : '';
         if (yer !== 'yurtdisi') yurtdisi = '';
@@ -1417,6 +1424,7 @@
             is_gizli: false
         };
         if (baslikMetin) kayit.baslik = baslikMetin;
+        if (slugHint) kayit.slug_hint = slugHint;
 
         var planIso = null;
         if (b.created_at != null && String(b.created_at).replace(/^\s+|\s+$/g, '') !== '') {
@@ -1436,6 +1444,7 @@
             content_full: tam
         };
         if (baslikMetin) rpcBody.baslik = baslikMetin;
+        if (slugHint) rpcBody.slug_hint = slugHint;
         if (planIso) rpcBody.created_at = planIso;
 
         /* Planlı: yalnızca RPC — PostgREST insert+created_at bazı kurulumlarda yanıt vermiyor. */
@@ -1523,7 +1532,7 @@
     }
 
     var KAMIKAZE_ARA_SELECT =
-        'id,status,username,baslik,age,gender,yasadigi_yer,yurtdisi_sehir,is_gizli,silindi_at,' +
+        'id,status,username,baslik,slug,slug_hint,age,gender,yasadigi_yer,yurtdisi_sehir,is_gizli,silindi_at,' +
         'up_votes,down_votes,tekil_goruntulenme,sayfa_goruntulenme,podyum_donem,podyum_sira,created_at,content_full,content_short';
 
     function kamikazeSatirdaBaslikAlaniYok(row) {

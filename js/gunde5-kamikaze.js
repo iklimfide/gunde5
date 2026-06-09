@@ -365,8 +365,9 @@
     }
 
     function satirBaslik(row) {
-        var b = row && row.baslik != null ? String(row.baslik).replace(/^\s+|\s+$/g, '') : '';
-        return b || '(Başlıksız)';
+        if (row && row.slug) return '/' + String(row.slug);
+        var oniz = String(row && (row.onizleme || row.content_short) || '').slice(0, 48);
+        return oniz || '(#' + (row && row.id) + ')';
     }
 
     function satirHtml(row) {
@@ -569,7 +570,10 @@
             '<p class="km-not">Planlı hikaye: yayın tarihi gelecekteyse sitede görünmez. Günde5 ritmine uygun sabah saati seç.</p>' +
             '<div class="km-grid km-grid--tek">' +
             '<div class="km-alan"><label>Rumuz<input type="text" id="kmDetayRumuz" maxlength="50" value="' + esc(h.username || '') + '"></label></div>' +
-            '<div class="km-alan"><label>Başlık<input type="text" id="kmDetayBaslik" maxlength="120" value="' + esc(h.baslik || '') + '"></label></div>' +
+            '<div class="km-alan"><label>URL adı <span class="km-not-inline">(isteğe bağlı, 3–5 kelime)</span>' +
+            '<input type="text" id="kmDetaySlugHint" maxlength="80" value="' + esc(h.slug_hint || '') + '" placeholder="örn. telefonsuz-market-listesi"></label>' +
+            (h.slug ? '<p class="km-not">Canlı URL: <code>/h/' + esc(h.slug) + '</code></p>' : '') +
+            '</div>' +
             '</div>' +
             '<div class="km-alan"><label>Hikaye metni<textarea id="kmDetayMetin">' + esc(h.content_full || '') + '</textarea></label></div>' +
             '<div class="km-grid">' +
@@ -603,7 +607,8 @@
             '<p class="km-not">Boş bırakılan yayın tarihi = hemen yayın. Gelecek tarih = planlı (Günde5 formatı).</p>' +
             '<div class="km-grid km-grid--tek">' +
             '<div class="km-alan"><label>Rumuz *<input type="text" id="kmYeniRumuz" maxlength="50" placeholder="En az 2 karakter"></label></div>' +
-            '<div class="km-alan"><label>Başlık<input type="text" id="kmYeniBaslik" maxlength="120"></label></div>' +
+            '<div class="km-alan"><label>URL adı <span class="km-not-inline">(isteğe bağlı)</span>' +
+            '<input type="text" id="kmYeniSlugHint" maxlength="80" placeholder="örn. telefonsuz-market-listesi"></label></div>' +
             '</div>' +
             '<div class="km-alan"><label>Hikaye metni *<textarea id="kmYeniMetin" placeholder="Hikaye…"></textarea></label></div>' +
             '<div class="km-grid">' +
@@ -708,7 +713,7 @@
             var yer = qs('kmDetayYer') ? qs('kmDetayYer').value : '';
             await hikayeIslem('guncelle', {
                 content_full: metin,
-                baslik: String(qs('kmDetayBaslik') && qs('kmDetayBaslik').value || '').trim(),
+                slug_hint: String(qs('kmDetaySlugHint') && qs('kmDetaySlugHint').value || '').trim(),
                 username: rumuz
             });
             await hikayeIslem('meta', {
@@ -820,7 +825,7 @@
             yasadigi_yer: yer || null,
             yurtdisi_sehir: yer === 'yurtdisi' ? String(qs('kmYeniYurtdisi') && qs('kmYeniYurtdisi').value || '').trim() || null : null,
             content_full: metin,
-            baslik: String(qs('kmYeniBaslik') && qs('kmYeniBaslik').value || '').trim()
+            slug_hint: String(qs('kmYeniSlugHint') && qs('kmYeniSlugHint').value || '').trim()
         };
         if (planHam) {
             var planTarih = datetimeLocalOku(planHam);

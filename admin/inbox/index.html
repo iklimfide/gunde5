@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -134,8 +134,8 @@
             <form id="admDuzenleForm">
                 <input type="hidden" id="admDuzenleId" name="id">
                 <div class="adm-alan">
-                    <label for="admDuzenleBaslikInput">Başlık</label>
-                    <input type="text" id="admDuzenleBaslikInput" name="title" maxlength="120" autocomplete="off">
+                    <label for="admDuzenleSlugHintInput">URL adı <span style="font-weight:400;color:#6b7280">(isteğe bağlı, 3–5 kelime)</span></label>
+                    <input type="text" id="admDuzenleSlugHintInput" name="slug_hint" maxlength="80" autocomplete="off" placeholder="örn. telefonsuz-market-listesi">
                 </div>
                 <div class="adm-alan">
                     <label for="admDuzenleIcerik">Hikaye metni</label>
@@ -176,8 +176,8 @@
                     <input type="text" id="admPlanlaRumuz" name="username" maxlength="50" required autocomplete="off" placeholder="En az 2 karakter">
                 </div>
                 <div class="adm-alan">
-                    <label for="admPlanlaBaslikInput">Başlık</label>
-                    <input type="text" id="admPlanlaBaslikInput" name="title" maxlength="120" autocomplete="off">
+                    <label for="admPlanlaSlugHintInput">URL adı <span style="font-weight:400;color:#6b7280">(isteğe bağlı)</span></label>
+                    <input type="text" id="admPlanlaSlugHintInput" name="slug_hint" maxlength="80" autocomplete="off" placeholder="örn. telefonsuz-market-listesi">
                 </div>
                 <div class="adm-alan">
                     <label for="admPlanlaIcerik">Hikaye metni *</label>

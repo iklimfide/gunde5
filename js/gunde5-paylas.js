@@ -64,8 +64,17 @@
         return kokUrl(itirafIcLink(id, status));
     }
 
-    function itirafPaylasUrl(id, status) {
-        return itirafIcLinkTam(id, status || 'kulis');
+    function itirafHikayeUrl(id, slug) {
+        var parca = slug ? String(slug) : String(id);
+        return kokUrl('/h/' + encodeURIComponent(parca));
+    }
+
+    function itirafPaylasUrl(id, status, slug) {
+        if (slug) return itirafHikayeUrl(id, slug);
+        var card = document.getElementById('h-' + id);
+        var kartSlug = card && card.getAttribute('data-slug');
+        if (kartSlug) return itirafHikayeUrl(id, kartSlug);
+        return itirafHikayeUrl(id, null);
     }
 
     function itirafSayfayaGit(id, status) {
@@ -218,6 +227,7 @@
         itirafIcLink: itirafIcLink,
         itirafIcLinkTam: itirafIcLinkTam,
         itirafPaylasUrl: itirafPaylasUrl,
+        itirafHikayeUrl: itirafHikayeUrl,
         itirafSayfayaGit: itirafSayfayaGit,
         itirafHedefIdOku: itirafHedefIdOku,
         paylasItiraf: paylasItiraf,

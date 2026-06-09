@@ -45,7 +45,7 @@
             metinKisalt(row.content_short || row.content_full, 160) ||
             "Her sabah 5 yeni anonim hikaye & itiraf. 5 dakikada oku, gül, güne başla 😄";
         var baslik = rumuz + ' | gunde5.com';
-        var url = SITE + '/h/' + id;
+        var url = SITE + '/h/' + (row.slug || id);
         var ogImage = DEFAULT_IMG;
 
         document.title = baslik;

@@ -220,7 +220,7 @@
         var modal = document.getElementById('admDuzenleModal');
         if (!modal || !row) return;
         document.getElementById('admDuzenleId').value = row.id || '';
-        document.getElementById('admDuzenleBaslikInput').value = row.title || '';
+        document.getElementById('admDuzenleSlugHintInput').value = row.title || '';
         document.getElementById('admDuzenleIcerik').value = row.content || '';
         document.getElementById('admDuzenleYas').value = row.age != null ? String(row.age) : '';
         document.getElementById('admDuzenleSehir').value = row.city || '';
@@ -254,7 +254,7 @@
             return;
         }
         document.getElementById('admPlanlaId').value = row.id || '';
-        document.getElementById('admPlanlaBaslikInput').value = row.title || '';
+        document.getElementById('admPlanlaSlugHintInput').value = row.title || '';
         document.getElementById('admPlanlaIcerik').value = row.content || '';
         var yas = parseInt(row.age, 10);
         document.getElementById('admPlanlaYas').value = (yas >= 18 && yas <= 120) ? String(yas) : '';
@@ -311,7 +311,8 @@
             username: rumuz,
             age: yas,
             gender: form.gender ? form.gender.value : 'female',
-            title: (form.title && form.title.value || '').trim(),
+            slug_hint: (form.slug_hint && form.slug_hint.value || '').trim(),
+            title: (form.slug_hint && form.slug_hint.value || '').trim(),
             content: icerik,
             city: (form.city && form.city.value || '').trim(),
             created_at: planIso
@@ -357,7 +358,8 @@
         var genderEl = form.querySelector('input[name="gender"]:checked');
         var payload = {
             id: form.id.value,
-            title: (form.title && form.title.value || '').trim(),
+            slug_hint: (form.slug_hint && form.slug_hint.value || '').trim(),
+            title: (form.slug_hint && form.slug_hint.value || '').trim(),
             content: icerik,
             city: (form.city && form.city.value || '').trim(),
             gender: genderEl ? genderEl.value : ''
@@ -384,7 +386,7 @@
 
     function hikayeKartHtml(row) {
         hikayeSatirlar[row.id] = row;
-        var baslik = row.title ? esc(row.title) : '(Başlıksız)';
+        var baslik = row.title ? esc(row.title) : esc(String(row.content || '').slice(0, 56) + (row.content && row.content.length > 56 ? '…' : ''));
         var meta =
             esc(row.status) + ' · ' + tarih(row.created_at);
         if (row.city) meta += ' · ' + esc(row.city);

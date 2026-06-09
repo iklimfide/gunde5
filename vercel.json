@@ -169,12 +169,6 @@
         { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
       ]
     },
-    {
-      "source": "/h/:path*",
-      "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
-      ]
-    }
   ],
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true },
@@ -209,6 +203,6 @@
   ],
   "rewrites": [
     { "source": "/admin/inbox", "destination": "/admin/inbox/index.html" },
-    { "source": "/h/:id", "destination": "/api/itiraf-share?id=:id" }
+    { "source": "/h/:slug", "destination": "/api/itiraf-share" }
   ]
 }

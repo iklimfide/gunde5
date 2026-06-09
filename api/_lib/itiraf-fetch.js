@@ -1,13 +1,12 @@
-export async function itirafGetir(id) {
+var ITIRAF_SELECT =
+    'id,username,content_short,content_full,age,gender,city,yasadigi_yer,baslik,slug,slug_hint,status,is_gizli,silindi_at,created_at';
+
+async function itirafRestSorgu(filtre) {
     var url = process.env.GUNDE5_SUPABASE_URL;
     var key = process.env.GUNDE5_SUPABASE_ANON_KEY;
-    if (!url || !key || !id) return null;
+    if (!url || !key || !filtre) return null;
 
-    var api =
-        url.replace(/\/$/, '') +
-        '/rest/v1/itiraflar?id=eq.' +
-        encodeURIComponent(String(id)) +
-        '&select=id,username,content_short,content_full,age,gender,city,yasadigi_yer,baslik,created_at';
+    var api = url.replace(/\/$/, '') + '/rest/v1/itiraflar?' + filtre + '&select=' + ITIRAF_SELECT + '&limit=1';
 
     var res = await fetch(api, {
         headers: {
@@ -19,6 +18,16 @@ export async function itirafGetir(id) {
     if (!res.ok) return null;
     var rows = await res.json();
     return rows && rows[0] ? rows[0] : null;
+}
+
+export async function itirafGetir(id) {
+    if (!id) return null;
+    return itirafRestSorgu('id=eq.' + encodeURIComponent(String(id)));
+}
+
+export async function itirafGetirSlug(slug) {
+    if (!slug) return null;
+    return itirafRestSorgu('slug=eq.' + encodeURIComponent(String(slug)));
 }
 
 export function metinKisalt(metin, max) {

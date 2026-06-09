@@ -35,7 +35,6 @@ var DISALLOW = [
     '/sosyal-paylas',
     '/sosyal-paylas.html',
     '/admin/',
-    '/h/',
     '/itiraf/',
     '/demo/',
     '/404',
@@ -58,8 +57,8 @@ var ONIZLEME_BOTLARI = [
 var ONIZLEME_IZIN = ['/h/', '/itiraf/', '/api/og'];
 
 var lines = [
-    '# gunde5.com — otomatik uretim; yayinda: yalnizca anasayfa',
-    '# Paylasim onizleme botlari /h/ ve OG gorselini tarayabilir (Google index degil).'
+    '# gunde5.com — otomatik uretim',
+    '# /h/ hikaye sayfalari indexlenebilir; onizleme botlari /api/og icin acik.'
 ];
 
 ONIZLEME_BOTLARI.forEach(function (bot) {

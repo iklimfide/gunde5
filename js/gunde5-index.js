@@ -582,6 +582,7 @@
         art.className = 'story-card card ' + cins + (ilkKart ? ' focused' : '');
         art.id = 'h-' + id;
         art.setAttribute('data-id', id);
+        if (row.slug) art.setAttribute('data-slug', String(row.slug));
 
         art.innerHTML =
             '<div class="card-header">' +
@@ -1121,7 +1122,10 @@
         var metinEl = card.querySelector('.short-text');
         var fullText = metinEl ? metinEl.textContent : '';
         var kanca = fullText.length > 140 ? fullText.substring(0, 140) + '...' : fullText;
-        var url = 'https://gunde5.com/h/' + encodeURIComponent(String(id));
+        var slug = card.getAttribute('data-slug');
+        var url = slug
+            ? 'https://gunde5.com/h/' + encodeURIComponent(slug)
+            : 'https://gunde5.com/h/' + encodeURIComponent(String(id));
         var paket = kanca + '\n\n' + PAYLAS_CAGRI + '\n' + url;
         return { kanca: kanca, url: url, paket: paket };
     }
