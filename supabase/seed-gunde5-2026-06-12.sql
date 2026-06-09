@@ -1,4 +1,4 @@
--- 5 planlı hikaye — gunde5-2026-06-12.txt — 2026-06-12 … 2026-06-12 (dosya TARİH / 07:00–07:04)
+-- 5 planlı hikaye — arşiv: 2026-05-24 07:00–07:04 (eski plan 2026-06-12)
 -- created_at gelene kadar anasayfada görünmez. Supabase SQL Editor'da bir kez Run.
 
 insert into public.itiraflar (
@@ -61,7 +61,7 @@ Tüm ofis bir anda bana döndü.
 Şu an şirkette herkes beni gizli bir fantezi tutkunu sanıyor.
 
 İşin kötü tarafı, eşim rengini beğenmedi. 😂',
-      timestamptz '2026-06-12 07:04:00+03'
+      timestamptz '2026-05-24 07:04:00+03'
     ),
     (
       'Gece Kemirgeni',
@@ -89,7 +89,7 @@ Birbirimizi görmemiş gibi yapıp sessizce odalarımıza döndük.
 Biz evli değiliz.
 
 Suç ortaklığı yapıyoruz. 😂',
-      timestamptz '2026-06-12 07:03:00+03'
+      timestamptz '2026-05-24 07:03:00+03'
     ),
     (
       'Sepet Bekçisi',
@@ -115,7 +115,7 @@ Toplamda fazladan 250 TL harcamış oldum.
 Ama kargo bedavaya geldi.
 
 Ekonomi profesörleri bu zekamı görse diplomalarını yırtardı. 😂',
-      timestamptz '2026-06-12 07:02:00+03'
+      timestamptz '2026-05-24 07:02:00+03'
     ),
     (
       'Rezil Olduk',
@@ -141,7 +141,7 @@ Babamın öksürük sesi mutfağa kadar geldi.
 Teknolojiyi seviyorum.
 
 Ama teknolojinin beni aileme karşı bu kadar hızlı harcayacağını düşünmemiştim. 😂',
-      timestamptz '2026-06-12 07:01:00+03'
+      timestamptz '2026-05-24 07:01:00+03'
     ),
     (
       'Hamlamış Vücut',
@@ -167,7 +167,7 @@ Doğrulabilmek için yataktan yuvarlanarak yere düşmek zorunda kaldım.
 Spor sağlıklı yaşam sunuyor diyorlar.
 
 Ama bana daha çok hareket kabiliyetimi kaybettirdi. 😂',
-      timestamptz '2026-06-12 07:00:00+03'
+      timestamptz '2026-05-24 07:00:00+03'
     )
 ) as v(username, age, gender, yasadigi_yer, yurtdisi_sehir, baslik, hikaye, yayin_at)
 where not exists (

@@ -1,4 +1,4 @@
--- 10 planlı hikaye — gunde5.txt — 2026-06-13 … 2026-06-14 (07:00–07:04)
+-- 10 planlı hikaye — arşiv: 2026-05-24 07:00–07:04 (eski plan 2026-06-13 … 14)
 -- created_at gelene kadar anasayfada görünmez. Supabase SQL Editor'da bir kez Run.
 
 insert into public.itiraflar (
@@ -57,7 +57,7 @@ Dün sınav sonuçları açıklandı.
 Arkadaş o dersi hâlâ geçememiş, okul uzadı.
 
 Dersten geçemedi ama okul tarihine geçti 😂',
-      timestamptz '2026-06-13 07:00:00+03'
+      timestamptz '2026-05-24 07:00:00+03'
     ),
     (
       'Kete Mağduru',
@@ -81,7 +81,7 @@ Ertesi sabah çocuk koşa koşa yanıma geldi, gözlerinin içi parlıyordu.
 Tüm sınıfın önünde ne diyeceğimi bilemeden öylece kalakaldım.
 
 Çocukların o aşırı dürüst filtresiz dünyası bazen insanı hayattan soğutuyor. 😂',
-      timestamptz '2026-06-13 07:01:00+03'
+      timestamptz '2026-05-24 07:01:00+03'
     ),
     (
       'Rehber Faciası',
@@ -105,7 +105,7 @@ Kaşlarını çatıp: "Benim adım Maria, Lugano da kim?" dedi.
 Fenerbahçe''nin eski defans oyuncusunu ve ofsayt taktiğini kıza anlatmaya çalışırken iyice rezil oldum.
 
 Kız iki gün sonra otelden ayrıldı, arkasına bile bakmadı. 😂',
-      timestamptz '2026-06-13 07:02:00+03'
+      timestamptz '2026-05-24 07:02:00+03'
     ),
     (
       'Kod Parçası',
@@ -127,7 +127,7 @@ Sonra birden fark ettim; biz bu teknolojiyi o kadar hevesli ve kusursuz gelişti
 Kendi ellerimizle kendi yerimize geçecek dijital işçiyi yaratıp üstüne bir de mesaiye kalıyoruz.
 
 Geleceğe doğru koşarken altımızdaki dalı kesmek tam olarak bu olsa gerek. 😂',
-      timestamptz '2026-06-13 07:03:00+03'
+      timestamptz '2026-05-24 07:03:00+03'
     ),
     (
       'Gurme Komşu',
@@ -149,7 +149,7 @@ Abla gayet rahat bir tavırla gülümsedi:
 "Ay yok ne uğraşması, ben büyük bir yemek şirketinde çalışıyorum, arta kalanları getiriyorum" dedi.
 
 Kendimi bir an mahallenin şanslı sokak hayvanı gibi hissetsem de tabağı boş çeviremedim. 😂',
-      timestamptz '2026-06-13 07:04:00+03'
+      timestamptz '2026-05-24 07:04:00+03'
     ),
     (
       'Fantastik Gece',
@@ -171,7 +171,7 @@ Eşim yatağa bağlı şekilde kaldı, ben de yerde emekleyerek karanlıkta anah
 Gecenin sonu çilingirin yatak odamıza girip "Golayyy gele yenge" demesiyle bitti.
 
 Romantizm bitti, adli vaka tadında bir gece hafızalara kazındı. 😂',
-      timestamptz '2026-06-14 07:00:00+03'
+      timestamptz '2026-05-24 07:00:00+03'
     ),
     (
       'Kıskançlık Savaşları',
@@ -197,7 +197,7 @@ Masadaki dev çiçeği ve notu görünce adamın gözleri döndü.
 Kendi kendime gönderdiğimi, faturayı, kredi kartı ekstresini gösterdim ama nafile.
 
 Hava atalım derken evlilik krizinin tam ortasına düştük. 😂',
-      timestamptz '2026-06-14 07:01:00+03'
+      timestamptz '2026-05-24 07:01:00+03'
     ),
     (
       'Yalnızlık Seviyem',
@@ -223,7 +223,7 @@ Hayatımda beni onun kadar dikkatli izleyen ve sağlüğımı düşünen başka 
 Galiba bu hayatta beni gerçekten hak eden tek kişi bakkal Musa.
 
 Gidip ciddi ciddi konuşacağım, ne olacaksa olsun artık. 😂',
-      timestamptz '2026-06-14 07:02:00+03'
+      timestamptz '2026-05-24 07:02:00+03'
     ),
     (
       'Adalet Savaşçısı',
@@ -247,7 +247,7 @@ Ardından elini cebine attı, bir koçan çıkardı:
 Adam mesleki uzmanlık alanını direkt benim üzerimde test etmeye çalışıyordu.
 
 Adalete güveniyorum ama bu esnaflık kafasına güvencem kalmadı. 😂',
-      timestamptz '2026-06-14 07:03:00+03'
+      timestamptz '2026-05-24 07:03:00+03'
     ),
     (
       'Genç Hukukçu',
@@ -269,7 +269,7 @@ Yaşlı ve oldukça zengin bir müvekkilimiz davasının gidişatı için ziyare
 "Tabii efendim, önlükle adliyeye koşardım" diyecek halim yoktu ya.
 
 Müvekkil gözünde kıdemli görünmek isterken yaş engeline takılmak da mesleğin ilk cilvesi oldu. 😂',
-      timestamptz '2026-06-14 07:04:00+03'
+      timestamptz '2026-05-24 07:04:00+03'
     )
 ) as v(username, age, gender, yasadigi_yer, yurtdisi_sehir, baslik, hikaye, yayin_at)
 where not exists (

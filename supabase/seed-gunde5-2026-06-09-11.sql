@@ -1,4 +1,4 @@
--- 14 planlı hikaye — gunde5-2026-06-09-11.txt — 2026-06-09 … 2026-06-11 (dosya TARİH / 07:00–07:04)
+-- 14 planlı hikaye — 2026-06-09 … 06-10 yayın; 06-11 dörtlüsü arşiv → 2026-05-24
 -- created_at gelene kadar anasayfada görünmez. Supabase SQL Editor'da bir kez Run.
 
 insert into public.itiraflar (
@@ -327,7 +327,7 @@ Ve elimdeki şey de kadının çantasından düşüp cebine giren prezervatif pa
 Kadın bana baktı, ben kadına baktım, eşim ikimize baktı.
 
 "Vallahi sinema bileti arıyordum" dedim ama filmin kalanını koridorda izlemek zorunda kaldım. 😂',
-      timestamptz '2026-06-11 07:03:00+03'
+      timestamptz '2026-05-24 07:03:00+03'
     ),
     (
       'Yolun Sonu',
@@ -353,7 +353,7 @@ Navigasyon hala arkadan sakin bir sesle:
 diyor.
 
 Etrafım ineklerle çevrilmiş, daracık tarlada U dönüşü yapmaya çalışırken teknolojinin sınırlarını anladım. 😂',
-      timestamptz '2026-06-11 07:02:00+03'
+      timestamptz '2026-05-24 07:02:00+03'
     ),
     (
       'Plaza Kölesi',
@@ -375,7 +375,7 @@ Adam beni odasına çağırdı.
 "Kaan Bey, mailinizdeki o kibar tehdidi aldım" dedi.
 
 Plaza dili göründüğü kadar masum değilmiş, resmen diplomatik kriz çıkarıyordum. 😂',
-      timestamptz '2026-06-11 07:01:00+03'
+      timestamptz '2026-05-24 07:01:00+03'
     ),
     (
       'Yanlış Tabak',
@@ -395,7 +395,7 @@ Işığı bir açtım ki, yediklerim cips değil, kedim Çiko''nun somonlu ödü
 Çiko da tezgahın köşesinden bana "Benim rızkımı niye yiyorsun" der gibi bakıyordu.
 
 Tadı fena değildi ama insan gururlanıyor işte. 😂',
-      timestamptz '2026-06-11 07:00:00+03'
+      timestamptz '2026-05-24 07:00:00+03'
     )
 ) as v(username, age, gender, yasadigi_yer, yurtdisi_sehir, baslik, hikaye, yayin_at)
 where not exists (
