@@ -3,6 +3,7 @@
     'use strict';
 
     var PAYLAS_SIRA_EMOJI = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'];
+    var PAYLAS_SATIR_MAX = 28;
     var X_KARAKTER_LIMIT = 275;
     var MARKA_UST = "☕ Bugünün 5'i geldi.";
     var MARKA_ORTA = 'Her sabah 5 gerçek hikaye.';
@@ -56,11 +57,42 @@
         }).format(t);
     }
 
-    function paylasBaslik(row) {
+    function slugHintGoster(hint) {
+        return String(hint || '')
+            .trim()
+            .replace(/-/g, ' ')
+            .replace(/\s+/g, ' ');
+    }
+
+    /** Kelime sınırında kısalt; sosyal listede … yok */
+    function metinKisaltKelime(metin, max) {
+        var b = String(metin || '').trim();
+        if (!max || b.length <= max) return b;
+        var kes = b.slice(0, max);
+        var devam = b.charAt(max);
+        if (!devam || devam === ' ' || /[.,!?;:]/.test(devam)) return kes.trim();
+        var son = kes.lastIndexOf(' ');
+        if (son > 10) kes = kes.slice(0, son);
+        return kes.trim();
+    }
+
+    /** baslik → slug_hint → hikaye kancası → rumuz */
+    function paylasBaslik(row, maxLen) {
+        var limit = maxLen || PAYLAS_SATIR_MAX;
         var b = String(row && row.baslik || '').trim();
-        if (b) return b;
+        if (b) return metinKisaltKelime(b, limit);
+
+        var hint = slugHintGoster(row && row.slug_hint);
+        if (hint) return metinKisaltKelime(hint, limit);
+
+        var metin = String(row && (row.content_full || row.content_short) || '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        var kanca = metinKisaltKelime(metin, limit);
+        if (kanca) return kanca;
+
         var u = String(row && row.username || '').trim();
-        if (u) return u;
+        if (u) return metinKisaltKelime(u, limit);
         return 'Hikaye #' + (row && row.id);
     }
 
@@ -88,7 +120,8 @@
             [/evlilik|düğün|nişan/, '💍'],
             [/yurtdış|yurt dış/, '✈️'],
             [/gece|rüya|uyku/, '🌙'],
-            [/kahve|çay|latte/, '☕'],
+            [/kahve|çay|latte|filtre/, '☕'],
+            [/market|alışveriş|manav|kasiyer/, '🛒'],
             [/kavga|sinir|tartış/, '😤'],
             [/üzüc|ağla|hüzün/, '😢'],
             [/arkadaş|dost|kanka/, '🤝']
@@ -107,8 +140,7 @@
     }
 
     function listeSatiri(idx, row, maxBaslik) {
-        var ham = paylasBaslik(row);
-        var baslik = maxBaslik ? baslikKisalt(ham, maxBaslik) : ham;
+        var baslik = paylasBaslik(row, maxBaslik || PAYLAS_SATIR_MAX);
         var ek = baslikEmoji(baslik);
         return PAYLAS_SIRA_EMOJI[idx] + ' ' + ek + baslik;
     }
@@ -133,15 +165,15 @@
     }
 
     function paylasMetniOlustur(rows) {
-        var metin = paylasMetniOlusturHam(rows, 0);
+        var metin = paylasMetniOlusturHam(rows, PAYLAS_SATIR_MAX);
         if (metin.length <= X_KARAKTER_LIMIT) return metin;
-        var max = 56;
-        while (max >= 18) {
+        var max = PAYLAS_SATIR_MAX - 2;
+        while (max >= 14) {
             metin = paylasMetniOlusturHam(rows, max);
             if (metin.length <= X_KARAKTER_LIMIT) return metin;
-            max -= 6;
+            max -= 2;
         }
-        return paylasMetniOlusturHam(rows, 18).slice(0, X_KARAKTER_LIMIT - 1) + '…';
+        return paylasMetniOlusturHam(rows, 14).slice(0, X_KARAKTER_LIMIT - 1) + '…';
     }
 
     function xKarakterGuncelle(metin) {
@@ -172,7 +204,7 @@
         html += '<ul class="sp-ig-kart-liste">';
         var i;
         for (i = 0; i < liste.length && i < 5; i++) {
-            html += '<li>' + esc(listeSatiri(i, liste[i], 0)) + '</li>';
+            html += '<li>' + esc(listeSatiri(i, liste[i], PAYLAS_SATIR_MAX)) + '</li>';
         }
         if (!liste.length) {
             html += '<li class="sp-ig-kart-liste--bos">Henüz bugünkü hikâye yok</li>';
@@ -399,7 +431,7 @@
             html += '<section class="sp-kart"><h2 class="sp-kart-baslik">Bugünkü liste (yayın sırası)</h2>';
             html += '<ol class="sp-liste">';
             arr(rows).forEach(function (r, idx) {
-                var b = paylasBaslik(r);
+                var b = paylasBaslik(r, PAYLAS_SATIR_MAX);
                 html += '<li><span class="sp-sira">' + esc(PAYLAS_SIRA_EMOJI[idx] || '') + '</span> ';
                 html += '<strong>' + esc(baslikEmoji(b) + b) + '</strong>';
                 html += ' <span class="sp-saat">(' + esc(fmtTarih(r.created_at)) + ')</span></li>';

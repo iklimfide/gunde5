@@ -1933,7 +1933,7 @@
             var durum = await D.masterDurum();
             if (!durum || !durum.master) return;
             await scriptYukle('js/gunde5-ui.js');
-            await scriptYukle('js/gunde5-master.js?v=2');
+            await scriptYukle('js/gunde5-master.js?v=4');
             menuSol.hidden = false;
             if (global.Gunde5Shell && global.Gunde5Shell.applyShell) {
                 global.Gunde5Shell.applyShell();

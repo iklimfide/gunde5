@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -29,8 +29,8 @@
     <meta name="twitter:image:alt" content="Her sabah sadece 5 tane — kısa, anonim hikayeler &amp; itiraf">
     <meta name="theme-color" content="#ffffff">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="stylesheet" href="css/index.css?v=32">
-    <link rel="stylesheet" href="css/index-pc.css?v=14">
+    <link rel="stylesheet" href="css/index.css?v=34">
+    <link rel="stylesheet" href="css/index-pc.css?v=15">
     <link rel="stylesheet" href="css/gunde5-topbar.css?v=5">
     <script src="js/gunde5-shell.js"></script>
     <script src="js/gunde5-perde.js?v=2"></script>
@@ -130,13 +130,23 @@
                 <div id="indexListe" aria-live="polite"><p class="index-durum" id="indexListeBekle">Yükleniyor…</p></div>
 
                 <div class="page-tail">
-                    <p class="page-tail-satir">☕ Her sabah<br>5 yeni hikaye seni bekliyor.</p>
-                    <p class="page-tail-satir">🔔 Yarınki 5'i kaçırmamak için: <a href="https://x.com/gunde5_com" target="_blank" rel="noopener noreferrer">𝕏 @gunde5_com</a></p>
-                    <p class="page-tail-satir"><a href="#" id="pageTailDunBtn">📅 Dünkü 5'i oku</a></p>
-                    <button type="button" class="page-tail-cta" id="pageTailGonderBtn">✍️ Anlatacak bir hikayen mi var?</button>
-                    <p class="page-tail-satir"><a href="#" onclick="openModal(event)">Sıkça Sorulan Sorular</a></p>
-                    <p class="page-tail-satir page-tail-iletisim">İletişim: <button type="button" class="mail-link" data-mail="itiraf@gunde5.com" onclick="mailKopyala(event)">itiraf@gunde5.com</button></p>
-                    <p class="page-tail-satir page-tail-satir--kucuk">©️ gunde5.com 2026</p>
+                    <div class="page-tail-kart">
+                        <p class="page-tail-hook">☕ Her sabah<br><strong>5 yeni hikaye</strong> seni bekliyor.</p>
+                        <p class="page-tail-bant page-tail-bant--x">
+                            🔔 Yarınki 5'i kaçırmamak için:
+                            <a href="https://x.com/gunde5_com" target="_blank" rel="noopener noreferrer">𝕏 @gunde5_com</a>
+                        </p>
+                        <a href="#" class="page-tail-chip page-tail-chip--dun" id="pageTailDunBtn">📅 Dünkü 5'i oku</a>
+                        <button type="button" class="page-tail-cta" id="pageTailGonderBtn">✍️ Anlatacak bir hikayen mi var?</button>
+                        <div class="page-tail-alt">
+                            <a href="#" class="page-tail-link" onclick="openModal(event)">Sıkça Sorulan Sorular</a>
+                            <span class="page-tail-alt-ayrac" aria-hidden="true">·</span>
+                            <span class="page-tail-iletisim">İletişim:
+                                <button type="button" class="mail-link page-tail-mail" data-mail="itiraf@gunde5.com" onclick="mailKopyala(event)">itiraf@gunde5.com</button>
+                            </span>
+                        </div>
+                        <p class="page-tail-copy">©️ gunde5.com 2026</p>
+                    </div>
                 </div>
             </section>
 
@@ -186,39 +196,39 @@
             <h2 class="modal-title faq-modal-baslik">Sıkça Sorulan Sorular</h2>
             <div class="faq-list" id="faqList">
                 <div class="faq-item">
-                    <button type="button" class="faq-soru" aria-expanded="false">Günde5 nedir?</button>
+                    <button type="button" class="faq-soru" aria-expanded="false">📌 Günde5 nedir?</button>
                     <div class="faq-cevap-wrap">
-                        <p class="faq-cevap">Günde5, insanların anonim itiraflarını, anılarını ve gerçek hikâyelerini paylaştığı bir hikâye platformudur.</p>
+                        <p class="faq-cevap">☕ Kahveni içerken birkaç dakikada okuyabileceğin küçük bir mola.</p>
+                        <p class="faq-cevap">Her gün sadece 5 yeni hikaye.</p>
+                        <p class="faq-cevap">Bazen güldüren, bazen şaşırtan, bazen &quot;aynısı benim de başıma geldi&quot; dedirten. 😄</p>
                     </div>
                 </div>
                 <div class="faq-item">
-                    <button type="button" class="faq-soru" aria-expanded="false">Neden gunde5?</button>
+                    <button type="button" class="faq-soru" aria-expanded="false">❓ Neden sadece günde 5?</button>
                     <div class="faq-cevap-wrap">
-                        <p class="faq-cevap">Sitemizde her gün bize gönderilen 5 yeni hikâye yayınlanır. gunde5.com adını buradan alır.</p>
+                        <p class="faq-cevap">Çünkü internet zaten sonsuz.</p>
+                        <p class="faq-cevap">Biz seni saatlerce kaydırmaya değil, gününe küçük bir tebessüm bırakmaya geldik.</p>
                     </div>
                 </div>
                 <div class="faq-item">
-                    <button type="button" class="faq-soru" aria-expanded="false">Hikâyeler gerçek mi?</button>
+                    <button type="button" class="faq-soru" aria-expanded="false">❓ Daha fazlasını okuyamaz mıyım?</button>
                     <div class="faq-cevap-wrap">
-                        <p class="faq-cevap">Gönderilen hikâyeler editör kontrolünden geçer ancak doğruluğu garanti edilemez.</p>
+                        <p class="faq-cevap">Tabii ki okuyabilirsin. 😄 Arşivde eski hikayeler seni bekliyor.</p>
+                        <p class="faq-cevap">Ama Günde5'in asıl olayı şu: Her gün uğrarsan yetişmeye çalıştığın bir arşiv değil, biriktirdiğin bir alışkanlık olur. Bugünün 5'i, yarının arşivi.</p>
                     </div>
                 </div>
                 <div class="faq-item">
-                    <button type="button" class="faq-soru" aria-expanded="false">Hikâye, itiraf gönderebilir miyim?</button>
+                    <button type="button" class="faq-soru" aria-expanded="false">❓ Hikayeleri kim yazıyor?</button>
                     <div class="faq-cevap-wrap">
-                        <p class="faq-cevap">Evet. <button type="button" class="mail-link" id="faqGonderBtn">Buradan hikâyeni veya itirafını</button> anonim gönderebilirsin; editör onayından sonra yayınlanır.</p>
+                        <p class="faq-cevap">Sen, ben, biz.</p>
+                        <p class="faq-cevap">Rumuzunu seç, yaşadığın o komik, garip veya unutamadığın anı anlat. İsimler değil, hikayeler önemli.</p>
                     </div>
                 </div>
                 <div class="faq-item">
-                    <button type="button" class="faq-soru" aria-expanded="false">Anonim kalabilir miyim?</button>
+                    <button type="button" class="faq-soru" aria-expanded="false">❓ Reklam olacak mı?</button>
                     <div class="faq-cevap-wrap">
-                        <p class="faq-cevap">Evet. Hikâyeler isimsiz veya takma isimle yayınlanabilir.</p>
-                    </div>
-                </div>
-                <div class="faq-item">
-                    <button type="button" class="faq-soru" aria-expanded="false">Ücretsiz mi?</button>
-                    <div class="faq-cevap-wrap">
-                        <p class="faq-cevap">Evet. Günde5.com tamamen ücretsiz ve reklamsızdır.</p>
+                        <p class="faq-cevap">Önceliğimiz Günde5'in sade ve keyifli kalması.</p>
+                        <p class="faq-cevap">Ama kayınpederin 50.000 dolarlık teklifine kim hayır diyebilir? 😄 Merak etme, hikayelerin önüne geçen reklam çöplüğü olmayacağız.</p>
                     </div>
                 </div>
             </div>

@@ -96,6 +96,7 @@
             menuUyelerGuncelle();
             menuKamikazeGuncelle();
             menuSosyalPaylasGuncelle();
+            menuPlanliGuncelle();
             eskiMasterMenuTemizle();
             return;
         }
@@ -114,6 +115,7 @@
         menuUyelerGuncelle();
         menuKamikazeGuncelle();
         menuSosyalPaylasGuncelle();
+        menuPlanliGuncelle();
         eskiMasterMenuTemizle();
         temizleKartlar();
         profilModTemizle();
@@ -144,6 +146,12 @@
         } else {
             nav.appendChild(link);
         }
+    }
+
+    function masterMenuSonaTasi(link) {
+        var nav = document.querySelector('.header-menu-nav');
+        if (!nav || !link) return;
+        nav.appendChild(link);
     }
 
     function eskiMasterMenuTemizle() {
@@ -200,15 +208,17 @@
             menuPlanliKaldir();
             return;
         }
-        if (document.getElementById('headerMenuPlanli')) return;
         var nav = document.querySelector('.header-menu-nav');
         if (!nav) return;
-        var link = document.createElement('a');
-        link.href = '/planli';
-        link.className = 'header-menu-link header-menu-link--master';
-        link.id = 'headerMenuPlanli';
-        link.textContent = '📅 Planlı';
-        masterMenuNavEkle(link, 'headerMenuKamikaze');
+        var link = document.getElementById('headerMenuPlanli');
+        if (!link) {
+            link = document.createElement('a');
+            link.href = '/planli';
+            link.className = 'header-menu-link header-menu-link--master';
+            link.id = 'headerMenuPlanli';
+            link.textContent = '📅 Planlı';
+        }
+        masterMenuSonaTasi(link);
     }
 
     function menuKamikazeGuncelle() {
@@ -225,8 +235,6 @@
         link.id = 'headerMenuKamikaze';
         link.textContent = '☄️ Kamikaze';
         masterMenuNavEkle(link, 'headerMenuMudavim');
-        menuPlanliGuncelle();
-        menuSosyalPaylasGuncelle();
     }
 
     function menuSosyalPaylasKaldir() {

@@ -659,13 +659,6 @@
         color: var(--text-muted);
     }
 
-    body.dark-mode .page-tail-satir,
-    body.dark-mode .page-tail-satir a,
-    [data-theme="dark"] .page-tail-satir,
-    [data-theme="dark"] .page-tail-satir a {
-        color: var(--text-muted);
-    }
-
     body.dark-mode .index-durum,
     [data-theme="dark"] .index-durum {
         color: var(--text-muted);
