@@ -23,6 +23,7 @@ ROUTE_TO_HTML = {
     "/mudavimler": "/mudavimler.html",
     "/uyeler": "/uyeler.html",
     "/kamikaze": "/kamikaze.html",
+    "/planli": "/planli.html",
     "/sosyal-paylas": "/sosyal-paylas.html",
     "/admin/inbox": "/admin/inbox/index.html",
     "/admin/submissions": "/admin/inbox/index.html",

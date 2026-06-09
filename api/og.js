@@ -1,5 +1,5 @@
 import { ImageResponse } from '@vercel/og';
-import { itirafGetir, itirafAyniGunEs, metinKisalt, metinKisaltKart } from './_lib/itiraf-fetch.js';
+import { itirafGetir, metinKisaltKart } from './_lib/itiraf-fetch.js';
 import { OG_DESCRIPTION } from './_lib/og-brand.js';
 
 export const config = { runtime: 'edge' };
@@ -10,24 +10,7 @@ var METIN_LIMIT = 140;
 var CTA = '\uD83D\uDCCC Devam\u0131n\u0131 REKLAMSIZ ve \u00DCCRETS\u0130Z oku';
 var BOYUT = { width: 1200, height: 630 };
 
-var OLCEK_IKILI = {
-    kartW: 586,
-    kartH: 614,
-    ustSerit: 22,
-    altSerit: 24,
-    rumuz: 32,
-    metin: 23,
-    cta: 26,
-    avatar: 54,
-    avatarFont: 26,
-    marka: 14,
-    filigran: 130,
-    padX: 18,
-    padY: 16,
-    govdeH: 480
-};
-
-var OLCEK_TEK = {
+var OLCEK = {
     kartW: 1200,
     kartH: 630,
     ustSerit: 28,
@@ -61,6 +44,7 @@ function cinsTema(cins) {
 
 function temaEmoji(metin) {
     var t = String(metin || '').toLowerCase();
+    if (/market|alışveriş|manav|kasiyer|kasa/.test(t)) return '\uD83D\uDECD';
     if (/bavul|valiz|gurbet|yurtd|almanya|uçak|havaliman/.test(t)) return '\uD83E\uDDF3';
     if (/asansör|apartman|kat/.test(t)) return '\uD83D\uDED7';
     if (/mum|karanlık|elektrik/.test(t)) return '\uD83D\uDD6F';
@@ -70,7 +54,7 @@ function temaEmoji(metin) {
     if (/okul|sınav|üniversite|öğretmen/.test(t)) return '\uD83D\uDCDA';
     if (/iş|patron|mesai|maaş|ofis/.test(t)) return '\uD83D\uDCBC';
     if (/aile|anne|baba|kardeş/.test(t)) return '\uD83C\uDFE0';
-    if (/evlilik|düğün|nişan/.test(t)) return '\uD83D\uDC8D';
+    if (/evlilik|düğün|nişan|nikah/.test(t)) return '\uD83D\uDC8D';
     return '\uD83D\uDCAC';
 }
 
@@ -84,8 +68,8 @@ function ozetMetin(kaynak) {
     return metinKisaltKart(String(kaynak || ''), METIN_LIMIT);
 }
 
-function hikayeKart(rumuz, ozet, yas, cins, filigranEmoji, olcek) {
-    var o = olcek || OLCEK_TEK;
+function hikayeKart(rumuz, ozet, yas, cins, filigranEmoji) {
+    var o = OLCEK;
     var tema = cinsTema(cins);
     var baslik = rumuzBaslik(rumuz, yas);
 
@@ -309,44 +293,17 @@ function hikayeKart(rumuz, ozet, yas, cins, filigranEmoji, olcek) {
     };
 }
 
-function kartFromRow(row, olcek) {
+function kartFromRow(row) {
     var cins = row.gender === 'male' ? 'male' : 'female';
     var rumuz = row.username || 'Anonim';
     var kaynak = String(row.content_full || row.content_short || '');
     var ozet = ozetMetin(kaynak);
     var emoji = temaEmoji(String(row.baslik || '') + ' ' + kaynak);
-    return hikayeKart(rumuz, ozet, row.age, cins, emoji, olcek);
-}
-
-function ikiliTuval(sol, sag) {
-    return {
-        type: 'div',
-        props: {
-            style: {
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'stretch',
-                justifyContent: 'center',
-                gap: 12,
-                padding: 8,
-                background: '#e5e7eb',
-                fontFamily: FONT
-            },
-            children: [sol, sag]
-        }
-    };
-}
-
-function ikiliSirala(ana, es) {
-    if (ana.gender === 'male' && es.gender !== 'male') return [ana, es];
-    if (es.gender === 'male' && ana.gender !== 'male') return [es, ana];
-    return [ana, es];
+    return hikayeKart(rumuz, ozet, row.age, cins, emoji);
 }
 
 function varsayilanKart() {
-    return hikayeKart('gunde5.com', ozetMetin(OG_DESCRIPTION), null, 'female', '\u2615', OLCEK_TEK);
+    return hikayeKart('gunde5.com', ozetMetin(OG_DESCRIPTION), null, 'female', '\u2615');
 }
 
 async function pngYanit(tree) {
@@ -371,18 +328,7 @@ export default async function handler(req) {
             return pngYanit(varsayilanKart());
         }
 
-        var es = await itirafAyniGunEs(row);
-        if (es) {
-            var ikili = ikiliSirala(row, es);
-            return pngYanit(
-                ikiliTuval(
-                    kartFromRow(ikili[0], OLCEK_IKILI),
-                    kartFromRow(ikili[1], OLCEK_IKILI)
-                )
-            );
-        }
-
-        return pngYanit(kartFromRow(row, OLCEK_TEK));
+        return pngYanit(kartFromRow(row));
     } catch (e) {
         return pngYanit(varsayilanKart());
     }

@@ -103,7 +103,7 @@ export default async function handler(req) {
         : OG_DESCRIPTION;
     var baslik = sayfaBaslik(row);
     var paylasUrl = row && row.slug ? SITE + '/h/' + row.slug : id ? SITE + '/h/' + id : SITE + '/';
-    var ogImage = id ? SITE + '/api/og?id=' + encodeURIComponent(id) + '&v=5' : OG_IMAGE_URL;
+    var ogImage = id ? SITE + '/api/og?id=' + encodeURIComponent(id) + '&v=6' : OG_IMAGE_URL;
     var ogImageAlt = row ? rumuz + ' — gunde5.com' : OG_IMAGE_ALT;
     var govdeMetin = row ? row.content_full || row.content_short || '' : '';
 

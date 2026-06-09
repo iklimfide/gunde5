@@ -168,6 +168,18 @@
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
       ]
+    },
+    {
+      "source": "/planli",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/planli.html",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
     }
   ],
   "redirects": [
@@ -188,6 +200,7 @@
     { "source": "/mudavimler.html", "destination": "/mudavimler", "permanent": true },
     { "source": "/uyeler.html", "destination": "/uyeler", "permanent": true },
     { "source": "/kamikaze.html", "destination": "/kamikaze", "permanent": true },
+    { "source": "/planli.html", "destination": "/planli", "permanent": true },
     { "source": "/hikaye-gonder", "destination": "/admin/inbox?tab=hikaye", "permanent": true },
     { "source": "/hikaye-gonder.html", "destination": "/admin/inbox?tab=hikaye", "permanent": true },
     { "source": "/sosyal-paylas.html", "destination": "/sosyal-paylas", "permanent": true },

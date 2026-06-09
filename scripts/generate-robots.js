@@ -30,6 +30,8 @@ var DISALLOW = [
     '/uyeler.html',
     '/kamikaze',
     '/kamikaze.html',
+    '/planli',
+    '/planli.html',
     '/bulut',
     '/bulut.html',
     '/sosyal-paylas',

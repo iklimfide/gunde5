@@ -692,6 +692,23 @@
         return q.lte('created_at', new Date().toISOString()).is('silindi_at', null);
     }
 
+    /** /planli — created_at > şimdi, kulis, silinmemiş */
+    async function planliHikayeListele() {
+        await init();
+        var sb = getClient();
+        if (!sb) return [];
+        var simdi = new Date().toISOString();
+        var res = await sb
+            .from('itiraflar')
+            .select(INDEX_ITIRAF_SELECT)
+            .is('silindi_at', null)
+            .eq('status', 'kulis')
+            .gt('created_at', simdi)
+            .order('created_at', { ascending: true });
+        if (res.error) throw res.error;
+        return res.data || [];
+    }
+
     /** @param {'yeni'|'tum'|'gulumseten'|'populer'|'efsane'} sort */
     async function indexHikayeListeleSayfa(offset, limit, sort) {
         var sb = getClient();
@@ -3256,6 +3273,7 @@
         podyumDonemTarihSatir: podyumDonemTarihSatir,
         podyumDonemAltSatir: podyumDonemAltSatir,
         planliTarihIso: planliTarihIso,
+        planliHikayeListele: planliHikayeListele,
         hataMesaji: hataMesaji
     };
 
