@@ -692,6 +692,24 @@
         return q.lte('created_at', new Date().toISOString()).is('silindi_at', null);
     }
 
+    /** Anasayfada görünen (index) hikaye sayısı — kamikaze index filtresi ile uyumlu. */
+    async function indexYayindaHikayeSay() {
+        await init();
+        var sb = getClient();
+        if (!sb) return 0;
+        var simdi = new Date().toISOString();
+        var res = await sb
+            .from('itiraflar')
+            .select('id', { count: 'exact', head: true })
+            .is('silindi_at', null)
+            .neq('status', 'silindi')
+            .neq('status', 'podyum')
+            .or('is_gizli.is.null,is_gizli.eq.false')
+            .lte('created_at', simdi);
+        if (res.error) throw res.error;
+        return res.count || 0;
+    }
+
     /** /planli — created_at > şimdi, kulis, silinmemiş */
     async function planliHikayeListele() {
         await init();
@@ -3274,6 +3292,7 @@
         podyumDonemAltSatir: podyumDonemAltSatir,
         planliTarihIso: planliTarihIso,
         planliHikayeListele: planliHikayeListele,
+        indexYayindaHikayeSay: indexYayindaHikayeSay,
         hataMesaji: hataMesaji
     };
 

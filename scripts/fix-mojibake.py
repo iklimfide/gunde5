@@ -5,21 +5,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-TARGETS = [
-    ROOT / "istatistikler.html",
-    ROOT / "metrikler.html",
-    ROOT / "kamikaze.html",
-    ROOT / "mudavimler.html",
-    ROOT / "sosyal-paylas.html",
-    ROOT / "uyeler.html",
-    ROOT / "admin" / "inbox" / "index.html",
-    ROOT / "hakkinda.html",
-    ROOT / "profil.html",
-    ROOT / "404.html",
-    ROOT / "iletisim.html",
-    ROOT / "kvkk.html",
-    ROOT / "bulut.html",
-]
+TARGETS = sorted(
+    p
+    for p in ROOT.rglob("*.html")
+    if "node_modules" not in p.parts and ".git" not in p.parts
+)
 
 
 def fix_mojibake(text: str) -> str:
@@ -46,18 +36,25 @@ def fix_mojibake(text: str) -> str:
     return "".join(result)
 
 
-def process(path: Path) -> bool:
-    if not path.is_file():
-        return False
-    raw = path.read_bytes()
+def decode_text(raw: bytes) -> tuple[str, bool]:
     if raw.startswith(b"\xef\xbb\xbf"):
         raw = raw[3:]
         had_bom = True
     else:
         had_bom = False
-    text = raw.decode("utf-8")
+    try:
+        return raw.decode("utf-8"), had_bom
+    except UnicodeDecodeError:
+        return raw.decode("cp1254"), True
+
+
+def process(path: Path) -> bool:
+    if not path.is_file():
+        return False
+    raw = path.read_bytes()
+    text, reencoded = decode_text(raw)
     fixed = fix_mojibake(text)
-    if fixed == text and not had_bom:
+    if fixed == text and not reencoded:
         return False
     path.write_bytes(fixed.encode("utf-8"))
     return True

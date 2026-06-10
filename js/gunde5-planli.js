@@ -2,6 +2,13 @@
 (function (global) {
     'use strict';
 
+    var tumSatirlar = [];
+    var aramaMetni = '';
+    var aramaZamanlayici = null;
+    var tarihFiltre = '';
+    var sira = 'desc';
+    var indexSayisi = null;
+
     function db() { return global.Gunde5DB; }
     function ui() { return global.Gunde5UI; }
 
@@ -64,6 +71,86 @@
 
     function planliYayinEtiket(iso) {
         return '<span class="planli-yayin-etiket">⏳ ' + esc(saatEtiket(iso)) + '</span>';
+    }
+
+    function benzersizGunler(rows) {
+        var map = {};
+        var gunler = [];
+        var i;
+        for (i = 0; i < rows.length; i++) {
+            var g = gunAnahtar(rows[i].created_at);
+            if (!g || map[g]) continue;
+            map[g] = true;
+            gunler.push(g);
+        }
+        gunler.sort();
+        return gunler;
+    }
+
+    function tarihSelectGuncelle(gunler) {
+        var el = qs('plTarih');
+        if (!el) return;
+        var secili = tarihFiltre;
+        if (secili && gunler.indexOf(secili) < 0) {
+            secili = '';
+            tarihFiltre = '';
+        }
+        var html = '<option value="">Tüm tarihler</option>';
+        var i;
+        for (i = 0; i < gunler.length; i++) {
+            var g = gunler[i];
+            html += '<option value="' + esc(g) + '"' + (g === secili ? ' selected' : '') + '>' +
+                esc(gunEtiket(g)) + '</option>';
+        }
+        el.innerHTML = html;
+    }
+
+    function aramaEslesir(row, q) {
+        if (!q) return true;
+        var alt = q.toLowerCase();
+        var parcalar = [
+            row.id,
+            row.username,
+            row.baslik,
+            row.slug,
+            row.content_short,
+            row.content_full
+        ];
+        var i;
+        for (i = 0; i < parcalar.length; i++) {
+            if (parcalar[i] != null && String(parcalar[i]).toLowerCase().indexOf(alt) >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function filtreUygula(rows) {
+        var gorunen = rows.slice();
+        if (tarihFiltre) {
+            gorunen = gorunen.filter(function (r) {
+                return gunAnahtar(r.created_at) === tarihFiltre;
+            });
+        }
+        var q = aramaMetni.replace(/^\s+|\s+$/g, '');
+        if (q) {
+            gorunen = gorunen.filter(function (r) { return aramaEslesir(r, q); });
+        }
+        gorunen.sort(function (a, b) {
+            var ta = new Date(a.created_at).getTime() || 0;
+            var tb = new Date(b.created_at).getTime() || 0;
+            return sira === 'asc' ? ta - tb : tb - ta;
+        });
+        return gorunen;
+    }
+
+    function filtreleriDomdanSenkronize() {
+        var tarihEl = qs('plTarih');
+        var siraEl = qs('plSira');
+        var araEl = qs('plAra');
+        if (tarihEl) tarihFiltre = tarihEl.value || '';
+        if (siraEl) sira = siraEl.value === 'desc' ? 'desc' : 'asc';
+        if (araEl) aramaMetni = araEl.value;
     }
 
     function kartOlustur(row) {
@@ -140,36 +227,62 @@
             }
             map[g].push(rows[i]);
         }
-        gunler.sort();
         return gunler.map(function (g) {
             return { gun: g, rows: map[g] };
         });
     }
 
+    function metaGuncelle(gorunen, gruplar) {
+        var meta = qs('plMeta');
+        if (!meta) return;
+        var toplam = gorunen.length;
+        var gunSay = gruplar.length;
+        var parcalar = [];
+        if (indexSayisi != null) {
+            parcalar.push('Yayında (index): ' + indexSayisi);
+        }
+        if (!tumSatirlar.length) {
+            parcalar.push('0 planlı hikaye');
+            meta.textContent = parcalar.join(' · ');
+            return;
+        }
+        var metin = toplam + ' planlı hikaye · ' + gunSay + ' gün';
+        if (toplam !== tumSatirlar.length) {
+            metin += ' (toplam ' + tumSatirlar.length + ')';
+        }
+        parcalar.push(metin);
+        meta.textContent = parcalar.join(' · ');
+    }
+
     function listeCiz(rows) {
         var el = qs('plListe');
-        var meta = qs('plMeta');
         if (!el) return;
 
-        if (!rows.length) {
+        if (!tumSatirlar.length) {
             el.innerHTML = '<p class="pl-bos">Planlı hikaye yok. Kamikaze\'den gelecek tarihli kayıt ekleyebilirsin.</p>';
-            if (meta) meta.textContent = '0 hikaye';
+            metaGuncelle([], []);
+            return;
+        }
+
+        if (!rows.length) {
+            el.innerHTML = '<p class="pl-bos">Bu filtrede planlı hikaye yok.</p>';
+            metaGuncelle([], []);
             return;
         }
 
         var gruplar = gunlereAyir(rows);
         var frag = document.createDocumentFragment();
-        var toplam = 0;
         var i;
         for (i = 0; i < gruplar.length; i++) {
-            toplam += gruplar[i].rows.length;
             frag.appendChild(gunBlokOlustur(gruplar[i].gun, gruplar[i].rows));
         }
         el.innerHTML = '';
         el.appendChild(frag);
-        if (meta) {
-            meta.textContent = toplam + ' hikaye · ' + gruplar.length + ' gün';
-        }
+        metaGuncelle(rows, gruplar);
+    }
+
+    function goster() {
+        listeCiz(filtreUygula(tumSatirlar));
     }
 
     function yukleniyorGoster(metin) {
@@ -211,9 +324,49 @@
         if (!D || !D.planliHikayeListele) {
             throw new Error('Planlı liste hazır değil.');
         }
-        var rows = await D.planliHikayeListele();
-        listeCiz(rows || []);
+        filtreleriDomdanSenkronize();
+        var sonuclar = await Promise.all([
+            D.planliHikayeListele(),
+            D.indexYayindaHikayeSay ? D.indexYayindaHikayeSay() : Promise.resolve(null)
+        ]);
+        tumSatirlar = sonuclar[0] || [];
+        indexSayisi = sonuclar[1];
+        tarihSelectGuncelle(benzersizGunler(tumSatirlar));
+        goster();
         icerikGoster();
+    }
+
+    function filtreBagla() {
+        var ara = qs('plAra');
+        var tarihEl = qs('plTarih');
+        var siraEl = qs('plSira');
+
+        if (ara) {
+            ara.addEventListener('input', function () {
+                aramaMetni = ara.value;
+                clearTimeout(aramaZamanlayici);
+                aramaZamanlayici = setTimeout(function () { goster(); }, 280);
+            });
+            ara.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    clearTimeout(aramaZamanlayici);
+                    aramaMetni = ara.value;
+                    goster();
+                }
+            });
+        }
+        if (tarihEl) {
+            tarihEl.addEventListener('change', function () {
+                tarihFiltre = tarihEl.value || '';
+                goster();
+            });
+        }
+        if (siraEl) {
+            siraEl.addEventListener('change', function () {
+                sira = siraEl.value === 'desc' ? 'desc' : 'asc';
+                goster();
+            });
+        }
     }
 
     async function initBaslat() {
@@ -221,6 +374,8 @@
         var U = ui();
         var yenile = qs('plYenile');
         var giris = qs('plGirisBtn');
+
+        filtreBagla();
 
         if (yenile) {
             yenile.addEventListener('click', function () {

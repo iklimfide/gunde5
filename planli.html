@@ -66,7 +66,23 @@
             align-items: center;
             padding: 0 16px 12px;
         }
-        .pl-meta { font-size: 13px; font-weight: 700; color: var(--text-muted, #6b7280); margin-left: auto; }
+        .pl-input, .pl-select {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color, #e5e7eb);
+            background: var(--card-bg, #fff);
+            font-size: 13px;
+            font-weight: 600;
+            min-height: 36px;
+        }
+        .pl-input { flex: 1 1 200px; min-width: 0; }
+        .pl-select { min-width: 130px; }
+        body.dark-mode .pl-input,
+        body.dark-mode .pl-select { background: #0b0f14; border-color: rgba(255,255,255,.12); color: #e7e9ea; }
+        .pl-meta { font-size: 13px; font-weight: 700; color: var(--text-muted, #6b7280); margin-left: auto; flex: 1 1 100%; }
+        @media (min-width: 520px) {
+            .pl-meta { flex: 0 1 auto; margin-left: auto; }
+        }
         .pl-btn-kucuk {
             padding: 8px 14px;
             border-radius: 10px;
@@ -94,10 +110,10 @@
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js" crossorigin></script>
     <script defer src="js/gunde5-profil.js"></script>
     <script defer src="js/gunde5-ui.js"></script>
-    <script defer src="js/gunde5-db.js?v=52"></script>
+    <script defer src="js/gunde5-db.js?v=53"></script>
     <script defer src="js/gunde5-bildirim.js?v=3"></script>
     <script defer src="js/gunde5-master.js?v=4"></script>
-    <script defer src="js/gunde5-planli.js?v=1"></script>
+    <script defer src="js/gunde5-planli.js?v=3"></script>
 </head>
 <body>
     <header class="page-topbar" id="planliPageTopbar">
@@ -129,6 +145,14 @@
 
         <div id="plIcerik" hidden>
             <div class="pl-toolbar">
+                <input type="search" id="plAra" class="pl-input" placeholder="Başlık, metin, rumuz veya ID…" autocomplete="off" aria-label="Hikaye ara">
+                <select id="plTarih" class="pl-select" aria-label="Tarih filtresi">
+                    <option value="">Tüm tarihler</option>
+                </select>
+                <select id="plSira" class="pl-select" aria-label="Sıralama">
+                    <option value="desc" selected>Yeniden eskiye</option>
+                    <option value="asc">Eskiden yeniye</option>
+                </select>
                 <button type="button" class="pl-btn-kucuk" id="plYenile">Yenile</button>
                 <span class="pl-meta" id="plMeta">—</span>
             </div>

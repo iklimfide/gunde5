@@ -58,6 +58,18 @@ class Gunde5Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=ROOT, **kwargs)
 
+    def guess_type(self, path):
+        ctype = super().guess_type(path)
+        if not ctype or "charset=" in ctype:
+            return ctype
+        if ctype.startswith("text/") or ctype in (
+            "application/javascript",
+            "application/json",
+            "application/xml",
+        ):
+            return ctype + "; charset=utf-8"
+        return ctype
+
     def log_message(self, fmt, *args):
         sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
 
