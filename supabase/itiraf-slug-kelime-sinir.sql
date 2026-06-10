@@ -8,9 +8,9 @@
 alter table public.itiraflar
     add column if not exists updated_at timestamptz not null default now();
 
+-- NOT NULL DEFAULT now() tüm mevcut satırlara migration anını yazar; IS NULL asla tetiklenmez.
 update public.itiraflar
-set updated_at = coalesce(created_at, now())
-where updated_at is null;
+set updated_at = created_at;
 
 -- ---------------------------------------------------------------------------
 -- 2) Slug yardımcıları (api/_lib/slug.js ile aynı mantık)

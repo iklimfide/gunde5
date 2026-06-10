@@ -1,5 +1,5 @@
-# gunde5.com — otomatik uretim; yayinda: yalnizca anasayfa
-# Paylasim onizleme botlari /h/ ve OG gorselini tarayabilir (Google index degil).
+# gunde5.com — otomatik uretim
+# /h/ hikaye sayfalari indexlenebilir; onizleme botlari /api/og icin acik.
 User-agent: Twitterbot
 Allow: /h/
 Allow: /itiraf/
@@ -68,12 +68,13 @@ Disallow: /uyeler
 Disallow: /uyeler.html
 Disallow: /kamikaze
 Disallow: /kamikaze.html
+Disallow: /planli
+Disallow: /planli.html
 Disallow: /bulut
 Disallow: /bulut.html
 Disallow: /sosyal-paylas
 Disallow: /sosyal-paylas.html
 Disallow: /admin/
-Disallow: /h/
 Disallow: /itiraf/
 Disallow: /demo/
 Disallow: /404

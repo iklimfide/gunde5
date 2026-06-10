@@ -27,7 +27,34 @@ export async function itirafGetir(id) {
 
 export async function itirafGetirSlug(slug) {
     if (!slug) return null;
-    return itirafRestSorgu('slug=eq.' + encodeURIComponent(String(slug)));
+    var row = await itirafRestSorgu('slug=eq.' + encodeURIComponent(String(slug)));
+    if (row) return row;
+    return itirafGecmisSlugdanGetir(slug);
+}
+
+/** Backfill sonrası eski slug → güncel kayıt (itiraf_slug_gecmisi) */
+async function itirafGecmisSlugdanGetir(eskiSlug) {
+    var url = process.env.GUNDE5_SUPABASE_URL;
+    var key = process.env.GUNDE5_SUPABASE_ANON_KEY;
+    if (!url || !key || !eskiSlug) return null;
+
+    var api =
+        url.replace(/\/$/, '') +
+        '/rest/v1/itiraf_slug_gecmisi?eski_slug=eq.' +
+        encodeURIComponent(String(eskiSlug)) +
+        '&select=itiraf_id&limit=1';
+
+    var res = await fetch(api, {
+        headers: {
+            apikey: key,
+            Authorization: 'Bearer ' + key
+        }
+    });
+
+    if (!res.ok) return null;
+    var rows = await res.json();
+    if (!rows || !rows[0] || !rows[0].itiraf_id) return null;
+    return itirafGetir(rows[0].itiraf_id);
 }
 
 export function metinKisalt(metin, max) {

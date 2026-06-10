@@ -125,9 +125,9 @@
                       ogType: 'website'
                   }
                 : {
-                      title: "Bugünün 5'i hazır",
+                      title: 'Günde5 | Her Gün 5 Gerçek Hayat Hikayesi',
                       description:
-                          'Her sabah 5 yeni anonim hikaye & itiraf. 5 dakikada oku, gül, güne başla 😄',
+                          'İlişkilerden aileye, işten gündelik rezilliklere gerçek insanların kısa, komik ve şaşırtıcı hikâyeleri. Her gün yalnızca 5 yeni hikâye.',
                       canonical: SITE_ORIGIN + '/',
                       ogUrl: SITE_ORIGIN + '/',
                       ogType: 'website',
