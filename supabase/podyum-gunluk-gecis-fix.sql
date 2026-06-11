@@ -1,1 +1,0 @@
--- Güncel kurulum: supabase/saat-1312-podyum.sql dosyasının tamamını çalıştırın.
