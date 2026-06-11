@@ -4,7 +4,17 @@
 
     var SAYFA = 5;
     var MSJ_ZATEN_OYLADIN = 'Bu hikayeyi zaten oylamıştın, sonrakine geç dostum';
-    var PAYLAS_CAGRI = '📌 Devamını REKLAMSIZ ve ÜCRETSİZ oku:';
+    var PAYLAS_CAGRI = '📌 Devamını reklamsız ve ücretsiz oku:';
+    var X_TWEET_LIMIT = 280;
+    var FALLBACK_HOOKS = [
+        'Bu hikâyeyi okumadan geçme 👇',
+        'Bugünün en iyi okumalarından biri',
+        'Gerçek bir hikâye — sen de oku',
+        'Kahveni al, 5 dakika ayır ☕',
+        'Okuyunca güleceksin (veya düşüneceksin)',
+        'gunde5\'ten bir hikâye daha'
+    ];
+    var hikayeSatirCache = Object.create(null);
     var CACHE_KEY = 'g5_index_feed_v1';
     var CACHE_TTL_MS = 5 * 60 * 1000;
     var ARAMA_DEBOUNCE = 280;
@@ -293,10 +303,17 @@
         return a;
     }
 
+    function hikayeSatirCacheTemizle() {
+        Object.keys(hikayeSatirCache).forEach(function (k) {
+            delete hikayeSatirCache[k];
+        });
+    }
+
     function listeSifirla() {
         state.offset = 0;
         state.bitti = false;
         state.yuklenenIdler = {};
+        hikayeSatirCacheTemizle();
         state.rastgeleHavuz = null;
         state.bugunBilgiGosterildi = false;
         state.loadMoreMetinGenel = false;
@@ -534,6 +551,7 @@
         state.offset = cached.offset || cached.rows.length;
         state.bitti = !!cached.bitti;
         state.yuklenenIdler = {};
+        hikayeSatirCacheTemizle();
         state.aktifBaskiYmd = cached.edition || null;
         state.oncekiBaskiYmd = null;
         var el = listeEl();
@@ -561,6 +579,7 @@
         }
         el.innerHTML = '';
         state.yuklenenIdler = {};
+        hikayeSatirCacheTemizle();
         state.offset = rows.length;
         state.bitti = rows.length < SAYFA;
         await kartlariEkle(rows, true);
@@ -583,6 +602,10 @@
         art.id = 'h-' + id;
         art.setAttribute('data-id', id);
         if (row.slug) art.setAttribute('data-slug', String(row.slug));
+        if (row.social_hook) art.setAttribute('data-social-hook', String(row.social_hook));
+        if (row.x_hook) art.setAttribute('data-x-hook', String(row.x_hook));
+        if (row.slug_hint) art.setAttribute('data-slug-hint', String(row.slug_hint));
+        hikayeSatirCache[id] = row;
 
         art.innerHTML =
             '<div class="card-header">' +
@@ -826,6 +849,7 @@
                 var elArama = listeEl();
                 if (elArama && !elArama.querySelector('.story-card')) {
                     state.yuklenenIdler = {};
+                    hikayeSatirCacheTemizle();
                     await kartlariEkle(rows, ilkPart);
                 }
             }
@@ -1001,6 +1025,15 @@
     }
 
     function kartVerisiniGuncelle(card, row) {
+        if (row && row.id != null) {
+            hikayeSatirCache[String(row.id)] = row;
+            if (row.social_hook) card.setAttribute('data-social-hook', String(row.social_hook));
+            else card.removeAttribute('data-social-hook');
+            if (row.x_hook) card.setAttribute('data-x-hook', String(row.x_hook));
+            else card.removeAttribute('data-x-hook');
+            if (row.slug_hint) card.setAttribute('data-slug-hint', String(row.slug_hint));
+            else card.removeAttribute('data-slug-hint');
+        }
         kartMetniniGuncelle(card, row);
         kartOySayilariniGuncelle(card, row);
     }
@@ -1116,18 +1149,90 @@
     var paylasSheetBagli = false;
     var paylasAktifId = null;
 
-    function paylasPaketOlustur(id) {
-        var card = document.getElementById('h-' + id);
-        if (!card) return null;
-        var metinEl = card.querySelector('.short-text');
-        var fullText = metinEl ? metinEl.textContent : '';
-        var kanca = fullText.length > 140 ? fullText.substring(0, 140) + '...' : fullText;
-        var slug = card.getAttribute('data-slug');
-        var url = slug
+    function slugHintMetin(hint) {
+        return String(hint || '').trim().replace(/-/g, ' ').replace(/\s+/g, ' ');
+    }
+
+    function fallbackHookSec() {
+        return FALLBACK_HOOKS[Math.floor(Math.random() * FALLBACK_HOOKS.length)];
+    }
+
+    /** Hikâye metninden değil; başlık / slug ipucu / rumuz. */
+    function generateHook(story) {
+        var b = String(story && story.baslik || '').trim();
+        if (b) return b;
+        var hint = slugHintMetin(story && story.slug_hint);
+        if (hint) return hint;
+        var u = String(story && story.username || '').trim();
+        if (u) return u + ' anlatıyor…';
+        return '';
+    }
+
+    function storyHookAl(story) {
+        if (!story) return fallbackHookSec();
+        var ozel = String(story.social_hook || story.x_hook || '').trim();
+        if (ozel) return ozel;
+        var uretilen = generateHook(story);
+        if (uretilen) return uretilen;
+        return fallbackHookSec();
+    }
+
+    function hookKisalt(hook, maxLen) {
+        var s = String(hook || '').trim();
+        if (!maxLen || s.length <= maxLen) return s;
+        if (maxLen <= 1) return '…';
+        var kes = s.slice(0, maxLen - 1).trim();
+        var son = kes.lastIndexOf(' ');
+        if (son > maxLen * 0.5) kes = kes.slice(0, son).trim();
+        return kes + '…';
+    }
+
+    function storyPaylasUrl(story) {
+        var sid = story && story.id != null ? String(story.id) : '';
+        var slug = story && story.slug ? String(story.slug) : '';
+        if (!slug && sid) {
+            var card = document.getElementById('h-' + sid);
+            slug = card ? card.getAttribute('data-slug') : '';
+        }
+        return slug
             ? 'https://gunde5.com/h/' + encodeURIComponent(slug)
-            : 'https://gunde5.com/h/' + encodeURIComponent(String(id));
-        var paket = kanca + '\n\n' + PAYLAS_CAGRI + '\n' + url;
-        return { kanca: kanca, url: url, paket: paket };
+            : 'https://gunde5.com/h/' + encodeURIComponent(sid);
+    }
+
+    function buildTweetText(story) {
+        var storyUrl = storyPaylasUrl(story);
+        var hook = storyHookAl(story);
+        var tail = '\n\n' + PAYLAS_CAGRI + '\n' + storyUrl;
+        var maxHook = X_TWEET_LIMIT - tail.length;
+        if (maxHook < 1) {
+            hook = '';
+        } else if (hook.length > maxHook) {
+            hook = hookKisalt(hook, maxHook);
+        }
+        var tweetText = hook + tail;
+        return { hook: hook, url: storyUrl, paket: tweetText, tweetText: tweetText };
+    }
+
+    function storySatirBul(id) {
+        var sid = String(id);
+        if (hikayeSatirCache[sid]) return hikayeSatirCache[sid];
+        var card = document.getElementById('h-' + sid);
+        if (!card) return null;
+        return {
+            id: sid,
+            slug: card.getAttribute('data-slug') || '',
+            baslik: ((card.querySelector('.kart-baslik') || {}).textContent || '').trim(),
+            social_hook: card.getAttribute('data-social-hook') || '',
+            x_hook: card.getAttribute('data-x-hook') || '',
+            slug_hint: card.getAttribute('data-slug-hint') || '',
+            username: ((card.querySelector('.username') || {}).textContent || '').trim()
+        };
+    }
+
+    function paylasPaketOlustur(id) {
+        var story = storySatirBul(id);
+        if (!story) return null;
+        return buildTweetText(story);
     }
 
     function paylasSheetKapat() {
@@ -1165,7 +1270,7 @@
         elX.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(veri.paket);
         elWa.href = 'https://wa.me/?text=' + encodeURIComponent(veri.paket);
         elTg.href = 'https://t.me/share/url?url=' + encodeURIComponent(veri.url) +
-            '&text=' + encodeURIComponent(veri.kanca + '\n\n' + PAYLAS_CAGRI);
+            '&text=' + encodeURIComponent(veri.hook + '\n\n' + PAYLAS_CAGRI);
         elFb.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(veri.url);
 
         if (!paylasSheetBagli) {

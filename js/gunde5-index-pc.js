@@ -23,11 +23,28 @@
         return qsa('.story-card[data-id]', host).slice(0, 5);
     }
 
+    function metinOzet(metin, maxLen) {
+        var s = String(metin || '').replace(/\s+/g, ' ').trim();
+        if (!s) return '';
+        var n = maxLen || 64;
+        if (s.length <= n) return s;
+        return s.slice(0, n - 1).trim() + '…';
+    }
+
+    function rowGosterimBasligi(row) {
+        if (!row) return '';
+        var b = row.baslik ? String(row.baslik).trim() : '';
+        if (b) return b;
+        return metinOzet(row.content_full || row.content_short || '');
+    }
+
     function kartBasligi(card) {
         var id = card.getAttribute('data-id') || '';
         var h = qs('.kart-baslik', card);
         var title = (h && h.textContent || '').trim();
-        return title || ('Hikâye #' + id);
+        if (title) return title;
+        var t = qs('.short-text', card);
+        return metinOzet(t && t.textContent || '') || ('Hikâye #' + id);
     }
 
     function kartAlinti(card) {
@@ -150,7 +167,7 @@
         var html = '';
         rows.slice().reverse().forEach(function (r, idx) {
             var id = String(r && r.id || '');
-            var title = (r && r.baslik) ? String(r.baslik).trim() : ('Hikâye #' + id);
+            var title = rowGosterimBasligi(r) || ('Hikâye #' + id);
             html += '<li><a href="/itiraf/' + esc(id) + '">' + (idx + 1) + ' • ' + esc(title) + '</a></li>';
         });
         list.innerHTML = html;
@@ -191,7 +208,7 @@
         });
 
         var id = String(best && best.id || '');
-        var title = (best && best.baslik) ? String(best.baslik).trim() : ('Hikâye #' + id);
+        var title = rowGosterimBasligi(best) || ('Hikâye #' + id);
         link.href = id ? ('/itiraf/' + id) : '#';
         bas.textContent = title;
 
