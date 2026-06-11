@@ -31,20 +31,38 @@
         return s.slice(0, n - 1).trim() + '…';
     }
 
-    function rowGosterimBasligi(row) {
+    function slugHintMetin(hint) {
+        return String(hint || '').trim().replace(/-/g, ' ').replace(/\s+/g, ' ');
+    }
+
+    function rowGosterimBasligi(row, maxLen) {
         if (!row) return '';
+        var n = maxLen || 36;
         var b = row.baslik ? String(row.baslik).trim() : '';
-        if (b) return b;
-        return metinOzet(row.content_full || row.content_short || '');
+        if (b) return metinOzet(b, n);
+        var hint = slugHintMetin(row.slug_hint);
+        if (hint) return metinOzet(hint, n);
+        var oz = metinOzet(row.content_full || row.content_short || '', n);
+        if (oz) return oz;
+        var u = row.username ? String(row.username).trim() : '';
+        if (u) return metinOzet(u, n);
+        return '';
     }
 
     function kartBasligi(card) {
         var id = card.getAttribute('data-id') || '';
         var h = qs('.kart-baslik', card);
         var title = (h && h.textContent || '').trim();
-        if (title) return title;
+        if (title) return metinOzet(title, 36);
         var t = qs('.short-text', card);
-        return metinOzet(t && t.textContent || '') || ('Hikâye #' + id);
+        var oz = metinOzet(t && t.textContent || '', 36);
+        if (oz) return oz;
+        var hint = slugHintMetin(card.getAttribute('data-slug-hint'));
+        if (hint) return metinOzet(hint, 36);
+        var u = qs('.username', card);
+        var rumuz = (u && u.textContent || '').trim();
+        if (rumuz) return metinOzet(rumuz, 36);
+        return id ? ('#' + id) : '…';
     }
 
     function kartAlinti(card) {
@@ -165,10 +183,10 @@
         }
 
         var html = '';
-        rows.slice().reverse().forEach(function (r, idx) {
+        rows.slice().reverse().forEach(function (r) {
             var id = String(r && r.id || '');
-            var title = rowGosterimBasligi(r) || ('Hikâye #' + id);
-            html += '<li><a href="/itiraf/' + esc(id) + '">' + (idx + 1) + ' • ' + esc(title) + '</a></li>';
+            var title = rowGosterimBasligi(r, 36) || ('#' + id);
+            html += '<li><a href="/itiraf/' + esc(id) + '">' + esc(title) + '</a></li>';
         });
         list.innerHTML = html;
         renderDununFavorisi();
@@ -208,7 +226,7 @@
         });
 
         var id = String(best && best.id || '');
-        var title = rowGosterimBasligi(best) || ('Hikâye #' + id);
+        var title = rowGosterimBasligi(best, 48) || ('#' + id);
         link.href = id ? ('/itiraf/' + id) : '#';
         bas.textContent = title;
 
