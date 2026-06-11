@@ -27,9 +27,32 @@
     <meta name="twitter:description" content="İlişkilerden aileye, işten gündelik rezilliklere gerçek insanların kısa, komik ve şaşırtıcı hikâyeleri. Her gün yalnızca 5 yeni hikâye.">
     <meta name="twitter:image" content="https://gunde5.com/og/anasayfa.png?v=2">
     <meta name="twitter:image:alt" content="Her sabah sadece 5 tane — kısa, anonim hikayeler &amp; itiraf">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://gunde5.com/#website",
+          "url": "https://gunde5.com/",
+          "name": "Günde5",
+          "description": "İlişkilerden aileye, işten gündelik rezilliklere gerçek insanların kısa, komik ve şaşırtıcı hikâyeleri. Her gün yalnızca 5 yeni hikâye.",
+          "inLanguage": "tr-TR",
+          "publisher": { "@id": "https://gunde5.com/#organization" }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://gunde5.com/#organization",
+          "name": "gunde5.com",
+          "url": "https://gunde5.com/",
+          "email": "arif@gunde5.com"
+        }
+      ]
+    }
+    </script>
     <meta name="theme-color" content="#ffffff">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="stylesheet" href="css/index.css?v=34">
+    <link rel="stylesheet" href="css/index.css?v=35">
     <link rel="stylesheet" href="css/index-pc.css?v=15">
     <link rel="stylesheet" href="css/gunde5-topbar.css?v=5">
     <script src="js/gunde5-shell.js"></script>
@@ -68,7 +91,7 @@
                 <div class="pc-left-kutu pc-left-kutu--rituel">
                     <div class="pc-left-etiket">Günde5</div>
                     <div class="pc-left-baslik">☕ Günaydın</div>
-                    <div class="pc-left-alt">Bugünün 5 hikayesi hazır. Kahveni al, birkaç dakikada oku.</div>
+                    <div class="pc-left-alt" data-nosnippet>Bugünün 5 hikayesi hazır. Kahveni al, birkaç dakikada oku.</div>
                     <button type="button" class="pc-left-cta" id="pcBaslaBtn">Bugünün 5'ine başla</button>
                 </div>
                 <div class="pc-left-kutu">
@@ -85,8 +108,8 @@
                 <section class="pc-hero" aria-label="Bugünün 5'i ritüeli">
                     <div class="pc-hero-sol">
                         <h1 class="pc-hero-baslik">☕ Günaydın</h1>
-                        <p class="pc-hero-alt">Bugünün 5 hikayesi hazır.</p>
-                        <p class="pc-hero-kucuk">Kahveni al, birkaç dakikada oku.</p>
+                        <p class="pc-hero-alt" data-nosnippet>Bugünün 5 hikayesi hazır.</p>
+                        <p class="pc-hero-kucuk" data-nosnippet>Kahveni al, birkaç dakikada oku.</p>
                         <button type="button" class="pc-hero-cta" id="pcHeroBaslaBtn">Bugünün 5'ine başla</button>
                         <div class="pc-hero-ilerleme" aria-hidden="true">
                             <div class="pc-hero-ilerleme-dolgu" id="pcIlerlemeBar"></div>
@@ -101,7 +124,7 @@
 
                 <div class="pc-pills" id="pcPills" aria-label="Bugünün 5'i hızlı geçiş"></div>
 
-                <p class="index-tagline">Anonim hikaye ve itiraflar</p>
+                <p class="index-tagline">İlişkilerden aileye, işten gündelik rezilliklere gerçek insanların kısa, komik ve şaşırtıcı hikâyeleri. Her gün yalnızca 5 yeni hikâye.</p>
 
                 <div class="index-toolbar" id="indexToolbar">
                     <div class="index-arama-wrap">
@@ -129,7 +152,7 @@
 
                 <div id="indexListe" aria-live="polite"><p class="index-durum" id="indexListeBekle">Yükleniyor…</p></div>
 
-                <div class="page-tail">
+                <div class="page-tail" data-nosnippet>
                     <div class="page-tail-kart">
                         <p class="page-tail-hook">☕ Her sabah<br><strong>5 yeni hikaye</strong> seni bekliyor.</p>
                         <p class="page-tail-bant page-tail-bant--x">
@@ -175,7 +198,7 @@
         </div>
     </main>
 
-    <nav class="index-altbar mobile-only" id="indexAltbar" aria-label="Hızlı işlemler">
+    <nav class="index-altbar mobile-only" id="indexAltbar" aria-label="Hızlı işlemler" data-nosnippet>
         <button type="button" class="index-altbar-item" id="indexAltbarAra" aria-label="Hikaye ara">
             <span class="index-altbar-ikon index-altbar-ikon--emoji" aria-hidden="true">🔍</span>
             <span class="index-altbar-metin">Ara</span>
@@ -190,7 +213,7 @@
         </button>
     </nav>
 
-    <div class="modal" id="aboutModal" onclick="closeModal(event)">
+    <div class="modal" id="aboutModal" onclick="closeModal(event)" data-nosnippet>
         <div class="modal-content modal-content--faq" onclick="event.stopPropagation()">
             <button type="button" class="modal-close" onclick="closeModal()" aria-label="Kapat">✕</button>
             <h2 class="modal-title faq-modal-baslik">Sıkça Sorulan Sorular</h2>

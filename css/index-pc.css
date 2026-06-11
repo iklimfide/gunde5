@@ -410,6 +410,10 @@
         gap: 6px;
         margin: 0;
         padding: 0;
+        counter-reset: pc-dun;
+    }
+    .pc-right-liste li {
+        counter-increment: pc-dun;
     }
     .pc-right-liste a {
         display: block;
@@ -423,6 +427,11 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    .pc-right-liste a::before {
+        content: counter(pc-dun) ". ";
+        color: var(--pc-metin-muted);
+        font-weight: 800;
     }
     .pc-right-liste a:hover {
         background: rgba(29,155,240,0.08);

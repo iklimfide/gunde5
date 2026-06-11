@@ -910,6 +910,44 @@
         return Array.isArray(rows) ? rows : [];
     }
 
+    function indexSatirGosterimVerisiVar(row) {
+        if (!row) return false;
+        if (String(row.baslik || '').trim()) return true;
+        if (String(row.slug_hint || '').trim()) return true;
+        if (String(row.username || '').trim()) return true;
+        if (String(row.content_full || '').trim()) return true;
+        if (String(row.content_short || '').trim()) return true;
+        return false;
+    }
+
+    /** RPC yalnızca id döndürdüyse kart alanlarını tek sorguda tamamla. */
+    async function indexSatirlarBaslikZenginlestir(rows) {
+        if (!rows || !rows.length) return rows || [];
+        var eksikIdler = [];
+        var i;
+        for (i = 0; i < rows.length; i++) {
+            if (!indexSatirGosterimVerisiVar(rows[i]) && rows[i].id != null) {
+                eksikIdler.push(parseInt(rows[i].id, 10));
+            }
+        }
+        eksikIdler = eksikIdler.filter(function (n) { return isFinite(n) && n > 0; });
+        if (!eksikIdler.length) return rows;
+        var sb = getClient();
+        if (!sb) return rows;
+        var res = await indexYayindaFiltre(
+            sb.from('itiraflar').select(INDEX_ITIRAF_SELECT).in('id', eksikIdler)
+        );
+        if (res.error || !res.data || !res.data.length) return rows;
+        var byId = {};
+        for (i = 0; i < res.data.length; i++) {
+            byId[String(res.data[i].id)] = res.data[i];
+        }
+        return rows.map(function (r) {
+            var tam = byId[String(r.id)];
+            return tam ? Object.assign({}, r, tam) : r;
+        });
+    }
+
     /** Anasayfa — bugünün 5'i (manuel sıra varsa ona göre, yoksa yayın sırası). */
     async function indexBugunun5Getir() {
         var sb = getClient();
@@ -918,7 +956,8 @@
         try {
             var rpcRes = await sb.rpc('index_bugunun5_getir');
             if (!rpcRes.error && rpcRes.data != null) {
-                return rpcSatirlarCoz(rpcRes.data);
+                var rpcRows = rpcSatirlarCoz(rpcRes.data);
+                if (rpcRows.length) return indexSatirlarBaslikZenginlestir(rpcRows);
             }
         } catch (eRpc) { /* RPC yoksa istemci yedeği */ }
 
@@ -967,7 +1006,8 @@
         try {
             var rpcRes = await sb.rpc('index_dunun5_getir');
             if (!rpcRes.error && rpcRes.data != null) {
-                return rpcSatirlarCoz(rpcRes.data);
+                var rpcRows = rpcSatirlarCoz(rpcRes.data);
+                if (rpcRows.length) return indexSatirlarBaslikZenginlestir(rpcRows);
             }
         } catch (eRpc) { /* istemci yedeği */ }
 
