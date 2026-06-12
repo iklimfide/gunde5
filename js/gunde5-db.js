@@ -817,23 +817,14 @@
         return s.length >= 10 ? s.slice(0, 10) : null;
     }
 
-    /** Aktif baskı: bugün yayında hikâye varsa bugün, yoksa en son yayın günü. */
-    async function aktifBaskiGunGetir() {
+    /** Takvim bugünü için yayında (created_at ≤ şimdi) en az bir hikâye var mı? */
+    async function bugunTakvimYayindaVarMi() {
         var sb = getClient();
-        if (!sb) return null;
-
-        try {
-            var rpcRes = await sb.rpc('gunde5_aktif_baski_gunu');
-            if (!rpcRes.error && rpcRes.data != null) {
-                return rpcTarihCoz(rpcRes.data);
-            }
-        } catch (eRpc) { /* istemci yedeği */ }
-
+        if (!sb) return false;
         var takvim = istanbulYmdSimdi();
-        if (!takvim) return null;
+        if (!takvim) return false;
         var aralik = istanbulGunAraligi(takvim);
-        if (!aralik) return null;
-
+        if (!aralik) return false;
         var bugunRes = await indexYayindaFiltre(
             sb
                 .from('itiraflar')
@@ -841,20 +832,27 @@
                 .gte('created_at', aralik.bas)
                 .lt('created_at', aralik.son)
         ).limit(1);
-        if (!bugunRes.error && bugunRes.data && bugunRes.data.length) {
-            return takvim;
+        return !bugunRes.error && !!(bugunRes.data && bugunRes.data.length);
+    }
+
+    /** Aktif baskı: takvim bugünü; yayınlı gün varsa RPC/onaylı gün, yoksa yine bugün (rastgele 5). */
+    async function aktifBaskiGunGetir() {
+        var sb = getClient();
+        var takvim = istanbulYmdSimdi();
+        if (!takvim) return null;
+        if (!sb) return takvim;
+
+        if (await bugunTakvimYayindaVarMi()) {
+            try {
+                var rpcRes = await sb.rpc('gunde5_aktif_baski_gunu');
+                if (!rpcRes.error && rpcRes.data != null) {
+                    var rpcGun = rpcTarihCoz(rpcRes.data);
+                    if (rpcGun) return rpcGun;
+                }
+            } catch (eRpc) { /* istemci yedeği */ }
         }
 
-        var sonRes = await indexYayindaFiltre(
-            sb
-                .from('itiraflar')
-                .select('created_at')
-                .order('created_at', { ascending: false })
-        ).limit(1);
-        if (sonRes.error || !sonRes.data || !sonRes.data.length) {
-            return null;
-        }
-        return istanbulYmdFromIso(sonRes.data[0].created_at);
+        return takvim;
     }
 
     async function oncekiBaskiGunGetir(aktifGun) {
@@ -948,7 +946,27 @@
         });
     }
 
-    /** Anasayfa — bugünün 5'i (manuel sıra varsa ona göre, yoksa yayın sırası). */
+    function rastgeleSec(dizi, adet) {
+        var a = Array.isArray(dizi) ? dizi.slice() : [];
+        var n = Math.min(adet || 5, a.length);
+        if (!n) return [];
+        var i, j, t;
+        for (i = a.length - 1; i > 0; i--) {
+            j = Math.floor(Math.random() * (i + 1));
+            t = a[i];
+            a[i] = a[j];
+            a[j] = t;
+        }
+        return a.slice(0, n);
+    }
+
+    /** Yayında arşivden rastgele 5 (yeni gün hikâyesi yokken anasayfa). */
+    async function indexRastgele5Getir() {
+        var havuz = await indexItirafHavuzGetir();
+        return rastgeleSec(havuz, 5);
+    }
+
+    /** Anasayfa — bugünün 5'i; takvim gününde yayın yoksa arşivden rastgele 5. */
     async function indexBugunun5Getir() {
         var sb = getClient();
         if (!sb) return [];
@@ -961,9 +979,14 @@
             }
         } catch (eRpc) { /* RPC yoksa istemci yedeği */ }
 
-        var bugun = await aktifBaskiGunGetir();
+        var bugun = istanbulYmdSimdi();
         if (!bugun) return [];
-        return baskiGunHikayeleriGetir(bugun, 5);
+
+        if (await bugunTakvimYayindaVarMi()) {
+            return indexSatirlarBaslikZenginlestir(await baskiGunHikayeleriGetir(bugun, 5));
+        }
+
+        return indexSatirlarBaslikZenginlestir(await indexRastgele5Getir());
     }
 
     async function masterBugun5SiraKaydet(hikayeIds) {

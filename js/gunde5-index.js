@@ -368,7 +368,12 @@
         if (editionOverride) {
             state.aktifBaskiYmd = editionOverride;
         } else if (rows && rows.length) {
-            state.aktifBaskiYmd = trYmd(rows[0].created_at);
+            var D0 = db();
+            if (D0 && D0.aktifBaskiGunGetir) {
+                state.aktifBaskiYmd = await D0.aktifBaskiGunGetir();
+            } else {
+                state.aktifBaskiYmd = trYmd(rows[0].created_at);
+            }
         } else {
             var D = db();
             if (D && D.aktifBaskiGunGetir) {
