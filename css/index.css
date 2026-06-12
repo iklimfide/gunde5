@@ -587,6 +587,9 @@
             text-align: justify;
             text-justify: inter-word;
             margin-bottom: 14px;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
 
         .story-card .card-body::before {

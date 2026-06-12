@@ -103,8 +103,63 @@
             color: #b45309;
         }
         body.dark-mode .planli-yayin-etiket { background: rgba(245, 158, 11, .25); color: #fbbf24; }
+        .pl-kart-footer { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+        .pl-duzenle-btn {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            background: rgba(245, 158, 11, .1);
+            color: #b45309;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .pl-duzenle-btn:hover { background: rgba(245, 158, 11, .18); }
+        body.dark-mode .pl-duzenle-btn { color: #fbbf24; border-color: #f59e0b; background: rgba(245, 158, 11, .15); }
+        .pl-drawer { position: fixed; inset: 0; z-index: 1200; display: none; }
+        .pl-drawer.acik { display: block; }
+        .pl-drawer-bg { position: absolute; inset: 0; background: rgba(15, 23, 42, .45); }
+        .pl-drawer-panel {
+            position: absolute; top: 0; right: 0; width: min(560px, 100%); height: 100%;
+            background: var(--card-bg, #fff); border-left: 1px solid var(--border-color, #e5e7eb);
+            display: flex; flex-direction: column; box-shadow: -12px 0 32px rgba(0, 0, 0, .18);
+        }
+        body.dark-mode .pl-drawer-panel { background: #0b0f14; border-color: rgba(255, 255, 255, .1); }
+        .pl-drawer-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 16px; border-bottom: 1px solid var(--border-color, #e5e7eb);
+        }
+        body.dark-mode .pl-drawer-head { border-color: rgba(255, 255, 255, .1); }
+        .pl-drawer-head h2 { font-size: 18px; font-weight: 900; margin: 0; }
+        .pl-drawer-close { border: none; background: transparent; font-size: 28px; line-height: 1; cursor: pointer; }
+        .pl-drawer-body { flex: 1; overflow: auto; padding: 16px; display: grid; gap: 14px; }
+        .pl-alan label { display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted, #6b7280); }
+        .pl-alan input, .pl-alan select, .pl-alan textarea {
+            width: 100%; border: 1px solid var(--border-color, #e5e7eb); border-radius: 12px;
+            background: var(--card-bg, #fff); color: var(--text-main, #111); padding: 10px 12px; font: inherit;
+        }
+        body.dark-mode .pl-alan input,
+        body.dark-mode .pl-alan select,
+        body.dark-mode .pl-alan textarea { background: #0b0f14; border-color: rgba(255, 255, 255, .12); color: #e7e9ea; }
+        .pl-alan textarea { min-height: 180px; resize: vertical; line-height: 1.45; }
+        .pl-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .pl-grid--tek { grid-template-columns: 1fr; }
+        .pl-form-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+        .pl-form-btn {
+            padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border-color, #e5e7eb);
+            background: var(--card-bg, #fff); font-weight: 800; font-size: 14px; cursor: pointer; font-family: inherit;
+        }
+        .pl-form-btn--primary { background: #1d9bf0; border-color: #1d9bf0; color: #fff; }
+        .pl-form-btn--danger { color: #b91c1c; border-color: #fecaca; }
+        body.dark-mode .pl-form-btn { background: #0b0f14; border-color: rgba(255, 255, 255, .12); color: #e7e9ea; }
+        body.dark-mode .pl-form-btn--primary { background: #1d9bf0; border-color: #1d9bf0; color: #fff; }
+        .pl-form-not { font-size: 12px; color: var(--text-muted, #6b7280); line-height: 1.45; margin: 0; }
+        @media (max-width: 640px) { .pl-grid { grid-template-columns: 1fr; } }
     </style>
     <script src="js/gunde5-shell.js"></script>
+    <script src="js/gunde5-hikaye-koruma.js"></script>
     <script src="js/gunde5-perde.js?v=2"></script>
     <script defer src="js/gunde5-config.js?v=17"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js" crossorigin></script>
@@ -113,7 +168,8 @@
     <script defer src="js/gunde5-db.js?v=53"></script>
     <script defer src="js/gunde5-bildirim.js?v=3"></script>
     <script defer src="js/gunde5-master.js?v=4"></script>
-    <script defer src="js/gunde5-planli.js?v=3"></script>
+    <script defer src="js/gunde5-slug.js"></script>
+    <script defer src="js/gunde5-planli.js?v=4"></script>
 </head>
 <body>
     <header class="page-topbar" id="planliPageTopbar">
@@ -159,5 +215,16 @@
             <div id="plListe"></div>
         </div>
     </main>
+
+    <div class="pl-drawer" id="plDrawer" hidden aria-hidden="true">
+        <div class="pl-drawer-bg" data-pl-kapat></div>
+        <div class="pl-drawer-panel" role="dialog" aria-labelledby="plDrawerBaslik">
+            <div class="pl-drawer-head">
+                <h2 id="plDrawerBaslik">Hikâye düzenle</h2>
+                <button type="button" class="pl-drawer-close" data-pl-kapat aria-label="Kapat">×</button>
+            </div>
+            <div class="pl-drawer-body" id="plDrawerBody"></div>
+        </div>
+    </div>
 </body>
 </html>

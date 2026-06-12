@@ -8,9 +8,13 @@
     var tarihFiltre = '';
     var sira = 'desc';
     var indexSayisi = null;
+    var drawerId = null;
+    var islemSuruyor = false;
+    var drawerTiklamaBaglandi = false;
 
     function db() { return global.Gunde5DB; }
     function ui() { return global.Gunde5UI; }
+    function profil() { return global.Gunde5Profil; }
 
     function qs(id) { return document.getElementById(id); }
 
@@ -71,6 +75,264 @@
 
     function planliYayinEtiket(iso) {
         return '<span class="planli-yayin-etiket">⏳ ' + esc(saatEtiket(iso)) + '</span>';
+    }
+
+    function ikiHane(n) {
+        return n < 10 ? '0' + n : String(n);
+    }
+
+    function isoDatetimeLocalValue(iso) {
+        if (!iso) return '';
+        try {
+            var d = new Date(iso);
+            if (isNaN(d.getTime())) return '';
+            return d.getFullYear() + '-' + ikiHane(d.getMonth() + 1) + '-' + ikiHane(d.getDate()) +
+                'T' + ikiHane(d.getHours()) + ':' + ikiHane(d.getMinutes());
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function toast(msg, tur) {
+        var U = ui();
+        if (U && U.showToast) U.showToast(msg, tur);
+    }
+
+    function drawerKapat() {
+        var d = qs('plDrawer');
+        if (d) {
+            d.classList.remove('acik');
+            d.hidden = true;
+            d.setAttribute('aria-hidden', 'true');
+        }
+        document.body.style.overflow = '';
+        drawerId = null;
+    }
+
+    function drawerAc(baslik) {
+        var d = qs('plDrawer');
+        var h = qs('plDrawerBaslik');
+        if (h) h.textContent = baslik || 'Hikâye düzenle';
+        if (d) {
+            d.hidden = false;
+            d.classList.add('acik');
+            d.setAttribute('aria-hidden', 'false');
+        }
+        document.body.style.overflow = 'hidden';
+    }
+
+    function yerSelectHtml(secili) {
+        var P = profil();
+        var html = '<option value="">—</option>';
+        if (P && P.YER_SECENEKLERI) {
+            P.YER_SECENEKLERI.forEach(function (s) {
+                html += '<option value="' + esc(s.value) + '"' +
+                    (secili === s.value ? ' selected' : '') + '>' + esc(s.label) + '</option>';
+            });
+        }
+        return html;
+    }
+
+    function slugOnizlemeUret(hint, metin, id) {
+        var S = global.Gunde5Slug;
+        if (!S || !S.slugUret || !id) return '';
+        return '/h/' + S.slugUret(hint, metin, id);
+    }
+
+    function slugOnizlemeGuncelle(id) {
+        var el = qs('plSlugOnizleme');
+        if (!el) return;
+        var hintEl = qs('plDetaySlugHint');
+        var metinEl = qs('plDetayMetin');
+        var yol = slugOnizlemeUret(
+            hintEl ? hintEl.value : '',
+            metinEl ? metinEl.value : '',
+            id
+        );
+        el.textContent = yol || '—';
+    }
+
+    function slugOnizlemeBagla(id) {
+        var hintEl = qs('plDetaySlugHint');
+        var metinEl = qs('plDetayMetin');
+        function guncelle() { slugOnizlemeGuncelle(id); }
+        if (hintEl) hintEl.addEventListener('input', guncelle);
+        if (metinEl) metinEl.addEventListener('input', guncelle);
+        guncelle();
+    }
+
+    function detayFormHtml(h) {
+        var yer = h.yasadigi_yer || '';
+        var onizleme = slugOnizlemeUret(h.slug_hint, h.content_full, h.id) || (h.slug ? '/h/' + h.slug : '');
+        return (
+            '<p class="pl-form-not">Planlı hikaye: yayın tarihi gelecekteyse sitede görünmez. Günde5 ritmine uygun sabah saati seç.</p>' +
+            '<div class="pl-grid pl-grid--tek">' +
+            '<div class="pl-alan"><label>Rumuz<input type="text" id="plDetayRumuz" maxlength="50" value="' + esc(h.username || '') + '"></label></div>' +
+            '<div class="pl-alan"><label>URL adı <span>(isteğe bağlı, 3–5 kelime)</span>' +
+            '<input type="text" id="plDetaySlugHint" maxlength="80" value="' + esc(h.slug_hint || '') + '" placeholder="örn. telefonsuz-market-listesi"></label>' +
+            '<p class="pl-form-not">URL önizleme: <code id="plSlugOnizleme">' + esc(onizleme || '—') + '</code></p>' +
+            (h.slug && h.slug !== onizleme.replace(/^\/h\//, '') ?
+                '<p class="pl-form-not">Kayıtlı canlı URL: <code>/h/' + esc(h.slug) + '</code></p>' : '') +
+            '</div>' +
+            '</div>' +
+            '<div class="pl-alan"><label>Hikâye metni<textarea id="plDetayMetin">' + esc(h.content_full || '') + '</textarea></label></div>' +
+            '<div class="pl-grid">' +
+            '<div class="pl-alan"><label>Yaş<input type="number" id="plDetayYas" min="18" max="120" value="' + esc(h.age != null ? h.age : '') + '"></label></div>' +
+            '<div class="pl-alan"><label>Cinsiyet<select id="plDetayCinsiyet">' +
+            '<option value="female"' + (h.gender === 'female' ? ' selected' : '') + '>Kadın</option>' +
+            '<option value="male"' + (h.gender === 'male' ? ' selected' : '') + '>Erkek</option>' +
+            '</select></label></div>' +
+            '<div class="pl-alan"><label>Yaşadığı yer<select id="plDetayYer">' + yerSelectHtml(yer) + '</select></label></div>' +
+            '<div class="pl-alan" id="plDetayYurtdisiWrap"' + (yer === 'yurtdisi' ? '' : ' hidden') + '>' +
+            '<label>Yurtdışı şehir<input type="text" id="plDetayYurtdisi" maxlength="80" value="' + esc(h.yurtdisi_sehir || '') + '"></label></div>' +
+            '<div class="pl-alan"><label>Yayın / planlama<input type="datetime-local" id="plDetayYayin" step="60" value="' + esc(isoDatetimeLocalValue(h.created_at)) + '"></label></div>' +
+            '<div class="pl-alan"><label>👍 Beğeni<input type="number" id="plDetayUp" min="0" value="' + esc(h.up_votes != null ? h.up_votes : 0) + '"></label></div>' +
+            '<div class="pl-alan"><label>👎 Beğenmeme<input type="number" id="plDetayDown" min="0" value="' + esc(h.down_votes != null ? h.down_votes : 0) + '"></label></div>' +
+            '</div>' +
+            '<div class="pl-form-actions">' +
+            '<button type="button" class="pl-form-btn pl-form-btn--primary" data-pl-act="kaydet">Kaydet</button>' +
+            '<button type="button" class="pl-form-btn" data-pl-act="iptal">İptal</button>' +
+            '<button type="button" class="pl-form-btn pl-form-btn--danger" data-pl-act="sil">Sil</button>' +
+            '</div>'
+        );
+    }
+
+    function yerBagla() {
+        var yer = qs('plDetayYer');
+        var wrap = qs('plDetayYurtdisiWrap');
+        if (!yer || !wrap) return;
+        yer.addEventListener('change', function () {
+            wrap.hidden = yer.value !== 'yurtdisi';
+        });
+    }
+
+    function kaydetBtnDurum(suruyor) {
+        var btn = document.querySelector('[data-pl-act="kaydet"]');
+        if (!btn) return;
+        btn.disabled = !!suruyor;
+        btn.textContent = suruyor ? 'Kaydediliyor…' : 'Kaydet';
+    }
+
+    async function hikayeIslem(islem, ek) {
+        var D = db();
+        if (!D || !D.masterHikayeIslem) throw new Error('Panel hazır değil.');
+        if (!drawerId) throw new Error('Hikâye seçilmedi.');
+        var body = Object.assign({ itiraf_id: parseInt(drawerId, 10), islem: islem }, ek || {});
+        var sonuc = await D.masterHikayeIslem(body);
+        if (!sonuc || sonuc.ok === false) {
+            throw new Error((sonuc && sonuc.hata) || 'İşlem başarısız');
+        }
+        return sonuc;
+    }
+
+    async function detayAc(id) {
+        var D = db();
+        if (!D || !D.masterKamikazeHikayeDetay) return;
+        try {
+            var sonuc = await D.masterKamikazeHikayeDetay(id);
+            if (!sonuc || sonuc.ok === false || !sonuc.hikaye) {
+                toast((sonuc && sonuc.hata) || 'Detay alınamadı', 'hata');
+                return;
+            }
+            drawerId = String(sonuc.hikaye.id);
+            var body = qs('plDrawerBody');
+            if (body) body.innerHTML = detayFormHtml(sonuc.hikaye);
+            drawerAc('#' + drawerId + ' — ' + (sonuc.hikaye.username || 'Hikâye'));
+            yerBagla();
+            slugOnizlemeBagla(parseInt(drawerId, 10));
+        } catch (e) {
+            toast(D.hataMesaji ? D.hataMesaji(e) : String(e), 'hata');
+        }
+    }
+
+    async function detayKaydet() {
+        if (islemSuruyor) return;
+        var D = db();
+        var rumuz = String(qs('plDetayRumuz') && qs('plDetayRumuz').value || '').trim();
+        var metin = String(qs('plDetayMetin') && qs('plDetayMetin').value || '').trim();
+        var yas = parseInt(qs('plDetayYas') && qs('plDetayYas').value, 10);
+        var planHam = String(qs('plDetayYayin') && qs('plDetayYayin').value || '').trim();
+        if (rumuz.length < 2) { toast('Rumuz en az 2 karakter.', 'hata'); return; }
+        if (!metin) { toast('Metin boş olamaz.', 'hata'); return; }
+        if (!planHam) { toast('Yayın tarihi gerekli.', 'hata'); return; }
+        islemSuruyor = true;
+        kaydetBtnDurum(true);
+        try {
+            var planIso = D.planliTarihIso ? D.planliTarihIso(planHam) : null;
+            if (!planIso) throw new Error('Yayın tarihi geçersiz.');
+            var yer = qs('plDetayYer') ? qs('plDetayYer').value : '';
+            await hikayeIslem('guncelle', {
+                content_full: metin,
+                slug_hint: String(qs('plDetaySlugHint') && qs('plDetaySlugHint').value || '').trim(),
+                username: rumuz
+            });
+            await hikayeIslem('meta', {
+                age: yas,
+                gender: qs('plDetayCinsiyet') ? qs('plDetayCinsiyet').value : 'female',
+                yasadigi_yer: yer || null,
+                yurtdisi_sehir: yer === 'yurtdisi'
+                    ? String(qs('plDetayYurtdisi') && qs('plDetayYurtdisi').value || '').trim() || null
+                    : null
+            });
+            await hikayeIslem('yayin_tarihi', { created_at: planIso });
+            await hikayeIslem('oylar', {
+                up_votes: parseInt(qs('plDetayUp') && qs('plDetayUp').value, 10) || 0,
+                down_votes: parseInt(qs('plDetayDown') && qs('plDetayDown').value, 10) || 0
+            });
+            toast('Kaydedildi.');
+            drawerKapat();
+            await yukle();
+        } catch (e) {
+            toast(D.hataMesaji ? D.hataMesaji(e) : String(e), 'hata');
+        } finally {
+            islemSuruyor = false;
+            kaydetBtnDurum(false);
+        }
+    }
+
+    async function detaySil() {
+        if (islemSuruyor || !global.confirm('Bu planlı hikâyeyi silmek istiyor musun?')) return;
+        var D = db();
+        islemSuruyor = true;
+        try {
+            await hikayeIslem('sil');
+            toast('Silindi.');
+            drawerKapat();
+            await yukle();
+        } catch (e) {
+            toast(D.hataMesaji ? D.hataMesaji(e) : String(e), 'hata');
+        } finally {
+            islemSuruyor = false;
+        }
+    }
+
+    function drawerTiklamaBagla() {
+        if (drawerTiklamaBaglandi) return;
+        drawerTiklamaBaglandi = true;
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('[data-pl-kapat]')) {
+                drawerKapat();
+                return;
+            }
+            var btn = e.target.closest('[data-pl-act]');
+            if (!btn || islemSuruyor) return;
+            var act = btn.getAttribute('data-pl-act');
+            if (act === 'kaydet') detayKaydet();
+            else if (act === 'iptal') drawerKapat();
+            else if (act === 'sil') detaySil();
+        });
+    }
+
+    function duzenleBagla() {
+        var liste = qs('plListe');
+        if (!liste || liste.getAttribute('data-pl-duzen-bound') === '1') return;
+        liste.setAttribute('data-pl-duzen-bound', '1');
+        liste.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-pl-duzenle]');
+            if (!btn || islemSuruyor) return;
+            e.preventDefault();
+            detayAc(btn.getAttribute('data-pl-duzenle'));
+        });
     }
 
     function benzersizGunler(rows) {
@@ -185,7 +447,10 @@
             '<div class="card-body">' +
                 '<span class="short-text">' + metinGoster(tam) + '</span>' +
             '</div>' +
-            '<div class="card-footer"><p class="pl-onizleme-not">Önizleme — henüz yayında değil</p></div>' +
+            '<div class="card-footer pl-kart-footer">' +
+                '<button type="button" class="pl-duzenle-btn" data-pl-duzenle="' + esc(id) + '">✏️ Hikâyeyi düzenle</button>' +
+                '<p class="pl-onizleme-not">Önizleme — henüz yayında değil</p>' +
+            '</div>' +
             slugLink;
 
         return art;
@@ -376,6 +641,8 @@
         var giris = qs('plGirisBtn');
 
         filtreBagla();
+        drawerTiklamaBagla();
+        duzenleBagla();
 
         if (yenile) {
             yenile.addEventListener('click', function () {
