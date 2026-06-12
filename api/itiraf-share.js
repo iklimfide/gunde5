@@ -1,4 +1,4 @@
-import { itirafGetir, itirafGetirSlug, metinKisalt } from './_lib/itiraf-fetch.js';
+import { itirafGetir, itirafGetirSlug, ilkKelimeler, metinKisalt } from './_lib/itiraf-fetch.js';
 import { OG_DESCRIPTION, OG_IMAGE_ALT, OG_IMAGE_URL, OG_TITLE } from './_lib/og-brand.js';
 import { slugPathtenOku } from './_lib/slug.js';
 
@@ -104,7 +104,8 @@ export default async function handler(req) {
     var indexle = indexlenebilirMi(row);
     var rumuz = row ? row.username || 'Anonim' : 'gunde5.com';
     var aciklama = row
-        ? metinKisalt(row.content_full || row.content_short, 160)
+        ? ilkKelimeler(row.content_full || row.content_short, 12) ||
+          metinKisalt(row.content_full || row.content_short, 160)
         : OG_DESCRIPTION;
     var baslik = sayfaBaslik(row);
     var paylasUrl = row && row.slug ? SITE + '/h/' + row.slug : id ? SITE + '/h/' + id : SITE + '/';

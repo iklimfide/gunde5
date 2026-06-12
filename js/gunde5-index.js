@@ -6,6 +6,7 @@
     var MSJ_ZATEN_OYLADIN = 'Bu hikayeyi zaten oylamıştın, sonrakine geç dostum';
     var PAYLAS_CAGRI = '📌 Devamını reklamsız ve ücretsiz oku:';
     var X_TWEET_LIMIT = 280;
+    var HOOK_KELIME = 12;
     var FALLBACK_HOOKS = [
         'Bu hikâyeyi okumadan geçme 👇',
         'Bugünün en iyi okumalarından biri',
@@ -643,6 +644,7 @@
 
     function loadMoreBtnHtml() {
         var metin;
+        var tumAltBtn = '';
         if (state.aramaAktif) {
             metin = '🔍 Daha fazla sonuç göster';
         } else if (state.siralama === 'tum') {
@@ -653,11 +655,16 @@
             metin = '📚 Önceki günlerin hikâyelerini göster';
         } else {
             metin = '📚 Dün yayınlanan hikâyeleri göster';
+            tumAltBtn =
+                '<button type="button" class="load-more-btn index-load-more-tum">' +
+                esc('📚 Tüm arşivi göster') +
+                '</button>';
         }
         return (
             '<button type="button" class="load-more-btn index-load-more index-load-more--onceki">' +
             esc(metin) +
-            '</button>'
+            '</button>' +
+            tumAltBtn
         );
     }
 
@@ -1157,15 +1164,23 @@
         return FALLBACK_HOOKS[Math.floor(Math.random() * FALLBACK_HOOKS.length)];
     }
 
-    /** Hikâye metninden değil; başlık / slug ipucu / rumuz. */
+    /** Kelime ortasından kesmez; en fazla maxKelime adet. */
+    function ilkKelimeler(metin, maxKelime) {
+        var t = String(metin || '').replace(/\s+/g, ' ').trim();
+        if (!t || !maxKelime) return '';
+        var kelimeler = t.split(' ');
+        if (kelimeler.length <= maxKelime) return t;
+        return kelimeler.slice(0, maxKelime).join(' ') + '…';
+    }
+
+    /** Başlık / slug ipucu / hikâyenin ilk kelimeleri. */
     function generateHook(story) {
-        var b = String(story && story.baslik || '').trim();
+        if (!story) return '';
+        var b = String(story.baslik || '').trim();
         if (b) return b;
-        var hint = slugHintMetin(story && story.slug_hint);
+        var hint = slugHintMetin(story.slug_hint);
         if (hint) return hint;
-        var u = String(story && story.username || '').trim();
-        if (u) return u + ' anlatıyor…';
-        return '';
+        return ilkKelimeler(icerikMetni(story), HOOK_KELIME);
     }
 
     function storyHookAl(story) {
@@ -1222,6 +1237,7 @@
             id: sid,
             slug: card.getAttribute('data-slug') || '',
             baslik: ((card.querySelector('.kart-baslik') || {}).textContent || '').trim(),
+            content_short: ((card.querySelector('.short-text') || {}).textContent || '').trim(),
             social_hook: card.getAttribute('data-social-hook') || '',
             x_hook: card.getAttribute('data-x-hook') || '',
             slug_hint: card.getAttribute('data-slug-hint') || '',
@@ -1512,6 +1528,34 @@
             listeTemizle();
             sonrakiPart(null);
         }
+        global.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function pcSolMenuAktif(siralama) {
+        var links = document.querySelectorAll('.pc-left-link[data-pc-sort]');
+        var i;
+        for (i = 0; i < links.length; i++) {
+            links[i].classList.toggle(
+                'pc-left-link--aktif',
+                links[i].getAttribute('data-pc-sort') === siralama
+            );
+        }
+    }
+
+    function tumArsiviGoster() {
+        analyticsIndex({ event: 'index_tum_arsiv_click', sayfa: 'index' });
+        altBarAramaKapat();
+        var sel = document.getElementById('indexSiralama');
+        if (sel && sel.value !== 'tum') {
+            sel.value = 'tum';
+            siralamaDegisti();
+        } else if (state.siralama !== 'tum') {
+            state.siralama = 'tum';
+            listeSifirla();
+            listeTemizle();
+            sonrakiPart(null);
+        }
+        pcSolMenuAktif('tum');
         global.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -1988,6 +2032,11 @@
             var shareBtn = e.target.closest('[data-share]');
             if (shareBtn) {
                 paylasTikla(shareBtn.getAttribute('data-share'));
+                return;
+            }
+            var tumBtn = e.target.closest('.index-load-more-tum');
+            if (tumBtn) {
+                tumArsiviGoster();
                 return;
             }
             var moreBtn = e.target.closest('.index-load-more');

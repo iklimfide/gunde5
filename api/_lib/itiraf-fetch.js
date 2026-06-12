@@ -57,13 +57,26 @@ async function itirafGecmisSlugdanGetir(eskiSlug) {
     return itirafGetir(rows[0].itiraf_id);
 }
 
+export function ilkKelimeler(metin, maxKelime) {
+    var t = String(metin || '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    if (!t || !maxKelime) return '';
+    var kelimeler = t.split(' ');
+    if (kelimeler.length <= maxKelime) return t;
+    return kelimeler.slice(0, maxKelime).join(' ') + '…';
+}
+
 export function metinKisalt(metin, max) {
     var t = String(metin || '')
         .replace(/\s+/g, ' ')
         .trim();
     if (!t) return '';
     if (t.length <= max) return t;
-    return t.slice(0, max - 1).trim() + '…';
+    var kes = t.slice(0, max - 1).trim();
+    var son = kes.lastIndexOf(' ');
+    if (son > 0) kes = kes.slice(0, son).trim();
+    return kes + '…';
 }
 
 /** Kart önizlemesi: satır sonlarını korur (gunde5-ui metinBol ile aynı). */
