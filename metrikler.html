@@ -652,6 +652,55 @@
             margin: -4px 0 10px;
             line-height: 1.45;
         }
+        .istat-bolum-baslik-satir {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px 10px;
+            margin: 0 0 10px;
+        }
+        .istat-bolum-baslik-satir .istat-bolum-baslik {
+            margin: 0;
+            flex: 1 1 auto;
+        }
+        .istat-bolum-alt-baslik {
+            font-size: 13px;
+            font-weight: 800;
+            margin: 0 0 8px;
+            letter-spacing: -0.02em;
+        }
+        .istat-bolum--lazy .istat-bolum-not {
+            margin-top: 0;
+        }
+        .istat-goster-btn {
+            border: 1px solid #1d9bf0;
+            background: #f0f9ff;
+            color: #0369a1;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            flex-shrink: 0;
+        }
+        .istat-goster-btn:hover { filter: brightness(0.97); }
+        .istat-goster-btn:disabled {
+            opacity: 0.55;
+            cursor: wait;
+        }
+        body.dark-mode .istat-goster-btn {
+            background: rgba(29, 155, 240, 0.12);
+            color: #7dd3fc;
+            border-color: rgba(56, 189, 248, 0.35);
+        }
+        .istat-lazy-icerik {
+            margin-top: 10px;
+        }
+        .istat-lazy-icerik[hidden] {
+            display: none !important;
+        }
         .istat-bolum--hero {
             background: linear-gradient(165deg, rgba(29, 155, 240, 0.08), rgba(29, 155, 240, 0.02));
             border: 1px solid rgba(29, 155, 240, 0.18);
@@ -887,7 +936,7 @@
     <script src="js/gunde5-db.js?v=35"></script>
     <script src="js/gunde5-paylas.js"></script>
     <script src="js/gunde5-bildirim.js?v=2"></script>
-    <script src="js/gunde5-metrikler.js?v=7"></script>
+    <script src="js/gunde5-metrikler.js?v=8"></script>
     <link rel="stylesheet" href="css/gunde5-topbar.css?v=1">
     <link rel="stylesheet" href="css/master-panel.css?v=2">
 </head>
@@ -915,7 +964,7 @@
 
     <div class="container">
         <h1 class="page-title">📈 Metrikler</h1>
-        <p class="intro">Sitede ne yaptılar — okuma, oy, paylaşım ve içerik performansı. Trafik kaynağı için <a href="/istatistikler">İstatistikler</a> sayfasına bakın.</p>
+        <p class="intro">Özet metrikler hemen yüklenir. İçerik performansı (okuyucu puanı tablosu) «Göster» ile açılır. Trafik için <a href="/istatistikler">İstatistikler</a>.</p>
 
         <div id="metrikYetkisiz" class="istat-yetkisiz" hidden>
             <p class="istat-yetkisiz-metin"></p>

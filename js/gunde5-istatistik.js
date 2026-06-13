@@ -6,6 +6,10 @@
     var seciliHaric = 'master';
     var filtreHazir = false;
     var aramaTerimOlayHazir = false;
+    var lazyOlayHazir = false;
+    var trafikVeri = null;
+    var gunlukVeri = null;
+    var gunlukVeriPromise = null;
 
     function db() { return global.Gunde5DB; }
     function ui() { return global.Gunde5UI; }
@@ -52,14 +56,11 @@
 
     function arrCoz(v) { return Array.isArray(v) ? v : []; }
 
-    function tabloHtml(baslik, kolonlar, satirlar, bosMesaj, not) {
-        var html = '<section class="istat-bolum"><h2 class="istat-bolum-baslik">' + esc(baslik) + '</h2>';
-        if (not) html += '<p class="istat-bolum-not">' + esc(not) + '</p>';
+    function tabloParcaHtml(kolonlar, satirlar, bosMesaj) {
         if (!satirlar.length) {
-            html += '<p class="istat-bos">' + esc(bosMesaj || 'Veri yok.') + '</p></section>';
-            return html;
+            return '<p class="istat-bos">' + esc(bosMesaj || 'Veri yok.') + '</p>';
         }
-        html += '<div class="istat-tablo-wrap"><table class="istat-tablo"><thead><tr>';
+        var html = '<div class="istat-tablo-wrap"><table class="istat-tablo"><thead><tr>';
         kolonlar.forEach(function (k) {
             html += '<th scope="col">' + esc(k.etiket) + '</th>';
         });
@@ -72,32 +73,139 @@
             });
             html += '</tr>';
         });
-        html += '</tbody></table></div></section>';
+        html += '</tbody></table></div>';
         return html;
     }
 
-    function kpiKart(etiket, deger, alt) {
+    function tabloHtml(baslik, kolonlar, satirlar, bosMesaj, not) {
+        var html = '<section class="istat-bolum"><h2 class="istat-bolum-baslik">' + esc(baslik) + '</h2>';
+        if (not) html += '<p class="istat-bolum-not">' + esc(not) + '</p>';
+        html += tabloParcaHtml(kolonlar, satirlar, bosMesaj);
+        return html + '</section>';
+    }
+
+    function lazyKabuk(id, baslik, not) {
         return (
-            '<div class="istat-kpi">' +
-            '<span class="istat-kpi-etiket">' + esc(etiket) + '</span>' +
-            '<span class="istat-kpi-deger">' + esc(deger) + '</span>' +
-            (alt ? '<span class="istat-kpi-alt">' + esc(alt) + '</span>' : '') +
-            '</div>'
+            '<section class="istat-bolum istat-bolum--lazy" data-istat-lazy="' + esc(id) + '">' +
+            '<div class="istat-bolum-baslik-satir">' +
+            '<h2 class="istat-bolum-baslik">' + esc(baslik) + '</h2>' +
+            '<button type="button" class="istat-goster-btn" data-istat-goster="' + esc(id) + '">Göster</button>' +
+            '</div>' +
+            (not ? '<p class="istat-bolum-not">' + esc(not) + '</p>' : '') +
+            '<div class="istat-lazy-icerik" data-istat-icerik="' + esc(id) + '" hidden></div>' +
+            '</section>'
         );
     }
 
-    function hikayeMatrisHtml(matris) {
+    function lazySifirla() {
+        gunlukVeri = null;
+        gunlukVeriPromise = null;
+        document.querySelectorAll('.istat-lazy-icerik').forEach(function (el) {
+            el.innerHTML = '';
+            el.hidden = true;
+            el.removeAttribute('data-yuklu');
+        });
+        document.querySelectorAll('[data-istat-goster]').forEach(function (btn) {
+            btn.textContent = 'Göster';
+            btn.disabled = false;
+        });
+    }
+
+    async function gunlukGetir() {
+        if (gunlukVeri) return gunlukVeri;
+        if (!gunlukVeriPromise) {
+            gunlukVeriPromise = loadGunluk().then(function (g) {
+                gunlukVeri = g;
+                return g;
+            });
+        }
+        return gunlukVeriPromise;
+    }
+
+    async function loadGunluk() {
+        var D = db();
+        if (!D || !D.masterGunlukIstatistik) {
+            return { ok: false, hata: 'master_gunluk_istatistik tanımlı değil' };
+        }
+        try {
+            return await D.masterGunlukIstatistik(seciliGun, seciliHaric);
+        } catch (e) {
+            return {
+                ok: false,
+                hata: D.hataMesaji ? D.hataMesaji(e) : 'RPC yok veya hata'
+            };
+        }
+    }
+
+    function aramaTerimleriYerlestir(gunluk) {
+        var wrap = document.querySelector('[data-istat-icerik="arama-terim"]');
+        if (!wrap || wrap.getAttribute('data-yuklu') !== '1' || !gunluk || !gunluk.ok) return;
+        var ia = gunluk.index_arayuz || {};
+        wrap.innerHTML = aramaTerimIcerik(arrCoz(ia.arama_terimleri));
+        aramaTerimTopluSilDurumGuncelle();
+    }
+
+    function referrerDetayHtml(veri) {
+        var not = 'Ham referrer URL (veya «direkt / bilinmiyor»). En çok 25 kayıt.';
+        return tabloParcaHtml(
+            [
+                { etiket: 'Referrer', deger: function (r) { return kisaMetin(r.referrer, 96); } },
+                { etiket: 'Adet', deger: function (r) { return fmtSayi(r.adet); } }
+            ],
+            arrCoz(veri && veri.referrerlar),
+            'Henüz referrer kaydı yok.'
+        ) + (not ? '<p class="istat-bolum-not">' + esc(not) + '</p>' : '');
+    }
+
+    function gunlukOzetIcerik(gunluk) {
+        if (!gunluk || !gunluk.ok) {
+            return '<p class="istat-hata">' + esc((gunluk && gunluk.hata) || 'Günlük veri yüklenemedi.') + '</p>';
+        }
+        var not = 'Hikaye okuma = story_impression (oturumda her hikaye en fazla 1 kez). ';
+        if (gunluk.veri_baslangic) {
+            not += 'Kayıtlar ' + fmtTarih(gunluk.veri_baslangic) + ' tarihinden itibaren.';
+        }
+        return tabloParcaHtml(
+            [
+                { etiket: 'Gün', deger: function (r) { return r.gun_etiket || r.gun; } },
+                { etiket: 'Sayfa açılışı', deger: function (r) { return fmtSayi(r.sayfa_acilisi); } },
+                { etiket: 'Tekil oturum', deger: function (r) { return fmtSayi(r.tekil_oturum); } },
+                { etiket: 'Tekil ziyaretçi', deger: function (r) { return fmtSayi(r.tekil_ziyaretci); } },
+                { etiket: 'Hikaye okuma', deger: function (r) { return fmtSayi(r.hikaye_okuma); } },
+                { etiket: 'Beğeni', deger: function (r) { return fmtSayi(r.begeni); } },
+                { etiket: 'Beğenmeme', deger: function (r) { return fmtSayi(r.begenmeme); } },
+                { etiket: 'Paylaşım', deger: function (r) { return fmtSayi(r.paylasim); } },
+                { etiket: 'Daha fazla oku', deger: function (r) { return fmtSayi(r.daha_fazla_oku); } },
+                { etiket: 'Aktif (dk)', deger: function (r) { return fmtAktifDk(r.aktif_saniye); } }
+            ],
+            arrCoz(gunluk.gunluk),
+            'Bu dönemde günlük kayıt yok.'
+        ) + '<p class="istat-bolum-not">' + esc(not) + '</p>';
+    }
+
+    function listeFiltreIcerik(ia) {
+        ia = ia || {};
+        return tabloParcaHtml(
+            [
+                { etiket: 'Filtre', deger: function (r) { return r.etiket || r.kod; } },
+                { etiket: 'Adet', deger: function (r) { return fmtSayi(r.adet); } }
+            ],
+            arrCoz(ia.siralama_filtreleri),
+            'Bu dönemde sıralama değişikliği yok.'
+        ) + '<p class="istat-bolum-not">Mobil açılır liste ve masaüstü yan menü.</p>';
+    }
+
+    function hikayeMatrisIcerik(matris) {
         matris = matris || {};
         var gunler = arrCoz(matris.gunler);
         var satirlar = arrCoz(matris.satirlar);
-        var html = '<section class="istat-bolum"><h2 class="istat-bolum-baslik">Hikaye okuma matrisi</h2>';
-        html += '<p class="istat-bolum-not">Son 7 gün · en çok okunan 20 hikaye · oturumda hikaye başına en fazla 1 okuma.';
+        var html = '<p class="istat-bolum-not">Son 7 gün · en çok okunan 20 hikaye · oturumda hikaye başına en fazla 1 okuma.';
         if (matris.baslangic && matris.bitis) {
             html += ' ' + esc(matris.baslangic) + ' – ' + esc(matris.bitis) + '.';
         }
         html += '</p>';
         if (!gunler.length || !satirlar.length) {
-            html += '<p class="istat-bos">Son bir haftada hikaye okuma kaydı yok.</p></section>';
+            html += '<p class="istat-bos">Son bir haftada hikaye okuma kaydı yok.</p>';
             return html;
         }
         html += '<div class="istat-tablo-wrap istat-matris-wrap"><table class="istat-tablo istat-matris"><thead><tr>';
@@ -118,8 +226,75 @@
             });
             html += '<td class="istat-matris-sayi istat-matris-toplam-hucre">' + fmtSayi(satir.toplam) + '</td></tr>';
         });
-        html += '</tbody></table></div></section>';
+        html += '</tbody></table></div>';
         return html;
+    }
+
+    async function lazyBolumHtml(id) {
+        if (id === 'referans-detay') {
+            return referrerDetayHtml(trafikVeri);
+        }
+        var gunluk = await gunlukGetir();
+        if (id === 'arama-terim') {
+            if (!gunluk || !gunluk.ok) {
+                return '<p class="istat-hata">' + esc((gunluk && gunluk.hata) || 'Günlük veri yüklenemedi.') + '</p>';
+            }
+            var ia = gunluk.index_arayuz || {};
+            return aramaTerimIcerik(arrCoz(ia.arama_terimleri));
+        }
+        if (id === 'gunluk-ozet') return gunlukOzetIcerik(gunluk);
+        if (id === 'hikaye-matris') return hikayeMatrisIcerik(gunluk.hikaye_matris);
+        if (id === 'liste-filtre') return listeFiltreIcerik(gunluk.index_arayuz);
+        return '';
+    }
+
+    async function lazyGoster(id) {
+        var wrap = document.querySelector('[data-istat-icerik="' + id + '"]');
+        var btn = document.querySelector('[data-istat-goster="' + id + '"]');
+        if (!wrap || !btn) return;
+
+        if (wrap.getAttribute('data-yuklu') === '1') {
+            wrap.hidden = !wrap.hidden;
+            btn.textContent = wrap.hidden ? 'Göster' : 'Gizle';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Yükleniyor…';
+        try {
+            wrap.innerHTML = await lazyBolumHtml(id);
+            wrap.hidden = false;
+            wrap.setAttribute('data-yuklu', '1');
+            btn.textContent = 'Gizle';
+        } catch (e) {
+            var D = db();
+            wrap.innerHTML = '<p class="istat-hata">' + esc(D && D.hataMesaji ? D.hataMesaji(e) : String(e)) + '</p>';
+            wrap.hidden = false;
+            btn.textContent = 'Göster';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    function lazyOlayBagla() {
+        if (lazyOlayHazir) return;
+        lazyOlayHazir = true;
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-istat-goster]');
+            if (!btn) return;
+            e.preventDefault();
+            lazyGoster(btn.getAttribute('data-istat-goster') || '');
+        });
+    }
+
+    function kpiKart(etiket, deger, alt) {
+        return (
+            '<div class="istat-kpi">' +
+            '<span class="istat-kpi-etiket">' + esc(etiket) + '</span>' +
+            '<span class="istat-kpi-deger">' + esc(deger) + '</span>' +
+            (alt ? '<span class="istat-kpi-alt">' + esc(alt) + '</span>' : '') +
+            '</div>'
+        );
     }
 
     function escAttr(s) {
@@ -138,18 +313,15 @@
         if (hata) global.alert(mesaj);
     }
 
-    function aramaTerimleriBolumu(terimler) {
+    function aramaTerimIcerik(terimler) {
         terimler = arrCoz(terimler);
-        var html = '<section class="istat-bolum istat-bolum--arama-terim">';
-        html += '<div class="istat-bolum-baslik-satir">';
-        html += '<h2 class="istat-bolum-baslik">En çok aranan terimler</h2>';
+        var html = '<div class="istat-bolum-baslik-satir istat-bolum-baslik-satir--ic">';
         html += '<div class="istat-terim-araclar">';
         html += '<button type="button" class="istat-terim-btn istat-terim-btn--ekle" data-istat-arama-ekle>Ekle</button>';
         html += '<button type="button" class="istat-terim-btn istat-terim-btn--sil istat-terim-btn--toplu-sil" data-istat-arama-toplu-sil disabled>Seçilenleri sil</button>';
         html += '</div></div>';
-        html += '<p class="istat-bolum-not">Arama önerilerini yönetin. Silinen terimler önerilerde görünmez; eklenen terimler öncelikli önerilir. Adet = seçili dönemdeki arama sayısı.</p>';
         if (!terimler.length) {
-            html += '<p class="istat-bos">Bu dönemde arama kaydı yok.</p></section>';
+            html += '<p class="istat-bos">Bu dönemde arama kaydı yok.</p>';
             return html;
         }
         html += '<div class="istat-tablo-wrap"><table class="istat-tablo"><thead><tr>';
@@ -168,7 +340,7 @@
             html += '<button type="button" class="istat-terim-btn istat-terim-btn--sil" data-istat-arama-sil data-terim="' + escAttr(terim) + '">Sil</button>';
             html += '</div></td></tr>';
         });
-        html += '</tbody></table></div></section>';
+        html += '</tbody></table></div>';
         return html;
     }
 
@@ -188,7 +360,7 @@
         try {
             await D.masterAramaTerimEkle(terim);
             toast('Terim eklendi.');
-            await veriYukle(seciliGun, seciliHaric);
+            await aramaSonrasiYenile();
         } catch (e) {
             toast(D.hataMesaji ? D.hataMesaji(e) : 'Eklenemedi.', true);
         }
@@ -211,7 +383,7 @@
         try {
             await D.masterAramaTerimGuncelle(eski, yeni);
             toast('Terim güncellendi.');
-            await veriYukle(seciliGun, seciliHaric);
+            await aramaSonrasiYenile();
         } catch (e) {
             toast(D.hataMesaji ? D.hataMesaji(e) : 'Güncellenemedi.', true);
         }
@@ -254,7 +426,7 @@
         try {
             var sonuc = await D.masterAramaTerimTopluSil(liste);
             toast((sonuc.silinen || liste.length) + ' terim kaldırıldı.');
-            await veriYukle(seciliGun, seciliHaric);
+            await aramaSonrasiYenile();
         } catch (e) {
             toast(D.hataMesaji ? D.hataMesaji(e) : 'Silinemedi.', true);
         }
@@ -270,7 +442,7 @@
         try {
             await D.masterAramaTerimSil(terim);
             toast('Terim kaldırıldı.');
-            await veriYukle(seciliGun, seciliHaric);
+            await aramaSonrasiYenile();
         } catch (e) {
             toast(D.hataMesaji ? D.hataMesaji(e) : 'Silinemedi.', true);
         }
@@ -317,71 +489,22 @@
         });
     }
 
-    function indexArayuzBolumu(ia) {
-        ia = ia || {};
-        var terimler = arrCoz(ia.arama_terimleri);
-        var siralama = arrCoz(ia.siralama_filtreleri);
-        var html = '<section class="istat-bolum"><h2 class="istat-bolum-baslik">Anasayfa arayüzü</h2>';
-        html += '<p class="istat-bolum-not">Alt bar, liste filtresi, arama ve «daha fazla oku» tıklamaları (analytics). Eski kayıtlarda «Dünkü 5» / «Ara» veya sıralama filtresi ayrımı olmayabilir.</p>';
-        html += '<div class="istat-kpi-grid">';
-        html += kpiKart('Ara (alt bar)', fmtSayi(ia.altbar_ara), 'Arama kutusunu açma');
-        html += kpiKart('Dünkü 5 (alt bar)', fmtSayi(ia.altbar_dun), 'Dünkü 5 kısayolu');
-        html += kpiKart('Dün yayınlanan…', fmtSayi(ia.daha_fazla_dun), 'İlk «daha fazla» (dün)');
-        html += kpiKart('Önceki günler…', fmtSayi(ia.daha_fazla_onceki), 'Sonraki «daha fazla»');
-        html += kpiKart('Daha fazla (toplam)', fmtSayi(ia.daha_fazla_toplam), 'Tüm load_more_click');
-        html += kpiKart('Arama yapıldı', fmtSayi(ia.arama), 'Gerçek sorgu gönderimi');
-        html += kpiKart('Liste filtresi', fmtSayi(ia.siralama_toplam), 'Sıralama değişikliği');
-        html += '</div>';
-        html += tabloHtml(
-            'Liste filtresi kullanımı',
-            [
-                { etiket: 'Filtre', deger: function (r) { return r.etiket || r.kod; } },
-                { etiket: 'Adet', deger: function (r) { return fmtSayi(r.adet); } }
-            ],
-            siralama,
-            'Bu dönemde sıralama değişikliği yok.',
-            'Mobil açılır liste ve masaüstü yan menü.'
-        );
-        html += aramaTerimleriBolumu(terimler);
-        return html + '</section>';
+    async function aramaSonrasiYenile() {
+        gunlukVeri = null;
+        gunlukVeriPromise = null;
+        var gunluk = await gunlukGetir();
+        aramaTerimleriYerlestir(gunluk);
+        ['liste-filtre', 'gunluk-ozet', 'hikaye-matris', 'arama-terim'].forEach(function (id) {
+            var wrap = document.querySelector('[data-istat-icerik="' + id + '"]');
+            if (!wrap || wrap.getAttribute('data-yuklu') !== '1') return;
+            if (id === 'arama-terim') return;
+            if (id === 'liste-filtre') wrap.innerHTML = listeFiltreIcerik(gunluk.index_arayuz);
+            else if (id === 'gunluk-ozet') wrap.innerHTML = gunlukOzetIcerik(gunluk);
+            else if (id === 'hikaye-matris') wrap.innerHTML = hikayeMatrisIcerik(gunluk.hikaye_matris);
+        });
     }
 
-    function gunlukBolumu(gunluk) {
-        if (!gunluk || !gunluk.ok) {
-            return (
-                '<section class="istat-bolum">' +
-                '<h2 class="istat-bolum-baslik">Günlük metrikler</h2>' +
-                '<p class="istat-hata">' + esc((gunluk && gunluk.hata) || 'Günlük veri yüklenemedi. Supabase SQL Editor\'da supabase/master-gunluk-istatistik.sql dosyasını çalıştırın.') + '</p>' +
-                '</section>'
-            );
-        }
-
-        var not = 'Hikaye okuma = story_impression (oturumda her hikaye en fazla 1 kez). ';
-        if (gunluk.veri_baslangic) {
-            not += 'Kayıtlar ' + fmtTarih(gunluk.veri_baslangic) + ' tarihinden itibaren.';
-        }
-
-        return tabloHtml(
-            'Günlük özet',
-            [
-                { etiket: 'Gün', deger: function (r) { return r.gun_etiket || r.gun; } },
-                { etiket: 'Sayfa açılışı', deger: function (r) { return fmtSayi(r.sayfa_acilisi); } },
-                { etiket: 'Tekil oturum', deger: function (r) { return fmtSayi(r.tekil_oturum); } },
-                { etiket: 'Tekil ziyaretçi', deger: function (r) { return fmtSayi(r.tekil_ziyaretci); } },
-                { etiket: 'Hikaye okuma', deger: function (r) { return fmtSayi(r.hikaye_okuma); } },
-                { etiket: 'Beğeni', deger: function (r) { return fmtSayi(r.begeni); } },
-                { etiket: 'Beğenmeme', deger: function (r) { return fmtSayi(r.begenmeme); } },
-                { etiket: 'Paylaşım', deger: function (r) { return fmtSayi(r.paylasim); } },
-                { etiket: 'Daha fazla oku', deger: function (r) { return fmtSayi(r.daha_fazla_oku); } },
-                { etiket: 'Aktif (dk)', deger: function (r) { return fmtAktifDk(r.aktif_saniye); } }
-            ],
-            arrCoz(gunluk.gunluk),
-            'Bu dönemde günlük kayıt yok.',
-            not
-        ) + hikayeMatrisHtml(gunluk.hikaye_matris) + indexArayuzBolumu(gunluk.index_arayuz);
-    }
-
-    function render(veri, gunluk) {
+    function render(veri) {
         var kok = document.getElementById('istatistikIcerik');
         if (!kok) return;
 
@@ -404,6 +527,12 @@
         html += kpiKart('Girişli ziyaret', fmtSayi(veri.girisli_ziyaret), 'user_id dolu kayıtlar');
         html += '</div></section>';
 
+        html += lazyKabuk(
+            'arama-terim',
+            'En çok aranan terimler',
+            'Arama önerilerini yönetin. Adet = seçili dönemdeki arama sayısı.'
+        );
+
         html += tabloHtml(
             'Trafik kaynakları',
             [
@@ -415,7 +544,26 @@
             'direct / bilinmiyor = referrer alınamadı.'
         );
 
-        html += gunlukBolumu(gunluk);
+        html += lazyKabuk(
+            'referans-detay',
+            'Trafik referansları (detay)',
+            'Ham referrer URL listesi; gruplu tablonun altında en çok 25 kayıt.'
+        );
+        html += lazyKabuk(
+            'gunluk-ozet',
+            'Günlük özet',
+            'Gün gün sayfa açılışı, oturum, okuma ve etkileşim.'
+        );
+        html += lazyKabuk(
+            'hikaye-matris',
+            'Hikaye okuma matrisi',
+            'Son 7 gün · en çok okunan 20 hikaye.'
+        );
+        html += lazyKabuk(
+            'liste-filtre',
+            'Liste filtresi kullanımı',
+            'Anasayfa sıralama filtresi değişiklikleri.'
+        );
 
         kok.innerHTML = html;
         aramaTerimTopluSilDurumGuncelle();
@@ -449,21 +597,15 @@
         if (haric) seciliHaric = haric;
         gunSecimGuncelle();
         haricSecimGuncelle();
+        lazySifirla();
         yukleniyor(true);
         try {
-            var trafikPromise = D.masterTrafikIstatistik(seciliGun, seciliHaric);
-            var gunlukPromise = D.masterGunlukIstatistik
-                ? D.masterGunlukIstatistik(seciliGun, seciliHaric).catch(function (e) {
-                    return {
-                        ok: false,
-                        hata: D.hataMesaji ? D.hataMesaji(e) : 'RPC yok veya hata'
-                    };
-                })
-                : Promise.resolve({ ok: false, hata: 'master_gunluk_istatistik tanımlı değil' });
-            var sonuc = await Promise.all([trafikPromise, gunlukPromise]);
-            render(sonuc[0], sonuc[1]);
+            var veri = await D.masterTrafikIstatistik(seciliGun, seciliHaric);
+            trafikVeri = veri;
+            render(veri);
         } catch (e) {
-            render({ ok: false, hata: D.hataMesaji ? D.hataMesaji(e) : 'Hata' }, null);
+            trafikVeri = null;
+            render({ ok: false, hata: D.hataMesaji ? D.hataMesaji(e) : 'Hata' });
         } finally {
             yukleniyor(false);
         }
@@ -549,6 +691,7 @@
         icerikGoster();
         filtreBagla();
         aramaTerimOlayBagla();
+        lazyOlayBagla();
         await veriYukle(seciliGun);
     }
 

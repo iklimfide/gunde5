@@ -353,12 +353,14 @@
         .sp-ig-kart {
             width: 1080px;
             box-sizing: border-box;
-            padding: 80px 72px 96px;
+            padding: 80px 72px 96px 144px;
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: linear-gradient(165deg, #1d9bf0 0%, #0c4a6e 48%, #0f172a 100%);
             display: flex;
             flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
             justify-content: flex-start;
         }
         /* Hikâye: üst profil + alt yanıt/beğeni çubuğu için güvenli alan (1080×1920) */
@@ -368,14 +370,19 @@
         }
         .sp-ig-kart--hikaye {
             height: 1920px;
-            padding: 150px 72px 440px;
+            padding: 300px 72px 440px 144px;
         }
         .sp-ig-kart-govde {
             flex: 0 0 auto;
+            width: 100%;
+        }
+        .sp-ig-kart--hikaye .sp-ig-kart-govde {
+            margin-top: 48px;
         }
         .sp-ig-kart-kapanis {
             flex: 0 0 auto;
             margin-top: 52px;
+            width: 100%;
         }
         .sp-ig-kart--hikaye .sp-ig-kart-kapanis {
             margin-top: 64px;
@@ -423,13 +430,6 @@
             letter-spacing: -0.04em;
         }
         .sp-ig-kart-marka span { color: #ef4444; }
-        .sp-ig-kart-x {
-            margin: 16px 0 0;
-            font-size: 28px;
-            font-weight: 700;
-            line-height: 1.35;
-            opacity: 0.92;
-        }
         /* html2canvas visibility:hidden öğeyi boş/siyah yakalar — ekran dışına al */
         .sp-ig-kart-host {
             position: fixed;
@@ -488,7 +488,7 @@
     <script src="js/gunde5-bildirim.js?v=2"></script>
     <script src="js/gunde5-master.js?v=2"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" crossorigin="anonymous"></script>
-    <script src="js/gunde5-sosyal-paylas.js?v=5"></script>
+    <script src="js/gunde5-sosyal-paylas.js?v=8"></script>
     <link rel="stylesheet" href="css/gunde5-topbar.css?v=1">
     <link rel="stylesheet" href="css/master-panel.css?v=2">
 </head>

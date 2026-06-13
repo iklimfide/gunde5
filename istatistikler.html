@@ -626,6 +626,10 @@
             margin: 0;
             flex: 1 1 auto;
         }
+        .istat-bolum-baslik-satir--ic {
+            justify-content: flex-end;
+            margin: 0 0 10px;
+        }
         .istat-terim-araclar {
             display: flex;
             flex-wrap: wrap;
@@ -729,6 +733,37 @@
             color: var(--text-muted);
             margin: -4px 0 10px;
             line-height: 1.45;
+        }
+        .istat-bolum--lazy .istat-bolum-not {
+            margin-top: 0;
+        }
+        .istat-goster-btn {
+            border: 1px solid #1d9bf0;
+            background: #f0f9ff;
+            color: #0369a1;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            flex-shrink: 0;
+        }
+        .istat-goster-btn:hover { filter: brightness(0.97); }
+        .istat-goster-btn:disabled {
+            opacity: 0.55;
+            cursor: wait;
+        }
+        body.dark-mode .istat-goster-btn {
+            background: rgba(29, 155, 240, 0.12);
+            color: #7dd3fc;
+            border-color: rgba(56, 189, 248, 0.35);
+        }
+        .istat-lazy-icerik {
+            margin-top: 10px;
+        }
+        .istat-lazy-icerik[hidden] {
+            display: none !important;
         }
         .istat-bolum--hero {
             background: linear-gradient(165deg, rgba(29, 155, 240, 0.08), rgba(29, 155, 240, 0.02));
@@ -863,7 +898,7 @@
     <script src="js/gunde5-db.js"></script>
     <script src="js/gunde5-paylas.js"></script>
     <script src="js/gunde5-bildirim.js?v=2"></script>
-    <script src="js/gunde5-istatistik.js?v=6"></script>
+    <script src="js/gunde5-istatistik.js?v=10"></script>
     <link rel="stylesheet" href="css/gunde5-topbar.css?v=1">
     <link rel="stylesheet" href="css/master-panel.css?v=2">
 </head>
@@ -891,7 +926,7 @@
 
     <div class="container">
         <h1 class="page-title">📊 İstatistikler</h1>
-        <p class="intro">Günlük ziyaret ve hikaye okuma (oturum başına 1 kez). Trafik özeti + kaynak grupları; detay davranış için <a href="/metrikler">Metrikler</a>.</p>
+        <p class="intro">Trafik özeti ve kaynak grupları hemen yüklenir. Günlük tablolar, referrer detayı ve liste filtresi «Göster» ile açılır. Davranış için <a href="/metrikler">Metrikler</a>.</p>
 
         <div id="istatistikYetkisiz" class="istat-yetkisiz" hidden>
             <p class="istat-yetkisiz-metin"></p>

@@ -5,6 +5,7 @@
     var seciliGun = 30;
     var seciliHaric = 'master';
     var filtreHazir = false;
+    var lazyOlayHazir = false;
     var bugunSiraIds = [];
     var bugunSiraKayitli = false;
     var bugunSiraSatirlar = {};
@@ -142,6 +143,84 @@
 
     function bolumKapat() { return '</section>'; }
 
+    function lazyKabuk(id, baslik, not) {
+        return (
+            '<section class="istat-bolum istat-bolum--lazy" data-metrik-lazy="' + esc(id) + '">' +
+            '<div class="istat-bolum-baslik-satir">' +
+            '<h2 class="istat-bolum-baslik">' + esc(baslik) + '</h2>' +
+            '<button type="button" class="istat-goster-btn" data-metrik-goster="' + esc(id) + '">Göster</button>' +
+            '</div>' +
+            (not ? '<p class="istat-bolum-not">' + esc(not) + '</p>' : '') +
+            '<div class="istat-lazy-icerik" data-metrik-icerik="' + esc(id) + '" hidden></div>' +
+            '</section>'
+        );
+    }
+
+    function lazySifirla() {
+        document.querySelectorAll('[data-metrik-icerik]').forEach(function (el) {
+            el.innerHTML = '';
+            el.hidden = true;
+            el.removeAttribute('data-yuklu');
+        });
+        document.querySelectorAll('[data-metrik-goster]').forEach(function (btn) {
+            btn.textContent = 'Göster';
+            btn.disabled = false;
+        });
+    }
+
+    function lazyBolumHtml(id, veri) {
+        if (id === 'icerik-performans') {
+            return puanSiraliTabloIcerik(objCoz(veri && veri.icerik));
+        }
+        return '';
+    }
+
+    function lazyGoster(id) {
+        var kok = document.getElementById('metrikIcerik');
+        var wrap = document.querySelector('[data-metrik-icerik="' + id + '"]');
+        var btn = document.querySelector('[data-metrik-goster="' + id + '"]');
+        if (!wrap || !btn || !kok || !kok._g5SonVeri) return;
+
+        if (wrap.getAttribute('data-yuklu') === '1') {
+            wrap.hidden = !wrap.hidden;
+            btn.textContent = wrap.hidden ? 'Göster' : 'Gizle';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Yükleniyor…';
+        try {
+            wrap.innerHTML = lazyBolumHtml(id, kok._g5SonVeri);
+            wrap.hidden = false;
+            wrap.setAttribute('data-yuklu', '1');
+            btn.textContent = 'Gizle';
+        } catch (e) {
+            wrap.innerHTML = '<p class="istat-hata">' + esc(String(e)) + '</p>';
+            wrap.hidden = false;
+            btn.textContent = 'Göster';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    function lazyOlayBagla() {
+        if (lazyOlayHazir) return;
+        lazyOlayHazir = true;
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-metrik-goster]');
+            if (!btn) return;
+            e.preventDefault();
+            lazyGoster(btn.getAttribute('data-metrik-goster') || '');
+        });
+    }
+
+    function puanLazyYenile() {
+        var wrap = document.querySelector('[data-metrik-icerik="icerik-performans"]');
+        var kok = document.getElementById('metrikIcerik');
+        if (!wrap || wrap.getAttribute('data-yuklu') !== '1' || !kok || !kok._g5SonVeri) return;
+        wrap.innerHTML = puanSiraliTabloIcerik(objCoz(kok._g5SonVeri.icerik));
+    }
+
     function puanListeYedek(icerik) {
         var harita = {};
         function birlestir(liste) {
@@ -256,15 +335,14 @@
         );
     }
 
-    function puanSiraliTabloHtml(icerik) {
+    function puanSiraliTabloIcerik(icerik) {
         var tum = puanSiralamaUygula(puanSiraliListe(icerik));
-        var baslik = 'Okuyucu puanı — hikâyeler';
         var not = 'Puan = (beğeni − beğenmeme) ÷ görülme × 100 · görülme = DB tekil veya dönem impression (büyük olan) · dönem içi oy · sütun başlığına tıklayarak sırala';
-        var html = '<section class="istat-bolum metrik-puan-bolum" id="metrikPuanBolum">';
-        html += '<h2 class="istat-bolum-baslik">' + esc(baslik) + '</h2>';
+        var html = '<div class="metrik-puan-bolum" id="metrikPuanBolum">';
+        html += '<h3 class="istat-bolum-alt-baslik">Okuyucu puanı — hikâyeler</h3>';
         html += '<p class="istat-bolum-not">' + esc(not) + '</p>';
         if (!tum.length) {
-            html += '<p class="istat-bos">Bu dönemde puanlanacak hikâye yok (görülme ve oy gerekli).</p></section>';
+            html += '<p class="istat-bos">Bu dönemde puanlanacak hikâye yok (görülme ve oy gerekli).</p></div>';
             return html;
         }
         var goster = tum.slice(0, puanGosterAdet);
@@ -288,7 +366,7 @@
             html += '<p class="metrik-puan-daha"><button type="button" class="istat-yenile-btn" id="metrikPuanDahaFazla">' +
                 fmtSayi(adim) + ' tane daha göster (' + fmtSayi(kalan) + ' kaldı)</button></p>';
         }
-        html += '</section>';
+        html += '</div>';
         return html;
     }
 
@@ -308,14 +386,14 @@
                     puanSort.kolon = kolon;
                     puanSort.yon = (kolon === 'baslik' || kolon === 'gender') ? 'asc' : 'desc';
                 }
-                if (kok._g5SonVeri) render(kok._g5SonVeri);
+                puanLazyYenile();
                 return;
             }
             var hedef = e.target;
             if (hedef && hedef.id === 'metrikPuanDahaFazla') {
                 e.preventDefault();
                 puanGosterAdet += PUAN_ADIM;
-                if (kok._g5SonVeri) render(kok._g5SonVeri);
+                puanLazyYenile();
             }
         });
     }
@@ -561,9 +639,11 @@
         html += kpiKart('Paylaşım', fmtSayi(etkilesim.paylasim));
         html += '</div>' + bolumKapat();
 
-        html += bolumAc('İçerik performansı');
-        html += puanSiraliTabloHtml(icerik);
-        html += bolumKapat();
+        html += lazyKabuk(
+            'icerik-performans',
+            'İçerik performansı',
+            'Okuyucu puanı tablosu — «Göster» ile açılır.'
+        );
 
         bugunSiraDurumGuncelle(icerik);
         html += sonGunHikayelerHtml(icerik);
@@ -602,6 +682,7 @@
         if (haric) seciliHaric = haric;
         gunSecimGuncelle();
         haricSecimGuncelle();
+        lazySifirla();
         yukleniyor(true);
         puanGosterAdet = PUAN_ILK_ADET;
         puanSort = { kolon: 'puan', yon: 'desc' };
@@ -694,6 +775,7 @@
         filtreBagla();
         siraAksiyonBagla();
         puanEtkilesimBagla();
+        lazyOlayBagla();
         await veriYukle(seciliGun);
     }
 
