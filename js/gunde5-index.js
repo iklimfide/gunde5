@@ -325,7 +325,71 @@
 
     function listeTemizle() {
         var el = listeEl();
-        if (el) el.innerHTML = '';
+        if (el) {
+            el.innerHTML = '';
+            el.removeAttribute('aria-busy');
+        }
+    }
+
+    function skeletonKartHtml() {
+        return (
+            '<article class="story-card story-card--skeleton" aria-hidden="true">' +
+                '<div class="sk-hdr"><span class="sk-av"></span><span class="sk-meta">' +
+                    '<span class="sk-bar sk-bar--sm"></span><span class="sk-bar sk-bar--xs"></span>' +
+                '</span></div>' +
+                '<div class="sk-body">' +
+                    '<span class="sk-bar"></span><span class="sk-bar"></span><span class="sk-bar sk-bar--md"></span>' +
+                '</div>' +
+                '<div class="sk-ft"><span class="sk-pill"></span><span class="sk-pill"></span></div>' +
+            '</article>'
+        );
+    }
+
+    function skeletonListeHtml() {
+        var html = skeletonKartHtml();
+        var i;
+        if (siralamaRituelModu()) {
+            html +=
+                '<div class="index-bugun-bilgi index-bugun-bilgi--skeleton" aria-hidden="true">' +
+                    '<span class="sk-bar sk-bar--sm"></span>' +
+                    '<span class="sk-bar sk-bar--xs"></span>' +
+                    '<span class="sk-bar sk-bar--xs"></span>' +
+                '</div>';
+            for (i = 0; i < 4; i++) html += skeletonKartHtml();
+            html +=
+                '<div class="index-load-more-wrap index-load-more-wrap--skeleton" aria-hidden="true">' +
+                    '<span class="sk-btn"></span><span class="sk-btn"></span>' +
+                '</div>';
+        } else {
+            for (i = 1; i < 5; i++) html += skeletonKartHtml();
+            if (!siralamaTekSeferMi()) {
+                html +=
+                    '<div class="index-load-more-wrap index-load-more-wrap--skeleton" aria-hidden="true">' +
+                        '<span class="sk-btn"></span>' +
+                    '</div>';
+            }
+        }
+        html += '<p class="index-sk-durum">Yükleniyor…</p>';
+        return html;
+    }
+
+    function skeletonTemizle(el) {
+        el = el || listeEl();
+        if (!el) return;
+        el.querySelectorAll(
+            '.story-card--skeleton, .index-bugun-bilgi--skeleton, .index-load-more-wrap--skeleton, .index-sk-durum'
+        ).forEach(function (n) {
+            n.remove();
+        });
+    }
+
+    function skeletonGoster() {
+        var el = listeEl();
+        if (!el) return;
+        if (el.querySelector('.story-card:not(.story-card--skeleton)')) return;
+        if (el.querySelector('.story-card--skeleton')) return;
+        el.innerHTML = skeletonListeHtml();
+        el.setAttribute('aria-busy', 'true');
     }
 
     /** Europe/Istanbul takvim günü (YYYY-MM-DD). */
@@ -561,7 +625,7 @@
         state.aktifBaskiYmd = cached.edition || null;
         state.oncekiBaskiYmd = null;
         var el = listeEl();
-        if (el) el.innerHTML = '';
+        if (el) skeletonTemizle(el);
         return baskiYmdDurumGuncelle(cached.rows, cached.edition).then(function () {
             return kartlariEkle(cached.rows, true);
         });
@@ -659,11 +723,14 @@
         } else if (state.loadMoreMetinGenel) {
             metin = '📚 Önceki günlerin hikâyelerini göster';
         } else {
-            metin = '📚 Dün yayınlanan hikâyeleri göster';
-            tumAltBtn =
+            return (
+                '<button type="button" class="load-more-btn index-load-more-dun index-load-more--onceki">' +
+                esc('📅 Dünkü 5\'i oku') +
+                '</button>' +
                 '<button type="button" class="load-more-btn index-load-more-tum">' +
                 esc('📚 Tüm arşivi göster') +
-                '</button>';
+                '</button>'
+            );
         }
         return (
             '<button type="button" class="load-more-btn index-load-more index-load-more--onceki">' +
@@ -681,8 +748,9 @@
             if (mevcut) mevcut.remove();
             return;
         }
-        if (el.querySelector('.story-card')) return;
+        if (el.querySelector('.story-card:not(.story-card--skeleton)')) return;
         el.innerHTML = html;
+        el.removeAttribute('aria-busy');
     }
 
     function loadMoreTemizle() {
@@ -696,6 +764,10 @@
     async function kartlariEkle(rows, ilkPart) {
         var el = listeEl();
         if (!el || !rows.length) return;
+
+        if (ilkPart && el.querySelector('.story-card--skeleton')) {
+            skeletonTemizle(el);
+        }
 
         loadMoreTemizle();
 
@@ -725,6 +797,7 @@
         if (!eklendi) return;
 
         el.appendChild(frag);
+        el.removeAttribute('aria-busy');
         await kartOyDurumlariniSenkron(rows);
 
         var A = global.Gunde5Analytics;
@@ -807,7 +880,7 @@
                 listeTemizle();
                 durumAramaYaz('Aranıyor…');
             } else {
-                durumYaz('<p class="index-durum">Yükleniyor…</p>');
+                skeletonGoster();
             }
         }
 
@@ -818,7 +891,9 @@
             if (ilkPart) {
                 var el = listeEl();
                 if (el && (state.aramaAktif || state.siralama !== 'dun' || !el.querySelector('.index-dun-bolum-baslik'))) {
-                    el.innerHTML = '';
+                    if (!el.querySelector('.story-card--skeleton')) {
+                        el.innerHTML = '';
+                    }
                 }
             }
 
@@ -1288,7 +1363,7 @@
         var elCopy = document.getElementById('indexShareCopy');
         if (!backdrop || !elX) return;
 
-        elX.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(veri.paket);
+        elX.href = '#';
         elWa.href = 'https://wa.me/?text=' + encodeURIComponent(veri.paket);
         elTg.href = 'https://t.me/share/url?url=' + encodeURIComponent(veri.url) +
             '&text=' + encodeURIComponent(veri.hook + '\n\n' + PAYLAS_CAGRI);
@@ -1321,7 +1396,30 @@
                     })
                     .finally(paylasSheetKapat);
             });
-            [elX, elWa, elTg, elFb].forEach(function (el) {
+            elX.addEventListener('click', function (e) {
+                e.preventDefault();
+                var aktif = paylasPaketOlustur(paylasAktifId);
+                if (!aktif) return;
+                var XI = global.Gunde5XIntent;
+                if (XI && XI.ac) {
+                    XI.ac(
+                        {
+                            text: aktif.hook + '\n\n' + PAYLAS_CAGRI,
+                            url: aktif.url,
+                            fullText: aktif.paket
+                        },
+                        showToast
+                    );
+                } else {
+                    global.open(
+                        'https://x.com/intent/post?text=' + encodeURIComponent(aktif.paket),
+                        '_blank',
+                        'noopener,noreferrer'
+                    );
+                }
+                paylasSheetKapat();
+            });
+            [elWa, elTg, elFb].forEach(function (el) {
                 if (el) el.addEventListener('click', paylasSheetKapat);
             });
         }
@@ -1834,6 +1932,22 @@
         });
     }
 
+    function dunHikayeleriTamamlandi() {
+        if (!siralamaRituelModu() || state.loadMoreMetinGenel) return;
+        state.loadMoreMetinGenel = true;
+        var el = listeEl();
+        if (!el) return;
+        el.querySelectorAll('.index-load-more-wrap').forEach(function (w) {
+            w.innerHTML = loadMoreBtnHtml();
+        });
+    }
+
+    async function dunHikayelerineGitKaydir(kart) {
+        if (!(await dunKartaKaydir(kart))) return false;
+        dunHikayeleriTamamlandi();
+        return true;
+    }
+
     async function dunHikayelerineGit(opts) {
         analyticsIndex({ event: 'altbar_dun_click', sayfa: 'index' });
         var D = db();
@@ -1859,7 +1973,7 @@
         }
 
         var kart = dunKartBul(idler);
-        if (await dunKartaKaydir(kart)) return;
+        if (await dunHikayelerineGitKaydir(kart)) return;
 
         var moreBtn = document.querySelector('.index-load-more');
         if (dunIdlerDomdaEksik(idler) && moreBtn && !state.bitti) {
@@ -1878,7 +1992,7 @@
                 await sonrakiPart(moreBtn, { skipHedefKaydir: true });
                 await dunDomHazirBekle();
                 kart = dunKartBul(idler);
-                if (await dunKartaKaydir(kart)) return;
+                if (await dunHikayelerineGitKaydir(kart)) return;
             }
         }
 
@@ -1886,11 +2000,11 @@
             await dunSatirlariListeyeEkle(dunRows);
             await dunDomHazirBekle();
             kart = dunKartBul(idler);
-            if (await dunKartaKaydir(kart)) return;
+            if (await dunHikayelerineGitKaydir(kart)) return;
         }
 
         kart = dunKartBul(idler);
-        if (await dunKartaKaydir(kart)) return;
+        if (await dunHikayelerineGitKaydir(kart)) return;
 
         showToast('Dünkü hikâyeler gösterilemedi.');
     }
@@ -1936,14 +2050,6 @@
         if (dun && dun.getAttribute('data-bound') !== '1') {
             dun.setAttribute('data-bound', '1');
             dun.addEventListener('click', function () {
-                altBarDunTikla();
-            });
-        }
-        var tailDun = document.getElementById('pageTailDunBtn');
-        if (tailDun && tailDun.getAttribute('data-bound') !== '1') {
-            tailDun.setAttribute('data-bound', '1');
-            tailDun.addEventListener('click', function (e) {
-                e.preventDefault();
                 altBarDunTikla();
             });
         }
@@ -2042,6 +2148,11 @@
             var tumBtn = e.target.closest('.index-load-more-tum');
             if (tumBtn) {
                 tumArsiviGoster();
+                return;
+            }
+            var dunLmBtn = e.target.closest('.index-load-more-dun');
+            if (dunLmBtn) {
+                altBarDunTikla();
                 return;
             }
             var moreBtn = e.target.closest('.index-load-more');

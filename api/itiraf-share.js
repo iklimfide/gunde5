@@ -34,9 +34,7 @@ function metinGoster(metin) {
 
 function sayfaBaslik(row) {
     if (!row) return OG_TITLE;
-    var rumuz = row.username || 'Anonim';
-    var oniz = metinKisalt(row.content_short || row.content_full, 72);
-    return oniz ? rumuz + ' — ' + oniz + ' | gunde5.com' : rumuz + ' | gunde5.com';
+    return 'gunde5.com';
 }
 
 function indexlenebilirMi(row) {
@@ -109,7 +107,7 @@ export default async function handler(req) {
         : OG_DESCRIPTION;
     var baslik = sayfaBaslik(row);
     var paylasUrl = row && row.slug ? SITE + '/h/' + row.slug : id ? SITE + '/h/' + id : SITE + '/';
-    var ogImage = id ? SITE + '/api/og?id=' + encodeURIComponent(id) + '&v=6' : OG_IMAGE_URL;
+    var ogImage = id ? SITE + '/api/og?id=' + encodeURIComponent(id) + '&v=7' : OG_IMAGE_URL;
     var ogImageAlt = row ? rumuz + ' — gunde5.com' : OG_IMAGE_ALT;
     var govdeMetin = row ? row.content_full || row.content_short || '' : '';
 

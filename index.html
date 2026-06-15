@@ -52,7 +52,7 @@
     </script>
     <meta name="theme-color" content="#ffffff">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="stylesheet" href="css/index.css?v=35">
+    <link rel="stylesheet" href="css/index.css?v=36">
     <link rel="stylesheet" href="css/index-pc.css?v=15">
     <link rel="stylesheet" href="css/gunde5-topbar.css?v=5">
     <script src="js/gunde5-shell.js"></script>
@@ -61,7 +61,8 @@
     <script defer src="js/gunde5-config.js?v=17"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js" crossorigin></script>
     <script defer src="js/gunde5-db.js?v=36"></script>
-    <script defer src="js/gunde5-index.js?v=64"></script>
+    <script defer src="js/gunde5-x-intent.js?v=1"></script>
+    <script defer src="js/gunde5-index.js?v=66"></script>
     <script defer src="js/gunde5-index-pc.js?v=11"></script>
     <script defer src="js/gunde5-gonder.js?v=2"></script>
 </head>
@@ -151,17 +152,44 @@
                     <p class="index-arama-durum" id="indexAramaDurum" aria-live="polite"></p>
                 </div>
 
-                <div id="indexListe" aria-live="polite"><p class="index-durum" id="indexListeBekle">Yükleniyor…</p></div>
+                <div id="indexListe" aria-live="polite" aria-busy="true">
+                    <article class="story-card story-card--skeleton" aria-hidden="true">
+                        <div class="sk-hdr"><span class="sk-av"></span><span class="sk-meta"><span class="sk-bar sk-bar--sm"></span><span class="sk-bar sk-bar--xs"></span></span></div>
+                        <div class="sk-body"><span class="sk-bar"></span><span class="sk-bar"></span><span class="sk-bar sk-bar--md"></span></div>
+                        <div class="sk-ft"><span class="sk-pill"></span><span class="sk-pill"></span></div>
+                    </article>
+                    <div class="index-bugun-bilgi index-bugun-bilgi--skeleton" aria-hidden="true">
+                        <span class="sk-bar sk-bar--sm"></span><span class="sk-bar sk-bar--xs"></span><span class="sk-bar sk-bar--xs"></span>
+                    </div>
+                    <article class="story-card story-card--skeleton" aria-hidden="true">
+                        <div class="sk-hdr"><span class="sk-av"></span><span class="sk-meta"><span class="sk-bar sk-bar--sm"></span><span class="sk-bar sk-bar--xs"></span></span></div>
+                        <div class="sk-body"><span class="sk-bar"></span><span class="sk-bar"></span><span class="sk-bar sk-bar--md"></span></div>
+                        <div class="sk-ft"><span class="sk-pill"></span><span class="sk-pill"></span></div>
+                    </article>
+                    <article class="story-card story-card--skeleton" aria-hidden="true">
+                        <div class="sk-hdr"><span class="sk-av"></span><span class="sk-meta"><span class="sk-bar sk-bar--sm"></span><span class="sk-bar sk-bar--xs"></span></span></div>
+                        <div class="sk-body"><span class="sk-bar"></span><span class="sk-bar"></span><span class="sk-bar sk-bar--md"></span></div>
+                        <div class="sk-ft"><span class="sk-pill"></span><span class="sk-pill"></span></div>
+                    </article>
+                    <article class="story-card story-card--skeleton" aria-hidden="true">
+                        <div class="sk-hdr"><span class="sk-av"></span><span class="sk-meta"><span class="sk-bar sk-bar--sm"></span><span class="sk-bar sk-bar--xs"></span></span></div>
+                        <div class="sk-body"><span class="sk-bar"></span><span class="sk-bar"></span><span class="sk-bar sk-bar--md"></span></div>
+                        <div class="sk-ft"><span class="sk-pill"></span><span class="sk-pill"></span></div>
+                    </article>
+                    <article class="story-card story-card--skeleton" aria-hidden="true">
+                        <div class="sk-hdr"><span class="sk-av"></span><span class="sk-meta"><span class="sk-bar sk-bar--sm"></span><span class="sk-bar sk-bar--xs"></span></span></div>
+                        <div class="sk-body"><span class="sk-bar"></span><span class="sk-bar"></span><span class="sk-bar sk-bar--md"></span></div>
+                        <div class="sk-ft"><span class="sk-pill"></span><span class="sk-pill"></span></div>
+                    </article>
+                    <div class="index-load-more-wrap index-load-more-wrap--skeleton" aria-hidden="true">
+                        <span class="sk-btn"></span><span class="sk-btn"></span>
+                    </div>
+                    <p class="index-sk-durum">Yükleniyor…</p>
+                </div>
 
                 <div class="page-tail" data-nosnippet>
                     <div class="page-tail-kart">
-                        <p class="page-tail-hook">☕ Her sabah<br><strong>5 yeni hikaye</strong> seni bekliyor.</p>
-                        <p class="page-tail-bant page-tail-bant--x">
-                            🔔 Yarınki 5'i kaçırmamak için:
-                            <a href="https://x.com/gunde5_com" target="_blank" rel="noopener noreferrer">𝕏 @gunde5_com</a>
-                        </p>
-                        <a href="#" class="page-tail-chip page-tail-chip--dun" id="pageTailDunBtn">📅 Dünkü 5'i oku</a>
-                        <button type="button" class="page-tail-cta" id="pageTailGonderBtn">✍️ Anlatacak bir hikayen mi var?</button>
+                        <button type="button" class="page-tail-cta" id="pageTailGonderBtn">Bize Ulaşın</button>
                         <div class="page-tail-alt">
                             <a href="#" class="page-tail-link" onclick="openModal(event)">Sıkça Sorulan Sorular</a>
                             <span class="page-tail-alt-ayrac" aria-hidden="true">·</span>

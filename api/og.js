@@ -112,10 +112,9 @@ function hikayeKart(rumuz, ozet, yas, cins, filigranEmoji) {
                             position: 'relative',
                             display: 'flex',
                             flexDirection: 'column',
-                            flexGrow: 1,
+                            flex: 1,
                             width: '100%',
-                            height: o.govdeH,
-                            padding: o.padY + 'px ' + o.padX + 'px 12px',
+                            padding: o.padY + 'px ' + o.padX + 'px 20px',
                             overflow: 'hidden'
                         },
                         children: [
@@ -268,24 +267,6 @@ function hikayeKart(rumuz, ozet, yas, cins, filigranEmoji) {
                                 }
                             }
                         ]
-                    }
-                },
-                {
-                    type: 'div',
-                    props: {
-                        style: {
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '100%',
-                            backgroundColor: '#2a2a2a',
-                            color: '#ffffff',
-                            fontSize: o.altSerit,
-                            fontWeight: 700,
-                            padding: '12px 10px',
-                            flexShrink: 0
-                        },
-                        children: rumuz + ' | gunde5.com'
                     }
                 }
             ]

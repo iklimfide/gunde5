@@ -191,8 +191,26 @@
         throw new Error('indexBugunun5Getir tanımlı değil');
     }
 
-    function twitterIntentUrl(metin) {
-        return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(String(metin || ''));
+    function twitterIntentUrl(metin, url) {
+        var XI = global.Gunde5XIntent;
+        if (XI && XI.intentUrl) {
+            return XI.intentUrl({ text: metin, url: url });
+        }
+        return 'https://x.com/intent/post?text=' + encodeURIComponent(String(metin || ''));
+    }
+
+    function xPaylas() {
+        var alan = document.getElementById('spPaylasMetin');
+        var metin = alan ? alan.value : '';
+        if (!metin) return;
+        var XI = global.Gunde5XIntent;
+        if (XI && XI.ac) {
+            XI.ac({ text: metin, fullText: metin }, function (msg) {
+                if (ui() && ui().showToast) ui().showToast(msg);
+            });
+            return;
+        }
+        global.open(twitterIntentUrl(metin), '_blank', 'noopener,noreferrer');
     }
 
     function igKartIcerikHtml(rows) {
@@ -480,13 +498,6 @@
         } catch (e2) {
             if (ui() && ui().showToast) ui().showToast('Kopyalanamadı — metni seçip elle kopyalayın', 'hata');
         }
-    }
-
-    function xPaylas() {
-        var alan = document.getElementById('spPaylasMetin');
-        var metin = alan ? alan.value : '';
-        if (!metin) return;
-        global.open(twitterIntentUrl(metin), '_blank', 'noopener,noreferrer');
     }
 
     function olaylariBagla() {

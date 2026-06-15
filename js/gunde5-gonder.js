@@ -93,8 +93,8 @@
             '.gonder-basari p{font-size:16px;font-weight:700;line-height:1.5;margin:0 0 10px}' +
             '.gonder-basari p:last-child{margin-bottom:0}' +
             '.gonder-geri{display:inline-block;margin-bottom:12px;padding:0;border:none;background:none;color:#1d9bf0;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}' +
-            '.page-tail-cta{display:block;width:100%;max-width:320px;margin:4px auto 0;padding:14px 20px;border:none;border-radius:999px;background:linear-gradient(135deg,#1d9bf0,#0ea5e9);color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(29,155,240,.35)}' +
-            '.page-tail-cta:hover{filter:brightness(1.05)}' +
+            '.page-tail-cta{display:block;width:100%;max-width:320px;margin:4px auto 0;padding:14px 20px;border:none;border-radius:999px;background:#4f46e5;color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(79,70,229,.35)}' +
+            '.page-tail-cta:hover{background:#4338ca}' +
             '.page-tail-iletisim{font-size:12px;font-weight:500;color:var(--text-muted);margin-top:4px}' +
             '.page-tail-iletisim .mail-link{font-size:inherit}';
         document.head.appendChild(s);
