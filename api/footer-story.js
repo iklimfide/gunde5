@@ -15,7 +15,7 @@ export default async function handler(req) {
     var ipHash = await ipHashFromRequest(req);
     var payload = {
         type: body.type || 'story',
-        title: body.title || '',
+        username: body.username || '',
         content: body.content || '',
         age: body.age,
         city: body.city || '',

@@ -277,7 +277,7 @@
                 msg.indexOf('master_submission_guncelle') >= 0 ||
                 msg.indexOf('master_messages') >= 0 || msg.indexOf('master_bildirim') >= 0) &&
             (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
-            return 'Footer gönderim kurulumu eksik. Supabase SQL Editor\'da supabase/footer-submissions.sql dosyasını çalıştırın.';
+            return 'Footer gönderim kurulumu eksik. Supabase SQL Editor\'da supabase/footer-submissions.sql dosyasını çalıştırın. Rumuz için ayrıca supabase/footer-submission-username.sql.';
         }
         if (msg.indexOf('master_') >= 0 && (msg.indexOf('function') >= 0 || err.code === 'PGRST202')) {
             return 'Master yönetim yok. Supabase SQL Editor\'da supabase/master-admin.sql dosyasını çalıştırın.';

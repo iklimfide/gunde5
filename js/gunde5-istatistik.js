@@ -8,6 +8,7 @@
     var aramaTerimOlayHazir = false;
     var lazyOlayHazir = false;
     var trafikVeri = null;
+    var son7Gunluk = null;
     var gunlukVeri = null;
     var gunlukVeriPromise = null;
 
@@ -129,6 +130,21 @@
         }
         try {
             return await D.masterGunlukIstatistik(seciliGun, seciliHaric);
+        } catch (e) {
+            return {
+                ok: false,
+                hata: D.hataMesaji ? D.hataMesaji(e) : 'RPC yok veya hata'
+            };
+        }
+    }
+
+    async function loadSon7Gunluk() {
+        var D = db();
+        if (!D || !D.masterGunlukIstatistik) {
+            return { ok: false, hata: 'master_gunluk_istatistik tanımlı değil' };
+        }
+        try {
+            return await D.masterGunlukIstatistik(7, seciliHaric);
         } catch (e) {
             return {
                 ok: false,
@@ -504,6 +520,61 @@
         });
     }
 
+    function son7GunlukToplam() {
+        var satirlar = arrCoz(son7Gunluk && son7Gunluk.gunluk);
+        var tekil = 0;
+        var gorunt = 0;
+        var i;
+        for (i = 0; i < satirlar.length; i++) {
+            tekil += parseInt(satirlar[i].tekil_ziyaretci, 10) || 0;
+            gorunt += parseInt(satirlar[i].sayfa_acilisi, 10) || 0;
+        }
+        return { tekil: tekil, gorunt: gorunt };
+    }
+
+    function son7GunlukHtml() {
+        if (!son7Gunluk || !son7Gunluk.ok) {
+            return (
+                '<section class="istat-bolum istat-bolum--son7">' +
+                '<h2 class="istat-bolum-baslik">Son 7 gün</h2>' +
+                '<p class="istat-hata">' + esc((son7Gunluk && son7Gunluk.hata) || 'Günlük veri yüklenemedi.') + '</p>' +
+                '</section>'
+            );
+        }
+        var toplam = son7GunlukToplam();
+        var html = '<section class="istat-bolum istat-bolum--son7">';
+        html += '<h2 class="istat-bolum-baslik">Son 7 gün</h2>';
+        html += tabloParcaHtml(
+            [
+                { etiket: 'Gün', deger: function (r) { return r.gun_etiket || r.gun; } },
+                { etiket: 'Tekil kullanıcı', deger: function (r) { return fmtSayi(r.tekil_ziyaretci); } },
+                { etiket: 'Görüntüleme', deger: function (r) { return fmtSayi(r.sayfa_acilisi); } }
+            ],
+            arrCoz(son7Gunluk.gunluk),
+            'Son 7 günde kayıt yok.'
+        );
+        html += '<p class="istat-bolum-not">İstanbul günü · tekil kullanıcı = o günkü benzersiz ziyaretçi · görüntüleme = sayfa açılışı</p>';
+        html += '<h3 class="istat-bolum-baslik istat-bolum-baslik--alt">Trafik özeti</h3>';
+        html += '<div class="istat-kpi-grid istat-kpi-grid--hero">';
+        html += kpiKart('Tekil kullanıcı', fmtSayi(toplam.tekil), '7 gün — günlük değerlerin toplamı');
+        html += kpiKart('Görüntüleme', fmtSayi(toplam.gorunt), '7 gün — sayfa açılışı toplamı');
+        html += '</div></section>';
+        return html;
+    }
+
+    function trafikDonemOzetHtml(veri) {
+        if (!veri || seciliGun === 7) return '';
+        return (
+            '<section class="istat-bolum istat-bolum--hero">' +
+            '<h2 class="istat-bolum-baslik">Trafik özeti — son ' + fmtSayi(veri.gun) + ' gün</h2>' +
+            '<div class="istat-kpi-grid istat-kpi-grid--hero">' +
+            kpiKart('Toplam sayfa açılışı', fmtSayi(veri.toplam), 'ziyaret_kaydet — yenileme dahil') +
+            kpiKart('Tekil oturum', fmtSayi(veri.tekil_oturum), 'Farklı oturum anahtarı') +
+            kpiKart('Girişli ziyaret', fmtSayi(veri.girisli_ziyaret), 'user_id dolu kayıtlar') +
+            '</div></section>'
+        );
+    }
+
     function render(veri) {
         var kok = document.getElementById('istatistikIcerik');
         if (!kok) return;
@@ -521,11 +592,8 @@
         }
         html += ' · <a class="istat-capraz-link" href="/metrikler">Site içi metrikler →</a></p>';
 
-        html += '<section class="istat-bolum istat-bolum--hero"><h2 class="istat-bolum-baslik">Trafik özeti</h2><div class="istat-kpi-grid istat-kpi-grid--hero">';
-        html += kpiKart('Toplam sayfa açılışı', fmtSayi(veri.toplam), 'ziyaret_kaydet — yenileme dahil');
-        html += kpiKart('Tekil oturum', fmtSayi(veri.tekil_oturum), 'Farklı oturum anahtarı');
-        html += kpiKart('Girişli ziyaret', fmtSayi(veri.girisli_ziyaret), 'user_id dolu kayıtlar');
-        html += '</div></section>';
+        html += son7GunlukHtml();
+        html += trafikDonemOzetHtml(veri);
 
         html += lazyKabuk(
             'arama-terim',
@@ -600,11 +668,17 @@
         lazySifirla();
         yukleniyor(true);
         try {
-            var veri = await D.masterTrafikIstatistik(seciliGun, seciliHaric);
+            var sonuclar = await Promise.all([
+                D.masterTrafikIstatistik(seciliGun, seciliHaric),
+                loadSon7Gunluk()
+            ]);
+            var veri = sonuclar[0];
+            son7Gunluk = sonuclar[1];
             trafikVeri = veri;
             render(veri);
         } catch (e) {
             trafikVeri = null;
+            son7Gunluk = null;
             render({ ok: false, hata: D.hataMesaji ? D.hataMesaji(e) : 'Hata' });
         } finally {
             yukleniyor(false);

@@ -260,7 +260,7 @@
         document.getElementById('admPlanlaYas').value = (yas >= 18 && yas <= 120) ? String(yas) : '';
         document.getElementById('admPlanlaSehir').value = row.city || '';
         document.getElementById('admPlanlaCinsiyet').value = cinsiyetSubmissiondan(row);
-        document.getElementById('admPlanlaRumuz').value = '';
+        document.getElementById('admPlanlaRumuz').value = row.username || '';
         document.getElementById('admPlanlaYayin').value = varsayilanPlanDatetimeLocal();
         modal.hidden = false;
         modal.classList.add('acik');
@@ -272,7 +272,7 @@
         ev.preventDefault();
         var D = db();
         if (!D || !D.masterSubmissionPlanla) {
-            toast('Planlama hazır değil. Supabase SQL Editor\'da supabase/master-submission-planla.sql dosyasını bir kez çalıştır.', 'hata');
+            toast('Planlama hazır değil. Supabase SQL Editor\'da supabase/footer-submission-username.sql dosyasını bir kez çalıştır.', 'hata');
             return;
         }
         var form = ev.target;
@@ -386,7 +386,9 @@
 
     function hikayeKartHtml(row) {
         hikayeSatirlar[row.id] = row;
-        var baslik = row.title ? esc(row.title) : esc(String(row.content || '').slice(0, 56) + (row.content && row.content.length > 56 ? '…' : ''));
+        var baslik = row.username
+            ? esc(row.username)
+            : (row.title ? esc(row.title) : esc(String(row.content || '').slice(0, 56) + (row.content && row.content.length > 56 ? '…' : '')));
         var meta =
             esc(row.status) + ' · ' + tarih(row.created_at);
         if (row.city) meta += ' · ' + esc(row.city);

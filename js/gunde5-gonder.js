@@ -78,14 +78,16 @@
             'body.dark-mode .gonder-secim-btn:hover{border-color:#1d9bf0}' +
             '.gonder-label{display:block;font-size:12px;font-weight:700;color:#6b7280;margin:12px 0 6px}' +
             'body.dark-mode .gonder-label{color:var(--text-muted,#9ca3af)}' +
-            '.gonder-input,.gonder-textarea{width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;background:#fff;color:inherit}' +
-            'body.dark-mode .gonder-input,body.dark-mode .gonder-textarea{background:#0f1419;border-color:rgba(255,255,255,.15)}' +
+            '.gonder-zorunlu{color:#dc2626;font-weight:800}' +
+            '.gonder-input,.gonder-textarea{width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;background:#f3f4f6;color:inherit}' +
+            'body.dark-mode .gonder-input,body.dark-mode .gonder-textarea{background:#1a1f26;border-color:rgba(255,255,255,.15)}' +
             '.gonder-textarea{min-height:140px;resize:vertical;line-height:1.5}' +
             '.gonder-rad-grup{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}' +
-            '.gonder-rad{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;cursor:pointer;padding:8px 10px;border:1px solid #e5e7eb;border-radius:999px}' +
-            'body.dark-mode .gonder-rad{border-color:rgba(255,255,255,.12)}' +
+            '.gonder-rad{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;cursor:pointer;padding:8px 10px;border:1px solid #e5e7eb;border-radius:999px;background:#f3f4f6}' +
+            'body.dark-mode .gonder-rad{border-color:rgba(255,255,255,.12);background:#1a1f26}' +
             '.gonder-rad input{accent-color:#1d9bf0}' +
-            '.gonder-gonder{width:100%;margin-top:16px;padding:14px;border:none;border-radius:14px;background:#1d9bf0;color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit}' +
+            '.gonder-gonder{width:100%;margin-top:16px;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--topbar-bg-start,#1d9bf0) 0%,var(--topbar-bg-end,#0c4a6e) 100%);color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(29,155,240,.28)}' +
+            '.gonder-gonder:hover{filter:brightness(1.04)}' +
             '.gonder-gonder:disabled{opacity:.55;cursor:not-allowed}' +
             '.gonder-alt{font-size:12px;color:#6b7280;text-align:center;margin-top:10px;line-height:1.45}' +
             'body.dark-mode .gonder-alt{color:var(--text-muted)}' +
@@ -146,19 +148,18 @@
         panelIcerik(
             '<button type="button" class="gonder-geri" data-gonder="geri">← Geri</button>' +
             '<form id="gonderHikayeForm" novalidate>' +
-            '<label class="gonder-label" for="gonderBaslikInput">Başlık (istersen boş bırak, biz buluruz)</label>' +
-            '<input class="gonder-input" id="gonderBaslikInput" name="title" maxlength="120" autocomplete="off" placeholder="Örn: Gece vardiyası">' +
-            '<label class="gonder-label" for="gonderIcerik">Hikayen veya itirafın *</label>' +
+            '<label class="gonder-label" for="gonderRumuzInput">Rumuz <span class="gonder-zorunlu" aria-hidden="true">*</span></label>' +
+            '<input class="gonder-input" id="gonderRumuzInput" name="username" maxlength="50" required minlength="2" autocomplete="off" placeholder="Örn: GeceKuşu">' +
+            '<label class="gonder-label" for="gonderIcerik">Hikayen veya itirafın <span class="gonder-zorunlu" aria-hidden="true">*</span></label>' +
             '<textarea class="gonder-textarea" id="gonderIcerik" name="content" required minlength="50" maxlength="12000" placeholder="Anlat…"></textarea>' +
-            '<label class="gonder-label" for="gonderYas">Yaş (isteğe bağlı)</label>' +
-            '<input class="gonder-input" id="gonderYas" name="age" type="number" min="13" max="120" inputmode="numeric" placeholder="Örn: 28">' +
+            '<label class="gonder-label" for="gonderYas">Yaş <span class="gonder-zorunlu" aria-hidden="true">*</span></label>' +
+            '<input class="gonder-input" id="gonderYas" name="age" type="number" required min="13" max="120" inputmode="numeric" placeholder="Örn: 28">' +
             '<label class="gonder-label" for="gonderSehir">Şehir (isteğe bağlı)</label>' +
             '<input class="gonder-input" id="gonderSehir" name="city" maxlength="80" autocomplete="address-level2" placeholder="Örn: İzmir">' +
-            '<span class="gonder-label">Cinsiyet</span>' +
-            '<div class="gonder-rad-grup" role="radiogroup">' +
-            '<label class="gonder-rad"><input type="radio" name="gender" value="Kadın"> Kadın</label>' +
+            '<span class="gonder-label">Cinsiyet <span class="gonder-zorunlu" aria-hidden="true">*</span></span>' +
+            '<div class="gonder-rad-grup" role="radiogroup" aria-required="true">' +
+            '<label class="gonder-rad"><input type="radio" name="gender" value="Kadın" required> Kadın</label>' +
             '<label class="gonder-rad"><input type="radio" name="gender" value="Erkek"> Erkek</label>' +
-            '<label class="gonder-rad"><input type="radio" name="gender" value="Belirtmek istemiyorum"> Belirtmek istemiyorum</label>' +
             '</div>' +
             '<button type="submit" class="gonder-gonder" id="gonderHikayeBtn">Anonim gönder ☕</button>' +
             '<p class="gonder-alt">Kim olduğunu kimse bilmez. Yayınlanacak hikayeler editör tarafından seçilir.</p>' +
@@ -171,7 +172,7 @@
         panelIcerik(
             '<button type="button" class="gonder-geri" data-gonder="geri">← Geri</button>' +
             '<form id="gonderMesajForm" novalidate>' +
-            '<label class="gonder-label" for="gonderMesajMetin">Mesajın *</label>' +
+            '<label class="gonder-label" for="gonderMesajMetin">Mesajın <span class="gonder-zorunlu" aria-hidden="true">*</span></label>' +
             '<textarea class="gonder-textarea" id="gonderMesajMetin" name="message" required minlength="10" maxlength="4000" placeholder="Yazmak istediklerin…"></textarea>' +
             '<label class="gonder-label" for="gonderEmail">Mail adresin (isteğe bağlı)</label>' +
             '<input class="gonder-input" id="gonderEmail" name="email" type="email" maxlength="200" autocomplete="email" placeholder="sen@ornek.com">' +
@@ -227,23 +228,35 @@
         if (gonderimKilit) return;
         var form = ev.target;
         var btn = document.getElementById('gonderHikayeBtn');
+        var rumuz = (form.username && form.username.value || '').trim();
+        if (rumuz.length < 2) {
+            toast('Rumuz en az 2 karakter olmalı.', 'hata');
+            return;
+        }
         var icerik = (form.content && form.content.value || '').trim();
         if (icerik.length < 50) {
             toast('Hikaye en az 50 karakter olmalı.', 'hata');
             return;
         }
+        var yas = parseInt(form.age && form.age.value, 10);
+        if (!yas || yas < 13 || yas > 120) {
+            toast('Geçerli bir yaş girin (13–120).', 'hata');
+            return;
+        }
         var genderEl = form.querySelector('input[name="gender"]:checked');
+        if (!genderEl) {
+            toast('Cinsiyet seçimi zorunlu.', 'hata');
+            return;
+        }
         var payload = {
             type: 'story',
-            title: (form.title && form.title.value || '').trim(),
+            username: rumuz,
             content: icerik,
+            age: yas,
             city: (form.city && form.city.value || '').trim(),
-            gender: genderEl ? genderEl.value : '',
+            gender: genderEl.value,
             visitor_id: visitorIdAl()
         };
-        if (form.age && form.age.value) {
-            payload.age = parseInt(form.age.value, 10);
-        }
 
         gonderimKilit = true;
         btnKilit(btn, true);
