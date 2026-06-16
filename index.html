@@ -52,7 +52,7 @@
     </script>
     <meta name="theme-color" content="#ffffff">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="stylesheet" href="css/index.css?v=36">
+    <link rel="stylesheet" href="css/index.css?v=37">
     <link rel="stylesheet" href="css/index-pc.css?v=15">
     <link rel="stylesheet" href="css/gunde5-topbar.css?v=5">
     <script src="js/gunde5-shell.js"></script>
@@ -62,7 +62,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js" crossorigin></script>
     <script defer src="js/gunde5-db.js?v=36"></script>
     <script defer src="js/gunde5-x-intent.js?v=1"></script>
-    <script defer src="js/gunde5-index.js?v=66"></script>
+    <script defer src="js/gunde5-index.js?v=68"></script>
     <script defer src="js/gunde5-index-pc.js?v=11"></script>
     <script defer src="js/gunde5-gonder.js?v=4"></script>
 </head>
@@ -85,7 +85,12 @@
                 </div>
             </div>
             <a href="/" class="brand">gunde<span class="brand-five">5</span>.com</a>
-            <button type="button" class="theme-fab" onclick="toggleTheme()" id="themeBtn" aria-label="Tema değiştir">🌙</button>
+            <div class="header-sag page-topbar-sag" id="indexTopbarSag">
+                <a href="/profil" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+                    <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
+                </a>
+                <button type="button" class="theme-fab" onclick="toggleTheme()" id="themeBtn" aria-label="Tema değiştir">🌙</button>
+            </div>
         </header>
 
         <div class="pc-shell">

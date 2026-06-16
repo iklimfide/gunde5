@@ -57,6 +57,34 @@
 
     function arrCoz(v) { return Array.isArray(v) ? v : []; }
 
+    function jsonCoz(v) {
+        if (v == null) return null;
+        if (typeof v === 'string') {
+            try { return JSON.parse(v); } catch (e) { return null; }
+        }
+        return v;
+    }
+
+    function aramaTerimleriAl(gunluk) {
+        var ia = jsonCoz(gunluk && gunluk.index_arayuz);
+        if (!ia || typeof ia !== 'object') return [];
+        var liste = jsonCoz(ia.arama_terimleri);
+        if (!Array.isArray(liste)) return [];
+        return liste.map(function (r) {
+            if (r == null) return null;
+            if (typeof r === 'string') {
+                var s = String(r).trim();
+                return s.length >= 2 ? { terim: s, adet: 0 } : null;
+            }
+            var terim = String(r.terim != null ? r.terim : (r.query != null ? r.query : '')).trim();
+            if (terim.length < 2) return null;
+            return {
+                terim: terim,
+                adet: parseInt(r.adet != null ? r.adet : r.count, 10) || 0
+            };
+        }).filter(function (x) { return !!x; });
+    }
+
     function tabloParcaHtml(kolonlar, satirlar, bosMesaj) {
         if (!satirlar.length) {
             return '<p class="istat-bos">' + esc(bosMesaj || 'Veri yok.') + '</p>';
@@ -153,11 +181,28 @@
         }
     }
 
+    function aramaTerimBolumHtml(gunluk) {
+        var html = '<section class="istat-bolum" id="istatistikAramaTerim">';
+        html += '<h2 class="istat-bolum-baslik">En çok aranan terimler</h2>';
+        html += '<p class="istat-bolum-not">Arama önerilerini yönetin. Adet = seçili dönemdeki arama sayısı.</p>';
+        html += '<div data-istat-arama-terim-icerik>';
+        if (!gunluk || !gunluk.ok) {
+            html += '<p class="istat-hata">' + esc((gunluk && gunluk.hata) || 'Günlük veri yüklenemedi.') + '</p>';
+        } else {
+            html += aramaTerimIcerik(aramaTerimleriAl(gunluk));
+        }
+        html += '</div></section>';
+        return html;
+    }
+
     function aramaTerimleriYerlestir(gunluk) {
-        var wrap = document.querySelector('[data-istat-icerik="arama-terim"]');
-        if (!wrap || wrap.getAttribute('data-yuklu') !== '1' || !gunluk || !gunluk.ok) return;
-        var ia = gunluk.index_arayuz || {};
-        wrap.innerHTML = aramaTerimIcerik(arrCoz(ia.arama_terimleri));
+        var wrap = document.querySelector('[data-istat-arama-terim-icerik]');
+        if (!wrap) return;
+        if (!gunluk || !gunluk.ok) {
+            wrap.innerHTML = '<p class="istat-hata">' + esc((gunluk && gunluk.hata) || 'Günlük veri yüklenemedi.') + '</p>';
+            return;
+        }
+        wrap.innerHTML = aramaTerimIcerik(aramaTerimleriAl(gunluk));
         aramaTerimTopluSilDurumGuncelle();
     }
 
@@ -251,13 +296,6 @@
             return referrerDetayHtml(trafikVeri);
         }
         var gunluk = await gunlukGetir();
-        if (id === 'arama-terim') {
-            if (!gunluk || !gunluk.ok) {
-                return '<p class="istat-hata">' + esc((gunluk && gunluk.hata) || 'Günlük veri yüklenemedi.') + '</p>';
-            }
-            var ia = gunluk.index_arayuz || {};
-            return aramaTerimIcerik(arrCoz(ia.arama_terimleri));
-        }
         if (id === 'gunluk-ozet') return gunlukOzetIcerik(gunluk);
         if (id === 'hikaye-matris') return hikayeMatrisIcerik(gunluk.hikaye_matris);
         if (id === 'liste-filtre') return listeFiltreIcerik(gunluk.index_arayuz);
@@ -438,7 +476,7 @@
             toast('Toplu silme henüz kurulmamış. Supabase\'de index-arama-terim-yonetim.sql güncel sürümünü çalıştırın.', true);
             return;
         }
-        if (!global.confirm(liste.length + ' terim önerilerden kaldırılsın mı?')) return;
+        if (!global.confirm(liste.length + ' terim kalıcı olarak silinsin mi?')) return;
         try {
             var sonuc = await D.masterAramaTerimTopluSil(liste);
             toast((sonuc.silinen || liste.length) + ' terim kaldırıldı.');
@@ -454,7 +492,7 @@
             toast('Terim yönetimi henüz kurulmamış.', true);
             return;
         }
-        if (!global.confirm('«' + terim + '» önerilerden kaldırılsın mı?')) return;
+        if (!global.confirm('«' + terim + '» kalıcı olarak silinsin mi?')) return;
         try {
             await D.masterAramaTerimSil(terim);
             toast('Terim kaldırıldı.');
@@ -510,10 +548,9 @@
         gunlukVeriPromise = null;
         var gunluk = await gunlukGetir();
         aramaTerimleriYerlestir(gunluk);
-        ['liste-filtre', 'gunluk-ozet', 'hikaye-matris', 'arama-terim'].forEach(function (id) {
+        ['liste-filtre', 'gunluk-ozet', 'hikaye-matris'].forEach(function (id) {
             var wrap = document.querySelector('[data-istat-icerik="' + id + '"]');
             if (!wrap || wrap.getAttribute('data-yuklu') !== '1') return;
-            if (id === 'arama-terim') return;
             if (id === 'liste-filtre') wrap.innerHTML = listeFiltreIcerik(gunluk.index_arayuz);
             else if (id === 'gunluk-ozet') wrap.innerHTML = gunlukOzetIcerik(gunluk);
             else if (id === 'hikaye-matris') wrap.innerHTML = hikayeMatrisIcerik(gunluk.hikaye_matris);
@@ -595,11 +632,7 @@
         html += son7GunlukHtml();
         html += trafikDonemOzetHtml(veri);
 
-        html += lazyKabuk(
-            'arama-terim',
-            'En çok aranan terimler',
-            'Arama önerilerini yönetin. Adet = seçili dönemdeki arama sayısı.'
-        );
+        html += aramaTerimBolumHtml(gunlukVeri);
 
         html += tabloHtml(
             'Trafik kaynakları',
@@ -670,15 +703,20 @@
         try {
             var sonuclar = await Promise.all([
                 D.masterTrafikIstatistik(seciliGun, seciliHaric),
-                loadSon7Gunluk()
+                loadSon7Gunluk(),
+                loadGunluk()
             ]);
             var veri = sonuclar[0];
             son7Gunluk = sonuclar[1];
+            gunlukVeri = sonuclar[2];
+            gunlukVeriPromise = Promise.resolve(gunlukVeri);
             trafikVeri = veri;
             render(veri);
         } catch (e) {
             trafikVeri = null;
             son7Gunluk = null;
+            gunlukVeri = null;
+            gunlukVeriPromise = null;
             render({ ok: false, hata: D.hataMesaji ? D.hataMesaji(e) : 'Hata' });
         } finally {
             yukleniyor(false);

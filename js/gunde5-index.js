@@ -47,6 +47,38 @@
         return global.Gunde5DB;
     }
 
+    function analyticsZiyaretciId() {
+        var A = global.Gunde5Analytics;
+        if (A && A.visitorIdAl) return A.visitorIdAl();
+        try {
+            var v = global.localStorage.getItem('g5_visitor_id');
+            if (v && v.length >= 8) return v;
+            v = 'v:' + (global.crypto && global.crypto.randomUUID
+                ? global.crypto.randomUUID()
+                : (Date.now() + '-' + Math.random().toString(36).slice(2, 11)));
+            global.localStorage.setItem('g5_visitor_id', v);
+            return v;
+        } catch (e) {
+            return 'v:tmp-' + Date.now();
+        }
+    }
+
+    function analyticsOturumId() {
+        var A = global.Gunde5Analytics;
+        if (A && A.sessionIdAl) return A.sessionIdAl();
+        try {
+            var s = global.sessionStorage.getItem('g5_session_id');
+            if (s && s.length >= 8) return s;
+            s = 's:' + (global.crypto && global.crypto.randomUUID
+                ? global.crypto.randomUUID()
+                : (Date.now() + '-' + Math.random().toString(36).slice(2, 11)));
+            global.sessionStorage.setItem('g5_session_id', s);
+            return s;
+        } catch (e2) {
+            return 's:tmp-' + Date.now();
+        }
+    }
+
     /** Index etkileşim olayları — Gunde5Analytics.track veya doğrudan RPC yedek */
     function analyticsIndex(govde) {
         var A = global.Gunde5Analytics;
@@ -57,8 +89,8 @@
         }
         var D = db();
         if (!D || !D.analyticsEventKaydet || !D.isConfigured || !D.isConfigured()) return;
-        var sid = A && A.sessionIdAl ? A.sessionIdAl() : null;
-        var vid = A && A.visitorIdAl ? A.visitorIdAl() : null;
+        var sid = analyticsOturumId();
+        var vid = analyticsZiyaretciId();
         if (!sid || !vid) return;
         D.analyticsEventKaydet(Object.assign({ session_id: sid, visitor_id: vid }, gov)).catch(function () { /* */ });
     }
@@ -2202,7 +2234,9 @@
         try {
             var durum = await D.masterDurum();
             if (!durum || !durum.master) return;
+            await scriptYukle('js/gunde5-paylas.js');
             await scriptYukle('js/gunde5-ui.js');
+            await scriptYukle('js/gunde5-bildirim.js');
             await scriptYukle('js/gunde5-master.js?v=4');
             menuSol.hidden = false;
             if (global.Gunde5Shell && global.Gunde5Shell.applyShell) {

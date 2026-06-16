@@ -11,7 +11,7 @@
     <meta name="description" content="Planlı hikaye önizlemesi — yalnızca yönetici.">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#ffffff">
-    <link rel="stylesheet" href="css/index.css?v=32">
+    <link rel="stylesheet" href="css/index.css?v=37">
     <link rel="stylesheet" href="css/gunde5-topbar.css?v=5">
     <style>
         .pl-page { max-width: 640px; margin: 0 auto; padding: 0 0 48px; }
@@ -186,7 +186,12 @@
             </div>
         </div>
         <a href="/" class="brand">gunde<span class="brand-five">5</span>.com</a>
-        <button type="button" class="theme-fab" onclick="toggleTheme()" id="themeBtn" aria-label="Tema değiştir">🌙</button>
+        <div class="header-sag page-topbar-sag" id="planliTopbarSag">
+            <a href="/profil" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
+                <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
+            </a>
+            <button type="button" class="theme-fab" onclick="toggleTheme()" id="themeBtn" aria-label="Tema değiştir">🌙</button>
+        </div>
     </header>
 
     <main class="pl-page">

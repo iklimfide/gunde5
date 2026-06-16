@@ -2519,7 +2519,11 @@
             p_haric: haric || 'master'
         });
         if (res.error) throw res.error;
-        return res.data || { ok: false };
+        var data = res.data || { ok: false };
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { data = { ok: false }; }
+        }
+        return data;
     }
 
     async function masterAramaTerimEkle(terim) {
