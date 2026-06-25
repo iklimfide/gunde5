@@ -597,6 +597,16 @@
             white-space: nowrap;
         }
 
+        a.username-link {
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        a.username-link:hover {
+            text-decoration: underline;
+        }
+
         .story-card.female .username {
             color: var(--female-color);
         }

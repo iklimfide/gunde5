@@ -22,7 +22,15 @@
 
     function readTheme() {
         try {
-            return w.localStorage.getItem(KEY_THEME) === 'dark' ? 'dark' : 'light';
+            var t = w.localStorage.getItem(KEY_THEME);
+            if (t === 'dark' || t === 'light') return t;
+            var legacy = w.localStorage.getItem('theme');
+            if (legacy === 'dark' || legacy === 'light') {
+                w.localStorage.setItem(KEY_THEME, legacy);
+                w.localStorage.removeItem('theme');
+                return legacy;
+            }
+            return 'light';
         } catch (e) {
             return 'light';
         }
@@ -68,7 +76,7 @@
             'html.g5-oturum[data-user-gender="female"] #headerProfilLink.cins-female .header-profil-avatar:not(.has-foto),' +
             'html.g5-oturum[data-user-gender="female"] #headerProfilLink:not(.cins-male) .header-profil-avatar:not(.has-foto){background-color:#db2777}' +
             'html.g5-oturum .header-sag{min-width:84px}' +
-            '.header-theme-btn{width:38px;height:38px;padding:0;border:1px solid rgba(255,255,255,.45);border-radius:10px;background:rgba(255,255,255,.18);color:#ffffff;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;cursor:pointer;line-height:1;flex-shrink:0}' +
+            '.header-theme-btn{width:38px;height:38px;padding:0;border:1px solid rgba(255,255,255,.45);border-radius:10px;background:rgba(255,255,255,.18);color:#ffffff;display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:400;cursor:pointer;line-height:1;flex-shrink:0}' +
             '.header-theme-btn:hover{background:rgba(255,255,255,.24)}' +
             '.header-theme-btn:active{transform:scale(.96)}' +
             '.header-theme-btn:focus-visible{outline:2px solid rgba(255,255,255,.55);outline-offset:2px}' +
@@ -115,7 +123,7 @@
         var btn = doc.getElementById(THEME_BTN_ID);
         if (!btn) return;
         var dark = !!(doc.body && doc.body.classList.contains('dark-mode'));
-        btn.textContent = dark ? '\u2600' : '\u263E';
+        btn.textContent = dark ? '\u2600\uFE0F' : '\uD83C\uDF19';
         btn.setAttribute('aria-label', dark ? 'Aydınlık moda geç' : 'Karanlık moda geç');
         btn.title = dark ? 'Aydınlık moda geç' : 'Karanlık moda geç';
     }
@@ -149,8 +157,13 @@
         var body = doc && doc.body;
         if (!body) return;
         var html = doc.documentElement;
-        body.classList.toggle('dark-mode', html.classList.contains('g5-tema-koyu'));
+        var dark = html.classList.contains('g5-tema-koyu');
+        body.classList.toggle('dark-mode', dark);
         body.classList.toggle('oturum-acik', html.classList.contains('g5-oturum'));
+        if (dark) html.setAttribute('data-theme', 'dark');
+        else html.removeAttribute('data-theme');
+        var meta = doc.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', dark ? '#0f1419' : '#ffffff');
         syncThemeButton();
     }
 

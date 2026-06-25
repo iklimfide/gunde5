@@ -145,6 +145,34 @@
             .replace(/"/g, '&quot;');
     }
 
+    var WOXIFLY_URL = 'https://woxifly.com/';
+
+    function woxiflyYazarLinkGoster(rumuz, isGizli) {
+        if (isGizli) return false;
+        var r = String(rumuz || '').trim();
+        return !!(r && r !== 'Anonim' && r !== 'Gizli Üye' && r !== 'Müdavim' && r !== '—');
+    }
+
+    function usernameHtml(rumuz, isGizli) {
+        var label = rumuz || 'Anonim';
+        if (!woxiflyYazarLinkGoster(rumuz, isGizli)) {
+            return '<span class="username">' + esc(label) + '</span>';
+        }
+        return '<a href="' + WOXIFLY_URL + '" class="username username-link" target="_blank" rel="noopener noreferrer" title="Woxifly\'da yazış">' + esc(label) + '</a>';
+    }
+
+    function usernameElGuncelle(card, rumuz, isGizli) {
+        var details = card && card.querySelector('.user-details');
+        if (!details) return;
+        var old = details.querySelector('.username, a.username-link');
+        var wrap = document.createElement('div');
+        wrap.innerHTML = usernameHtml(rumuz, isGizli);
+        var neu = wrap.firstChild;
+        if (!neu) return;
+        if (old) old.parentNode.replaceChild(neu, old);
+        else details.insertBefore(neu, details.firstChild);
+    }
+
     function likeSayisi(row) {
         if (row.like != null && row.like !== '') {
             return parseInt(row.like, 10) || 0;
@@ -716,7 +744,7 @@
                         (cins === 'male' ? '\u2642' : '\u2640') +
                     '</div>' +
                     '<div class="user-details">' +
-                        '<span class="username">' + esc(rumuz) + '</span>' +
+                        usernameHtml(rumuz, row.is_gizli) +
                         (meta ? '<span class="user-meta">' + esc(meta) + '</span>' : '') +
                     '</div>' +
                 '</div>' +
@@ -1099,8 +1127,7 @@
         card.classList.remove('male', 'female');
         card.classList.add(cins);
 
-        var userEl = card.querySelector('.username');
-        if (userEl) userEl.textContent = rumuz;
+        usernameElGuncelle(card, rumuz, row.is_gizli);
 
         var metaEl = card.querySelector('.user-meta');
         if (meta) {

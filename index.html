@@ -89,7 +89,6 @@
                 <a href="/profil" class="header-profil-link" id="headerProfilLink" aria-label="Profilim">
                     <span class="header-profil-avatar" id="headerProfilAvatar">♀</span>
                 </a>
-                <button type="button" class="theme-fab" onclick="toggleTheme()" id="themeBtn" aria-label="Tema değiştir">🌙</button>
             </div>
         </header>
 
@@ -340,33 +339,6 @@
     </div>
 
     <script>
-        function temaUygula(karanlik) {
-            var meta = document.querySelector('meta[name="theme-color"]');
-            if (karanlik) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                document.body.classList.add('dark-mode');
-                document.getElementById('themeBtn').textContent = '☀️';
-                if (meta) meta.setAttribute('content', '#0f1419');
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-                document.body.classList.remove('dark-mode');
-                document.getElementById('themeBtn').textContent = '🌙';
-                if (meta) meta.setAttribute('content', '#ffffff');
-            }
-        }
-
-        (function () {
-            if (localStorage.getItem('theme') === 'dark') {
-                temaUygula(true);
-            }
-        })();
-
-        function toggleTheme() {
-            var karanlik = document.documentElement.getAttribute('data-theme') === 'dark';
-            localStorage.setItem('theme', karanlik ? 'light' : 'dark');
-            temaUygula(!karanlik);
-        }
-
         function openModal(e) {
             e.preventDefault();
             document.getElementById('aboutModal').style.display = 'flex';

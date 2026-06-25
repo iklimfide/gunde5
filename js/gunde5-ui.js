@@ -35,6 +35,28 @@
         return '<span class="user-meta">' + htmlEsc(meta) + '</span>';
     }
 
+    var WOXIFLY_URL = 'https://woxifly.com/';
+
+    function woxiflyYazarLinkGoster(rumuz, isGizli) {
+        if (isGizli) return false;
+        var r = String(rumuz || '').trim();
+        return !!(r && r !== 'Anonim' && r !== 'Gizli Üye' && r !== 'Müdavim' && r !== '—');
+    }
+
+    function woxiflyMesajUrl(rumuz, isGizli) {
+        return woxiflyYazarLinkGoster(rumuz, isGizli) ? WOXIFLY_URL : null;
+    }
+
+    function usernameLinkHtml(rumuz, opts) {
+        opts = opts || {};
+        var label = rumuz || opts.fallback || 'Anonim';
+        var text = htmlEsc(label);
+        if (!woxiflyYazarLinkGoster(rumuz, opts.isGizli)) {
+            return '<span class="username">' + text + '</span>';
+        }
+        return '<a href="' + WOXIFLY_URL + '" class="username username-link" target="_blank" rel="noopener noreferrer" title="Woxifly\'da yazış">' + text + '</a>';
+    }
+
     function kartMetaDataAttr(kart, row) {
         if (!kart || !row) return;
         if (row.age != null && row.age !== '') {
@@ -624,7 +646,7 @@
                 '<div class="user-block">' +
                     '<div class="avatar"></div>' +
                     '<div class="user-details">' +
-                        '<span class="username">' + htmlEsc(rumuz) + '</span>' +
+                        usernameLinkHtml(rumuz, { isGizli: row.is_gizli, fallback: 'Müdavim' }) +
                         kullaniciMetaHtml(row) +
                     '</div>' +
                 '</div>' +
@@ -1022,6 +1044,8 @@
 
     global.Gunde5UI = {
         htmlEsc: htmlEsc,
+        woxiflyMesajUrl: woxiflyMesajUrl,
+        usernameLinkHtml: usernameLinkHtml,
         metinGoster: metinGoster,
         metinBol: metinBol,
         showToast: showToast,
